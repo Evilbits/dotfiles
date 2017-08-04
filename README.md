@@ -1,1 +1,3 @@
-.dotfiles for Rasmus Ubuntu setup updated 03/08/2017
+.dotfiles for bash mostly
+
+Uses Inconsolata 12px font.
