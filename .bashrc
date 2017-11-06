@@ -121,7 +121,7 @@ fi
 export GOPATH="$HOME/Desktop/go"
 export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin/:/usr/local/go/bin/:$GOPATH/bin" # Add /bin/ and Golang
 
-export NVM_DIR="/home/rasmus/.nvm"
+export NVM_DIR="/$HOME/$USER/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
