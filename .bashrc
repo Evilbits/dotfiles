@@ -56,12 +56,13 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
-if [ "$color_prompt" = yes ]; then
+# Always use color in terminal
+#if [ "$color_prompt" = yes ]; then
     #PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
     PS1='${debian_chroot:+($debian_chroot)}\[\033[96m\]\u\[\033[00m\] \[\033[1;33m\](\W)\[\033[00m\] \$ '
-else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-fi
+#else
+#    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+#fi
 unset color_prompt force_color_prompt
 
 # If this is an xterm set the title to user@host:dir
@@ -94,6 +95,10 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 
+# git aliases
+alias g='git'
+alias be='bundle exec'
+
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
@@ -118,10 +123,13 @@ if ! shopt -oq posix; then
   fi
 fi
 
-export GOPATH="$HOME/Desktop/go"
-export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin/:/usr/local/go/bin/:$GOPATH/bin" # Add /bin/ and Golang
+alias python=python3 # Set default python command to use python3
 
-export NVM_DIR="/$HOME/$USER/.nvm"
+export GOPATH="$HOME/Desktop/go"
+export PATH="$PATH:/usr/local/go/bin/:$GOPATH/bin" # Add /bin/ and Golang
+#export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin/:/usr/local/go/bin/:$GOPATH/bin" # Add /bin/ and Golang
+
+export NVM_DIR="/home/rasmus/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
