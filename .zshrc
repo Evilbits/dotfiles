@@ -2,7 +2,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-  export ZSH="$HOME/.oh-my-zsh"
+  export ZSH="/home/rasmus/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -39,7 +39,7 @@ ZSH_THEME="refined"
 # DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
+ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
 # COMPLETION_WAITING_DOTS="true"
@@ -105,3 +105,27 @@ source $ZSH/oh-my-zsh.sh
 ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=11,underline
 ZSH_HIGHLIGHT_STYLES[precommand]=fg=11,underline
 ZSH_HIGHLIGHT_STYLES[arg0]=fg=11
+
+# some more ls aliases
+alias ls='ls --color=auto --group-directories-first'
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# git aliases
+alias g='git'
+alias be='bundle exec'
+
+# Path
+alias python=python3 # Set default python command to use python3
+
+export GOPATH="$HOME/Desktop/go"
+export PATH="$PATH:/usr/local/go/bin/:$GOPATH/bin" # Add /bin/ and Golang
+ 
+export NVM_DIR="/home/rasmus/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+ 
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+ 
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$GEM_HOME/bin:$HOME/.rvm/bin:$PATH"
