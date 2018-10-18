@@ -8,7 +8,8 @@
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-ZSH_THEME="refined"
+#ZSH_THEME="refined"
+ZSH_THEME='spaceship'
 #PROMPT='%F{white}%* '$PROMPT
 #autoload -U promptinit; promptinit
 #prompt pure
@@ -103,8 +104,13 @@ source $ZSH/oh-my-zsh.sh
 
 # zsh-syntax-highligting
 ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=11,underline
-ZSH_HIGHLIGHT_STYLES[precommand]=fg=11,underline
+ZSH_HIGHLIGHT_STYLES[precommand]=fg=11
 ZSH_HIGHLIGHT_STYLES[arg0]=fg=11
+
+# spaceship theme settings
+SPACESHIP_USER_SHOW='always'
+SPACESHIP_BATTERY_SHOW=false
+SPACESHIP_RUBY_SYMBOL=''
 
 # some more ls aliases
 alias ls='ls --color=auto --group-directories-first'
