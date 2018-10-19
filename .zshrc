@@ -8,7 +8,6 @@
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-#ZSH_THEME="refined"
 ZSH_THEME='spaceship'
 #PROMPT='%F{white}%* '$PROMPT
 #autoload -U promptinit; promptinit
@@ -68,6 +67,7 @@ ENABLE_CORRECTION="true"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
   git
+  zsh-autosuggestions
   zsh-syntax-highlighting
 )
 
@@ -103,7 +103,7 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # zsh-syntax-highligting
-ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=11,underline
+ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=11
 ZSH_HIGHLIGHT_STYLES[precommand]=fg=11
 ZSH_HIGHLIGHT_STYLES[arg0]=fg=11
 
@@ -111,12 +111,16 @@ ZSH_HIGHLIGHT_STYLES[arg0]=fg=11
 SPACESHIP_USER_SHOW='always'
 SPACESHIP_BATTERY_SHOW=false
 SPACESHIP_RUBY_SYMBOL=''
+SPACESHIP_PROMPT_ADD_NEWLINE=true
 
-# some more ls aliases
+# zsh-autosuggest settings
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=6'
+
 alias ls='ls --color=auto --group-directories-first'
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
+alias -g G='| grep'
 
 # git aliases
 alias g='git'
