@@ -9,6 +9,8 @@
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 ZSH_THEME='spaceship'
+#autoload -U promptinit; promptinit
+#prompt spaceship
 #PROMPT='%F{white}%* '$PROMPT
 #autoload -U promptinit; promptinit
 #prompt pure
@@ -103,9 +105,9 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # zsh-syntax-highligting
-ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=11
-ZSH_HIGHLIGHT_STYLES[precommand]=fg=11
-ZSH_HIGHLIGHT_STYLES[arg0]=fg=11
+#ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=11
+#ZSH_HIGHLIGHT_STYLES[precommand]=fg=11
+#ZSH_HIGHLIGHT_STYLES[arg0]=fg=11
 
 # spaceship theme settings
 SPACESHIP_USER_SHOW='always'
@@ -114,7 +116,6 @@ SPACESHIP_RUBY_SYMBOL=''
 SPACESHIP_PROMPT_ADD_NEWLINE=true
 
 # zsh-autosuggest settings
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=6'
 
 alias ls='ls --color=auto --group-directories-first'
 alias ll='ls -alF'
@@ -126,16 +127,6 @@ alias -g G='| grep'
 alias g='git'
 alias be='bundle exec'
 
-# Path
-alias python=python3 # Set default python command to use python3
+#powerline-daemon -q . /usr/lib/python3.7/site-packages/powerline/bindings/zsh/powerline.zsh
 
-export GOPATH="$HOME/Desktop/go"
-export PATH="$PATH:/usr/local/go/bin/:$GOPATH/bin" # Add /bin/ and Golang
- 
-export NVM_DIR="/home/rasmus/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
- 
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
- 
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$GEM_HOME/bin:$HOME/.rvm/bin:$PATH"
+fpath=($fpath "/home/rasmus/.zfunctions")
