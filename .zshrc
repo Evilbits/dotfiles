@@ -105,9 +105,10 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # zsh-syntax-highligting
-#ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=11
-#ZSH_HIGHLIGHT_STYLES[precommand]=fg=11
-#ZSH_HIGHLIGHT_STYLES[arg0]=fg=11
+typeset -gA ZSH_HIGHLIGHT_STYLES
+ZSH_HIGHLIGHT_STYLES[suffix-alias]='fg=11'
+ZSH_HIGHLIGHT_STYLES[precommand]='fg=11'
+ZSH_HIGHLIGHT_STYLES[arg0]='fg=11'
 
 # spaceship theme settings
 SPACESHIP_USER_SHOW='always'
@@ -116,6 +117,7 @@ SPACESHIP_RUBY_SYMBOL=''
 SPACESHIP_PROMPT_ADD_NEWLINE=true
 
 # zsh-autosuggest settings
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
 
 alias ls='ls --color=auto --group-directories-first'
 alias ll='ls -alF'
