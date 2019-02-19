@@ -1,10 +1,10 @@
-# Colors
+! Colors
 ! Special colors
 *.foreground: #ABB2BF
 *.background: #1E2127
-*cursorColor: #5C6370
+*.cursorColor: #5C6370
 ! black
-*-color0: #1E2127
+*.color0: #1E2127
 *.color8: #4C6370
 ! red
 *.color1: #E06C75
@@ -17,7 +17,7 @@
 *.color11: #D19A66
 ! blue
 *.color4: #61AFEF
-*.color4: #61AFEF
+*.color12: #61AFEF
 ! magenta
 *.color5: #C678DD
 *.color13: #C678DD
@@ -28,31 +28,33 @@
 *.color7: #ABB2BF
 *.color15: #FFFFFF
 
-# Font
-URxvt.font: xft:Inconsolata:pixelsize=15
-#URxvt.font: xft:Termsynu:pixelsize=11
+! Font
+! Use fallback font for missing powerline glyphs
+URxvt.font: xft:Inconsolata\ for\ Powerline:pixelsize=15:antialias=true,xft:DejaVu\ Sans\ Mono\ for\ Powerline-10
+!URxvt.font: xft:Termsynu:pixelsize=11
+URxvt.letterSpace: 1
 
-# Disable scrollbar
+! Disable scrollbar
 URxvt.scrollBar: false
 URxvt.scrollBar_right: false
 
-# Make sure locale is set
+! Make sure locale is set
 URxvt.imLocale: da_DK.utf8
 
-# Rebind urxvt ISO 14755 keybind
+! Rebind urxvt ISO 14755 keybind
 URxvt.iso14755: false
 URxvt.iso14755_52: false
 
-# Keybindings
-# Allow pasting
+! Keybindings
+! Allow pasting
 Urxvt.keysym.Shift-Control-V: eval:paste_clipboard
 Urxvt.keysym.Shift-Control-C: eval:selection_to_clipboard
 
-# Styling
+! Styling
 URxvt.highlightSelection: true
 URxvt.transparent: true
-#URxvt.blurRadius: 100
-URxvt.shading: 18
+URxvt.blurRadius: 6
+URxvt.shading: 30
 
-# internal padding
+! internal padding
 URxvt.internalBorder: 10
