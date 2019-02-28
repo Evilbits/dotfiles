@@ -3,3 +3,7 @@
   cm = commit -m
   a = add
   co = checkout
+  ls = log --pretty=format:"%C(yellow)%h%C(green)%d\\ %Creset%s%C(cyan)\\ [%cn]" --decorate
+[user]
+	email = firestarter2100@gmail.com
+	name = Rasmus
