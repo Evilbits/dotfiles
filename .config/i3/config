@@ -9,7 +9,10 @@
 #
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
 
+# Set mod to ALT
 set $mod Mod1
+# Set mod to WINDOWS-KEY
+#set $mod Mod4
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
@@ -38,7 +41,10 @@ bindsym $mod+Return exec urxvt
 bindsym $mod+Shift+q kill
 
 # start dmenu (a program launcher)
-bindsym $mod+d exec dmenu_run
+#bindsym $mod+d exec dmenu_run
+set $execute exec rofi -show drun
+bindsym $mod+d $execute
+
 # There also is the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
 # installed.
@@ -78,8 +84,8 @@ bindsym $mod+v split v
 bindsym $mod+f fullscreen toggle
 
 # change container layout (stacked, tabbed, toggle split)
-bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
+#bindsym $mod+s layout stacking
+#bindsym $mod+w layout tabbed
 bindsym $mod+e layout toggle split
 
 # toggle tiling / floating
@@ -89,7 +95,7 @@ bindsym $mod+Shift+space floating toggle
 bindsym $mod+space focus mode_toggle
 
 # focus the parent container
-bindsym $mod+a focus parent
+#bindsym $mod+a focus parent
 
 # focus the child container
 #bindsym $mod+d focus child
@@ -99,8 +105,8 @@ bindsym $mod+a focus parent
 set $ws1 ">_"
 set $ws2 "www"
 set $ws3 "code"
-set $ws4 "code"
-set $ws5 "code"
+set $ws4 "4"
+set $ws5 "5"
 set $ws6 "6"
 set $ws7 "7"
 set $ws8 "8"
@@ -113,11 +119,11 @@ bindsym $mod+2 workspace $ws2
 bindsym $mod+3 workspace $ws3
 bindsym $mod+4 workspace $ws4
 bindsym $mod+5 workspace $ws5
-bindsym $mod+6 workspace $ws6
-bindsym $mod+7 workspace $ws7
-bindsym $mod+8 workspace $ws8
-bindsym $mod+9 workspace $ws9
-bindsym $mod+0 workspace $ws10
+bindsym $mod+Control+1 workspace $ws6
+bindsym $mod+Control+2 workspace $ws7
+bindsym $mod+Control+3 workspace $ws8
+bindsym $mod+Control+4 workspace $ws9
+bindsym $mod+Control+5 workspace $ws10
 
 # move focused container to workspace
 bindsym $mod+Shift+1 move container to workspace $ws1
@@ -125,11 +131,11 @@ bindsym $mod+Shift+2 move container to workspace $ws2
 bindsym $mod+Shift+3 move container to workspace $ws3
 bindsym $mod+Shift+4 move container to workspace $ws4
 bindsym $mod+Shift+5 move container to workspace $ws5
-bindsym $mod+Shift+6 move container to workspace $ws6
-bindsym $mod+Shift+7 move container to workspace $ws7
-bindsym $mod+Shift+8 move container to workspace $ws8
-bindsym $mod+Shift+9 move container to workspace $ws9
-bindsym $mod+Shift+0 move container to workspace $ws10
+bindsym $mod+Shift+Control+1 move container to workspace $ws6
+bindsym $mod+Shift+Control+2 move container to workspace $ws7
+bindsym $mod+Shift+Control+3 move container to workspace $ws8
+bindsym $mod+Shift+Control+4 move container to workspace $ws9
+bindsym $mod+Shift+Control+5 move container to workspace $ws10
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
@@ -165,21 +171,27 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
-# Start i3bar to display a workspace bar (plus the system information i3status
-# finds out, if available)
-#bar {
-#  status_command		i3status
-#	position 		top
-#	workspace_buttons 	yes
-#	
-#	colors {
-#		background #000000
-#		statusline #ffffff
-#	}
-#}
-
 # bind for setting up monitor
-bindsym $mod+Shift+m exec "xrandr --output eDP-1 --primary --auto --brightness 1.5 --output HDMI-2 --auto --above eDP-1"
+bindsym $mod+Shift+m exec "xrandr --output eDP1 --primary --auto --output HDMI2 --auto --above eDP1 --set 'Broadcast RGB' 'Full' && ~/.config/polybar/launch.sh"
+
+# bind for locking screen
+bindsym $mod+shift+x exec betterlockscreen -l dim
+
+# bind for screenshot all screens
+bindsym $mod+p exec "scrot ~/Pictures/%b%d::%H%M%S.png"
+# screenshot current window
+bindsym $mod+shift+p exec "scrot -u ~/Pictures/%b%d::%H%M%S.png"
+
+# bind for connecting to VPN - disabled since it requires sudo
+#bindsym $mod+shift+v exec "sudo openvpn --cd '/etc/openvpn/client' --config 'Denmark.conf'"
+
+# spotify keybinds
+bindsym $mod+z exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous"
+bindsym $mod+x exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause"
+bindsym $mod+c exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next"
+
+# rofi keybinds
+bindsym $mod+Shift+d exec "rofi -show window"
 
 # i3 gaps setup :)
 gaps inner 15
@@ -190,10 +202,8 @@ default_border          none
 default_floating_border none
 
 # set background
-exec_always feh --bg-scale --randomize $HOME/backgrounds/
-
-# start a terminal
-exec urxvt
+#exec_always feh --bg-scale $HOME/backgrounds/firewatch.jpg
+exec_always feh --bg-scale $HOME/backgrounds/alpine.jpg
 
 # exec polybar
 exec_always --no-startup-id $HOME/.config/polybar/launch.sh
