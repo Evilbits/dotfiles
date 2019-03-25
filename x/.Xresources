@@ -1,30 +1,32 @@
 ! Colors
-! Special colors
-*.foreground: #ABB2BF
-*.background: #1E2127
+*.foreground: #9EA7A6
+!*.foreground: #ABB2BF
+!*.background: #1E2127
+!*.background: #1F232B
+*.background: #232C31
 *.cursorColor: #5C6370
-! black
+!! black
 *.color0: #1E2127
 *.color8: #4C6370
-! red
+!! red
 *.color1: #E06C75
 *.color9: #E06C75
-! green
+!! green
 *.color2: #98C379
 *.color10: #98C379
-! yellow
+!! yellow
 *.color3: #D19A66
 *.color11: #D19A66
-! blue
+!! blue
 *.color4: #61AFEF
 *.color12: #61AFEF
-! magenta
+!! magenta
 *.color5: #C678DD
 *.color13: #C678DD
-! cyan
+!! cyan
 *.color6: #56B6C2
 *.color14: #56B6C2
-! white
+!! white
 *.color7: #ABB2BF
 *.color15: #FFFFFF
 
@@ -47,12 +49,12 @@ URxvt.iso14755_52: false
 
 ! Styling
 URxvt.highlightSelection: true
-URxvt.transparent: true
+!URxvt.transparent: true
 URxvt.blurRadius: 6
 URxvt.shading: 30
 
 ! internal padding
-URxvt.internalBorder: 10
+URxvt.internalBorder: 5
 
 ! Keybindings
 ! Allow copy/paste using CTRL-SHIFT-C/V
@@ -76,5 +78,6 @@ URxvt.keysym.Shift-Up: command:\033]720;1\007
 URxvt.keysym.Shift-Down: command:\033]721;1\007
 
 ! ROFI setup
-rofi.theme: Adapta-Nokto
+!rofi.theme: Adapta-Nokto
+rofi.theme: gruvbox-dark-soft
 rofi.modi:  drun

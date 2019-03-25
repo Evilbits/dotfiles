@@ -169,6 +169,9 @@ alias be='bundle exec'
 # alias keepassxc
 alias kp='keepassxc'
 
+# alias tmuxinator
+alias mux="tmuxinator"
+
 # cd aliases for work
 alias cda='cd ~/dev/fanomena/hileadzz_api'
 alias cdf='cd ~/dev/fanomena/hileadzz_frontend_web'
@@ -181,3 +184,10 @@ fpath=($fpath "/home/rasmus/.zfunctions")
 export PATH="$PATH:$HOME/.rvm/bin"
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load rvm into shell session
+
+# Export term for tmux
+export TERM="rxvt-unicode-256color"
+
+export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*" --glob "!node_modules/*"'
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

@@ -34,8 +34,11 @@ font pango:Inconsolata:style=Regular 11
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
-# start a terminalc
-bindsym $mod+Return exec urxvt
+# start a terminal
+bindsym $mod+Return exec urxvt -hold -e tmux
+
+# start a vim term
+bindsym $mod+Shift+Return exec urxvt -hold -e "mux default"
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -178,9 +181,9 @@ bindsym $mod+Shift+m exec "xrandr --output eDP1 --primary --auto --output HDMI2 
 bindsym $mod+shift+x exec betterlockscreen -l dim
 
 # bind for screenshot all screens
-bindsym $mod+p exec "scrot ~/Pictures/%b%d::%H%M%S.png"
+bindsym $mod+p exec "flameshot full -c -p ~/Pictures/flameshot"
 # screenshot current window
-bindsym $mod+shift+p exec "scrot -u ~/Pictures/%b%d::%H%M%S.png"
+bindsym $mod+shift+p exec "flameshot gui -p ~/Pictures/flameshot"
 
 # bind for connecting to VPN - disabled since it requires sudo
 #bindsym $mod+shift+v exec "sudo openvpn --cd '/etc/openvpn/client' --config 'Denmark.conf'"
