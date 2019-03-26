@@ -13,11 +13,20 @@ Plug 'yggdroot/indentline'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
+" Automatically add end to code
+Plug 'tpope/vim-endwise'
+
+" Automatically close brackets
+Plug 'raimondi/delimitmate'
+
 " Git status bar
 Plug 'airblade/vim-gitgutter'
 
 " ruby
 Plug 'tpope/vim-rails'
+
+" vue
+Plug 'posva/vim-vue'
 
 " javascript
 Plug 'pangloss/vim-javascript'
@@ -28,10 +37,6 @@ Plug 'pangloss/vim-javascript'
 Plug 'hzchirs/vim-material'
 
 call plug#end()
-
-" Set theme of bottom bar
-let g:airline_theme='luna'
-let g:airline_powerline_fonts = 1
 
 " nerdtree
 let NERDTreeShowHidden=0
