@@ -8,7 +8,8 @@
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-ZSH_THEME='spaceship'
+#ZSH_THEME='spaceship'
+ZSH_THEME='common'
 #autoload -U promptinit; promptinit
 #prompt spaceship
 #PROMPT='%F{white}%* '$PROMPT
@@ -153,7 +154,8 @@ SPACESHIP_PROMPT_ORDER=(
 )
 
 # zsh-autosuggest settings
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
+#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=4'
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
 
 alias ls='ls --color=auto --group-directories-first'
 alias ll='ls -alF'
@@ -176,6 +178,8 @@ alias mux="tmuxinator"
 alias cda='cd ~/dev/fanomena/hileadzz_api'
 alias cdf='cd ~/dev/fanomena/hileadzz_frontend_web'
 
+alias tmux='tmux -2'
+
 export EDITOR=vim
 
 fpath=($fpath "/home/rasmus/.zfunctions")
@@ -186,7 +190,7 @@ export PATH="$PATH:$HOME/.rvm/bin"
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load rvm into shell session
 
 # Export term for tmux
-export TERM="rxvt-unicode-256color"
+#export TERM="rxvt-unicode-256color"
 
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*" --glob "!node_modules/*"'
 

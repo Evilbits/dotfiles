@@ -35,10 +35,10 @@ font pango:Inconsolata:style=Regular 11
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec urxvt -hold -e tmux
+bindsym $mod+Return exec WINIT_HIDPI_FACTOR=1.0 alacritty #-hold -e tmux
 
 # start a vim term
-bindsym $mod+Shift+Return exec urxvt -hold -e "mux default"
+bindsym $mod+Shift+Return exec WINIT_HIDPI_FACTOR=1.0 alacritty -hold -e "mux default"
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -175,7 +175,7 @@ mode "resize" {
 bindsym $mod+r mode "resize"
 
 # bind for setting up monitor
-bindsym $mod+Shift+m exec "xrandr --output eDP1 --primary --auto --output HDMI2 --auto --above eDP1 --set 'Broadcast RGB' 'Full' && ~/.config/polybar/launch.sh"
+bindsym $mod+Shift+m exec "xrandr --output eDP1 --primary --auto --output HDMI2 --auto --above eDP1 && ~/.config/polybar/launch.sh && feh --bg-scale $bg_path"
 
 # bind for locking screen
 bindsym $mod+shift+x exec betterlockscreen -l dim
@@ -205,8 +205,8 @@ default_border          none
 default_floating_border none
 
 # set background
-#exec_always feh --bg-scale $HOME/backgrounds/firewatch.jpg
-exec_always feh --bg-scale $HOME/backgrounds/alpine.jpg
+set $bg_path $HOME/backgrounds/mountains-blue-light.jpg
+exec_always feh --bg-scale $bg_path
 
 # exec polybar
 exec_always --no-startup-id $HOME/.config/polybar/launch.sh

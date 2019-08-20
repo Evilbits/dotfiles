@@ -1,33 +1,67 @@
+!!!!!! LIGHTER BLUE SKIN
 ! Colors
-*.foreground: #9EA7A6
-!*.foreground: #ABB2BF
-!*.background: #1E2127
-!*.background: #1F232B
-*.background: #232C31
-*.cursorColor: #5C6370
-!! black
-*.color0: #1E2127
-*.color8: #4C6370
-!! red
-*.color1: #E06C75
-*.color9: #E06C75
-!! green
-*.color2: #98C379
-*.color10: #98C379
-!! yellow
-*.color3: #D19A66
-*.color11: #D19A66
-!! blue
-*.color4: #61AFEF
-*.color12: #61AFEF
-!! magenta
-*.color5: #C678DD
-*.color13: #C678DD
-!! cyan
-*.color6: #56B6C2
-*.color14: #56B6C2
-!! white
-*.color7: #ABB2BF
+!*.foreground: #9EA7A6
+!!*.foreground: #ABB2BF
+!!*.background: #1E2127
+!!*.background: #1F232B
+!*.background: #232C31
+!*.cursorColor: #5C6370
+!!! black
+!*.color0: #1E2127
+!*.color8: #4C6370
+!!! red
+!*.color1: #E06C75
+!*.color9: #E06C75
+!!! green
+!*.color2: #98C379
+!*.color10: #98C379
+!!! yellow
+!*.color3: #D19A66
+!*.color11: #D19A66
+!!! blue
+!*.color4: #61AFEF
+!*.color12: #61AFEF
+!!! magenta
+!*.color5: #C678DD
+!*.color13: #C678DD
+!!! cyan
+!*.color6: #56B6C2
+!*.color14: #56B6C2
+!!! white
+!*.color7: #ABB2BF
+!*.color15: #FFFFFF
+
+!!!!!!! DARKER BLUE ONE DARK SKIN
+! Found at: https://github.com/logico-dev/Xresources-themes/blob/master/one-dark.Xresources
+! Original theme https://github.com/nathanbuchar/atom-one-dark-terminal
+*.foreground:    #ABB2BF
+*.background:    #191C21
+*.cursorColor:   #5C6370
+*.highlightColor:#3A3F4B
+
+! Negro y gris
+*.color0:        #1E2127
+*.color8:        #5C6370
+! Rojos
+*.color1:        #E06C75
+*.color9:        #E06C75
+! Verde
+*.color2:        #98C379
+*.color10:       #98C379
+! Amarillo
+*.color3:        #D19A66
+*.color11:       #D19A66
+! Azul
+*.color4:        #61AFEF
+*.color12:       #61AFEF
+! Magenta
+*.color5:        #C678DD
+*.color13:       #C678DD
+! Cyan
+*.color6:        #56B6C2
+*.color14:       #56B6C2
+! Blanco
+*.color7:        #ABB2BF
 *.color15: #FFFFFF
 
 ! Font
@@ -76,6 +110,9 @@ URxvt.saveLines: 10000
 ! Quicker up/down scroll
 URxvt.keysym.Shift-Up: command:\033]720;1\007
 URxvt.keysym.Shift-Down: command:\033]721;1\007
+
+! Cursor size
+Xcursor.size: 16
 
 ! ROFI setup
 !rofi.theme: Adapta-Nokto

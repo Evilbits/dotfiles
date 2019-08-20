@@ -1,4 +1,5 @@
 [alias]
+  d = diff
   s = status
   cm = commit -m
   a = add
@@ -7,3 +8,5 @@
 [user]
 	email = firestarter2100@gmail.com
 	name = Rasmus
+[pull]
+  rebase = true

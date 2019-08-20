@@ -1,3 +1,4 @@
 # Ignore vim tmp files
 vim/.vim/tmp/*
 vim/.vim/plugged/*
+vim/.vim/bundle/*

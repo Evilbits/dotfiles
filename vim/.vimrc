@@ -12,6 +12,7 @@ Plug 'scrooloose/nerdtree'
 Plug 'yggdroot/indentline'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+Plug 'w0rp/ale'
 
 " Automatically add end to code
 Plug 'tpope/vim-endwise'
@@ -21,6 +22,9 @@ Plug 'raimondi/delimitmate'
 
 " Git status bar
 Plug 'airblade/vim-gitgutter'
+
+" Git
+Plug 'tpope/vim-fugitive'
 
 " ruby
 Plug 'tpope/vim-rails'
@@ -79,10 +83,6 @@ let g:airline_symbols.branch = ''
 let g:airline_symbols.readonly = ''
 let g:airline_symbols.linenr = ''
 
-" dracula
-let g:dracula_italic = 0
-let g:dracula_colorterm = 0
-
 " Change default command for fzf.vim to show dotfiles
 set wildmode=list:longest,list:full
 set wildignore+=*.o,*.obj,.git,*.rbc,*.pyc,__pycache__,node_modules/*
@@ -108,6 +108,13 @@ noremap <Down> <Nop>
 noremap <Left> <Nop>
 noremap <Right> <Nop>
 
+" Only use ESLint
+let b:ale_linters = {'javascript': ['eslint'], 'vue': ['eslint', 'vls']}
+" Run both javascript and vue linters for vue files.
+let g:ale_linter_aliases = {'vue': ['vue', 'javascript']}
+" Remove highlighting
+let g:ale_set_highlights = 0
+
 " change grep to use RipGrep
 if executable('rg')
   set grepprg=rg\ --no-heading\ --vimgrep\ --smart-case
@@ -129,6 +136,27 @@ set expandtab       " Expand TABs to spaces.
 set autoindent
 set number
 
+" Remove whitespaces
+let g:lessspace_enabled = 1
+" Don't enable for markdown as double space is a <br>
+let g:lessspace_blacklist = ['markdown']
+
+" Vue highligting
+" Sometimes the highlighting can't 'catch up' with Vim which leads to no
+" syntax highlighting.
+" See: https://github.com/posva/vim-vue/issues/72
+autocmd FileType vue syntax sync fromstart
+autocmd BufRead,BufNewFile *.vue setlocal filetype=vue.html.javascript.css.less.pug
+" Apparently helps with some of the speed concerns by disabling some
+" preprocessing
+let g:vue_disable_pre_processors=1
+
+if (has("termguicolors"))
+  set termguicolors
+endif
+
+" Stops delay on 'O' if pressed after ESC
+set ttimeoutlen=100
 syntax on
 set autoread " Auto load file if changed
 filetype on " Enable file type detection
@@ -136,9 +164,8 @@ filetype plugin indent on " Enable loading the plugin files for specific file ty
 set encoding=utf-8
 set ffs=unix,dos,mac
 set t_Co=256
+set t_ut=
 let g:airline_theme='material'
+"let g:material_style='oceanic'
 set background=dark
-if (has("termguicolors"))
-  set termguicolors
-endif
 colorscheme vim-material
