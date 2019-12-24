@@ -152,6 +152,8 @@ autocmd BufRead,BufNewFile *.vue setlocal filetype=vue.html.javascript.css.less.
 let g:vue_disable_pre_processors=1
 
 if (has("termguicolors"))
+  let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
   set termguicolors
 endif
 
@@ -164,8 +166,7 @@ filetype plugin indent on " Enable loading the plugin files for specific file ty
 set encoding=utf-8
 set ffs=unix,dos,mac
 set t_Co=256
-set t_ut=
-let g:airline_theme='material'
+let g:airline_theme='luna'
 "let g:material_style='oceanic'
 set background=dark
 colorscheme vim-material
