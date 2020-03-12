@@ -1,0 +1,11 @@
+#!/bin/bash
+
+## Created By Aditya Shakya
+
+MENU=" Lock| Logout| Reboot| Shutdown"
+            case "$MENU" in
+                *Lock) betterlockscreen -dim ;;
+                *Logout) openbox --exit;;
+                *Reboot) systemctl reboot ;;
+                *Shutdown) systemctl -i poweroff
+            esac

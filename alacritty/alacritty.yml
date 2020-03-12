@@ -30,7 +30,6 @@ window:
   #position:
   #  x: 0
   #  y: 0
-
   # Window padding (changes require restart)
   #
   # Blank space added around the window in pixels. This padding is scaled
@@ -163,7 +162,9 @@ draw_bold_text_with_bright_colors: true
 colors:
   # Default colors
   primary:
-    background: '0x1e282d'
+    # Match vim background
+    background: '#27323a'
+    #background: '0x1e282d'
     foreground: '0xc4c7d1'
 
   # Normal colors

@@ -180,7 +180,20 @@ alias cdf='cd ~/dev/fanomena/hileadzz_frontend_web'
 
 alias tmux='tmux -2'
 
+# Always use xterm for SSH
+alias ssh='TERM=xterm-256color ssh'
+
+# Ruby 2.7.0 warnings
+export RUBYOPT='-W:no-deprecated -W:no-experimental'
+
 export EDITOR=vim
+
+# Android Studio
+export ANDROID_HOME=/opt/android-sdk
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/tools/bin
+export PATH=$PATH:$ANDROID_HOME/platform-tools
 
 fpath=($fpath "/home/rasmus/.zfunctions")
 
