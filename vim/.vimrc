@@ -17,6 +17,9 @@ Plug 'w0rp/ale'
 " Automatically add end to code
 Plug 'tpope/vim-endwise'
 
+" Static code analysis for Ruby
+Plug 'ngmy/vim-rubocop'
+
 " Automatically close brackets
 Plug 'raimondi/delimitmate'
 
@@ -43,7 +46,7 @@ Plug 'hzchirs/vim-material'
 call plug#end()
 
 " nerdtree
-let NERDTreeShowHidden=0
+let NERDTreeShowHidden=1
 " Use Nerdtree for browsing directories
 " Auto start on opening Vim
 map <silent> <C-n> :NERDTreeToggle<CR>
@@ -108,12 +111,18 @@ noremap <Down> <Nop>
 noremap <Left> <Nop>
 noremap <Right> <Nop>
 
+" Fix files with prettier, and then ESLint.
+" let b:ale_fixers = ['prettier', 'eslint']
+" Set this variable to 1 to fix files when you save them.
+" let g:ale_fix_on_save = 1
 " Only use ESLint
-let b:ale_linters = {'javascript': ['eslint'], 'vue': ['eslint', 'vls']}
+let b:ale_linters = {'javascript': ['prettier', 'eslint'], 'vue': ['eslint', 'vls']}
 " Run both javascript and vue linters for vue files.
-let g:ale_linter_aliases = {'vue': ['vue', 'javascript']}
+let g:ale_linter_aliases = {'vue': ['vue', 'javascript'], 'typescript': 'javascript', 'typescriptreact': 'javascript'}
 " Remove highlighting
 let g:ale_set_highlights = 0
+" Automatic Typescript import from external modules
+let g:ale_completion_tsserver_autoimport = 1
 
 " change grep to use RipGrep
 if executable('rg')

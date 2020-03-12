@@ -35,7 +35,7 @@ font pango:Inconsolata:style=Regular 11
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec WINIT_HIDPI_FACTOR=1.0 alacritty #-hold -e tmux
+bindsym $mod+Return exec WINIT_HIDPI_FACTOR=1 alacritty #-hold -e tmux
 
 # start a vim term
 bindsym $mod+Shift+Return exec WINIT_HIDPI_FACTOR=1.0 alacritty -hold -e "mux default"
@@ -54,10 +54,10 @@ bindsym $mod+d $execute
 # bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
 
 # change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus down
-bindsym $mod+l focus up
-bindsym $mod+semicolon focus right
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
@@ -78,7 +78,7 @@ bindsym $mod+Shift+Up move up
 bindsym $mod+Shift+Right move right
 
 # split in horizontal orientation
-bindsym $mod+h split h
+bindsym $mod+b split h
 
 # split in vertical orientation
 bindsym $mod+v split v
@@ -105,9 +105,9 @@ bindsym $mod+space focus mode_toggle
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
-set $ws1 ">_"
-set $ws2 "www"
-set $ws3 "code"
+set $ws1 "www"
+set $ws2 "2"
+set $ws3 "3"
 set $ws4 "4"
 set $ws5 "5"
 set $ws6 "6"
@@ -174,11 +174,8 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
-# bind for setting up monitor
-bindsym $mod+Shift+m exec "xrandr --output eDP1 --primary --auto --output HDMI2 --auto --above eDP1 && ~/.config/polybar/launch.sh && feh --bg-scale $bg_path"
-
 # bind for locking screen
-bindsym $mod+shift+x exec betterlockscreen -l dim
+bindsym $mod+shift+x exec multilockscreen -l dim
 
 # bind for screenshot all screens
 bindsym $mod+p exec "flameshot full -c -p ~/Pictures/flameshot"
@@ -205,8 +202,11 @@ default_border          none
 default_floating_border none
 
 # set background
-set $bg_path $HOME/backgrounds/mountains-blue-light.jpg
+set $bg_path $HOME/backgrounds/pretty_circle.png
 exec_always feh --bg-scale $bg_path
 
 # exec polybar
 exec_always --no-startup-id $HOME/.config/polybar/launch.sh
+
+# Compositor
+exec_always picom --config $HOME/.config/picom/picom.conf
