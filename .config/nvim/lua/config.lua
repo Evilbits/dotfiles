@@ -42,28 +42,12 @@ end
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 
--- Use a loop to conveniently call 'setup' on multiple servers and
--- map buffer local keybindings when the language server attaches
-local servers = { 'omnisharp' }
-for _, lsp in ipairs(servers) do
-  nvim_lsp[lsp].setup {
-    on_attach = on_attach,
-		capabilities = capabilities,
-    flags = {
-      debounce_text_changes = 150,
-    }
-  }
-end
-
--- luasnip setup
-local luasnip = require 'luasnip'
-
 -- nvim-cmp setup
 local cmp = require 'cmp'
 cmp.setup {
   snippet = {
     expand = function(args)
-      require('luasnip').lsp_expand(args.body)
+			vim.fn["vsnip#anonymous"](args.body)
     end,
   },
   mapping = {
@@ -96,10 +80,12 @@ cmp.setup {
       end
     end,
   },
-  sources = {
+	sources = cmp.config.sources({
     { name = 'nvim_lsp' },
-    { name = 'luasnip' },
-  },
+    { name = 'vsnip' }, -- For vsnip users.
+  }, {
+    { name = 'buffer' },
+	})
 }
 
 -- Setup Omnisharp
@@ -112,3 +98,16 @@ require'lspconfig'.omnisharp.setup{
 
 -- Setup gopls
 require'lspconfig'.gopls.setup{}
+
+-- Use a loop to conveniently call 'setup' on multiple servers and
+-- map buffer local keybindings when the language server attaches
+local servers = { 'omnisharp' }
+for _, lsp in ipairs(servers) do
+  nvim_lsp[lsp].setup {
+    on_attach = on_attach,
+		capabilities = capabilities,
+    flags = {
+      debounce_text_changes = 150,
+    }
+  }
+end
