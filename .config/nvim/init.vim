@@ -202,7 +202,7 @@ nmap <space> <leader>
 
 """ Load lua config
 lua << EOF
-		require('config')
+require('config')
 EOF
 augroup omnisharp_commands
 	autocmd!
