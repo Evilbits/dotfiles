@@ -17,12 +17,17 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': 
 
 " Nvim
 Plug 'neovim/nvim-lspconfig'
-Plug 'nvim-lua/lsp_extensions.nvim'
 Plug 'williamboman/nvim-lsp-installer'
-Plug 'nvim-lua/completion-nvim'
-Plug 'hrsh7th/nvim-cmp' "Autocompletion plugin
-Plug 'hrsh7th/cmp-nvim-lsp' "LSP source for nvim-cmp
-Plug 'L3MON4D3/LuaSnip'
+
+" nvim-cmp autocompletion
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/cmp-path'
+Plug 'hrsh7th/cmp-cmdline'
+Plug 'hrsh7th/nvim-cmp'
+
+" Code snippets
+Plug 'SirVer/ultisnips'
 
 " C#
 Plug 'OmniSharp/omnisharp-vim'
@@ -208,6 +213,11 @@ augroup END
 let g:OmniSharp_server_use_mono = 1
 let g:OmniSharp_selector_ui = 'fzf'
 let g:OmniSharp_selector_findusages = 'fzf'
+
+" Ultisnip
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 
 " Below there be theming
 "let g:material_style='oceanic'
