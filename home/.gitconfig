@@ -1,3 +1,6 @@
+[user]
+  email = rasmusbreiler@gmail.com
+  name = Rasmus
 [alias]
   d = diff
   s = status
@@ -5,8 +8,11 @@
   a = add
   co = checkout
   ls = log --pretty=format:"%C(yellow)%h%C(green)%d\\ %Creset%s%C(cyan)\\ [%cn]" --decorate
-[user]
-	email = rasmusr@ecotekcorp.com
-	name = Rasmus
+[color]
+  branch = auto
+  diff = auto
+  interactive = auto
+  status = auto
+  ui = auto
 [pull]
   rebase = true
