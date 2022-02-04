@@ -1,4 +1,4 @@
-# Ignore vim tmp files
-vim/.vim/tmp/*
-vim/.vim/plugged/*
-vim/.vim/bundle/*
+# Ignore vim tmp files created after symlinking
+home/.config/nvim/tmp/swap/*
+home/.config/nvim/tmp/backup/*
+home/.config/nvim/tmp/undo/*

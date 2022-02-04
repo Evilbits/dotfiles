@@ -1,10 +1,3 @@
-"execute pathogen#infect()
-"if empty(glob('~/.vim/autoload/plug.vim'))
-"  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-"    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-"  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-"endif
-
 silent! if plug#begin('~/.vim/plugged')
 Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -223,17 +216,12 @@ let g:UltiSnipsJumpForwardTrigger="<c-b>"
 let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 
 " Below there be theming
-"let g:material_style='oceanic'
 set termguicolors
 if (has("termguicolors"))
   let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
   let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
 endif
-"
-"set t_Co=256
-"if &term =~ '256color'
-"  set t_ut=
-"endif
+
 "set background=dark
 "colorscheme tokyonight
 "colorscheme vim-material
