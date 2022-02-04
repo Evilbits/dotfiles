@@ -1,11 +1,11 @@
-execute pathogen#infect()
-if empty(glob('~/.vim/autoload/plug.vim'))
-  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-endif
+"execute pathogen#infect()
+"if empty(glob('~/.vim/autoload/plug.vim'))
+"  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+"    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+"  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+"endif
 
-call plug#begin('~/.vim/plugged')
+silent! if plug#begin('~/.vim/plugged')
 Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'scrooloose/nerdtree'
@@ -13,6 +13,27 @@ Plug 'yggdroot/indentline'
 Plug 'bling/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'w0rp/ale'
+Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+
+" Nvim
+Plug 'neovim/nvim-lspconfig'
+Plug 'williamboman/nvim-lsp-installer'
+
+" nvim-cmp autocompletion
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/cmp-path'
+Plug 'hrsh7th/cmp-cmdline'
+Plug 'hrsh7th/nvim-cmp'
+
+" Code snippets
+Plug 'SirVer/ultisnips'
+
+" C#
+Plug 'OmniSharp/omnisharp-vim'
+
+" Go
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 " Automatically add end to code
 Plug 'tpope/vim-endwise'
@@ -27,7 +48,7 @@ Plug 'raimondi/delimitmate'
 Plug 'airblade/vim-gitgutter'
 
 " Git
-Plug 'tpope/vim-fugitive'
+"Plug 'tpope/vim-fugitive'
 
 " ruby
 Plug 'tpope/vim-rails'
@@ -38,12 +59,21 @@ Plug 'posva/vim-vue'
 " javascript
 Plug 'pangloss/vim-javascript'
 
+" tsx
+Plug 'leafgarland/typescript-vim'
+Plug 'peitalin/vim-jsx-typescript'
+
 " theme
+Plug 'arcticicestudio/nord-vim'
 "Plug 'dracula/vim',{'as':'dracula'}
 "Plug 'ntk148v/vim-horizon'
 Plug 'hzchirs/vim-material'
-
+Plug 'bluz71/vim-nightfly-guicolors'
+Plug 'folke/tokyonight.nvim'
+Plug 'connorholyday/vim-snazzy'
+Plug 'embark-theme/vim', { 'as': 'embark', 'branch': 'main' }
 call plug#end()
+endif
 
 " nerdtree
 let NERDTreeShowHidden=1
@@ -112,11 +142,11 @@ noremap <Left> <Nop>
 noremap <Right> <Nop>
 
 " Fix files with prettier, and then ESLint.
-" let b:ale_fixers = ['prettier', 'eslint']
+let b:ale_fixers = ['prettier', 'eslint']
 " Set this variable to 1 to fix files when you save them.
-" let g:ale_fix_on_save = 1
+let g:ale_fix_on_save = 1
 " Only use ESLint
-let b:ale_linters = {'javascript': ['prettier', 'eslint'], 'vue': ['eslint', 'vls']}
+let b:ale_linters = {'javascript': ['prettier', 'eslint'], 'vue': ['eslint', 'vls'], 'cs': ['OmniSharp'], 'go': ['gopls']}
 " Run both javascript and vue linters for vue files.
 let g:ale_linter_aliases = {'vue': ['vue', 'javascript'], 'typescript': 'javascript', 'typescriptreact': 'javascript'}
 " Remove highlighting
@@ -131,17 +161,18 @@ if executable('rg')
 endif
 
 " History and backup
-set backupdir=~/.vim/tmp/backup
-set directory=~/.vim/tmp/swap
+set backupdir=~/.config/nvim/tmp/backup
+set directory=~/.config/nvim/tmp/swap
 " persit undo history
 set undofile " Maintain undo history between sessions
-set undodir=~/.vim/tmp/undo
+set undodir=~/.config/nvim/tmp/undo
 
 " Tabs
 set tabstop=2       " The width of a TAB is set to 2.
 set shiftwidth=2    " Indents will have a width of 2.
-set softtabstop=2   " Sets the number of columns for a TAB.
-set expandtab       " Expand TABs to spaces.
+set softtabstop=0
+set noexpandtab
+"set expandtab       " Expand TABs to spaces.
 set autoindent
 set number
 
@@ -160,12 +191,6 @@ autocmd BufRead,BufNewFile *.vue setlocal filetype=vue.html.javascript.css.less.
 " preprocessing
 let g:vue_disable_pre_processors=1
 
-if (has("termguicolors"))
-  let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
-  let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
-  set termguicolors
-endif
-
 " Stops delay on 'O' if pressed after ESC
 set ttimeoutlen=100
 syntax on
@@ -174,8 +199,45 @@ filetype on " Enable file type detection
 filetype plugin indent on " Enable loading the plugin files for specific file types
 set encoding=utf-8
 set ffs=unix,dos,mac
-set t_Co=256
 let g:airline_theme='luna'
+
+nmap <space> <leader>
+
+"let g:OmniSharp_server_path = '/home/rasmus/.omnisharp/run'
+let g:OmniSharp_server_use_mono = 1
+let g:OmniSharp_selector_ui = 'fzf'
+let g:OmniSharp_selector_findusages = 'fzf'
+
+""" Load lua config
+lua << EOF
+		require('config')
+EOF
+augroup omnisharp_commands
+	autocmd!
+	autocmd CursorHold *.cs OmniSharpTypeLookup
+augroup END
+
+" Ultisnip
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+" Below there be theming
 "let g:material_style='oceanic'
-set background=dark
-colorscheme vim-material
+set termguicolors
+if (has("termguicolors"))
+  let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
+endif
+"
+"set t_Co=256
+"if &term =~ '256color'
+"  set t_ut=
+"endif
+"set background=dark
+"colorscheme tokyonight
+"colorscheme vim-material
+"colorscheme embark
+"colorscheme nightfly
+colorscheme snazzy
+"colorscheme nord

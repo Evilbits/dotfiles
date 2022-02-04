@@ -70,20 +70,9 @@ cmp.setup {
 	})
 }
 
--- Setup Omnisharp
-local pid = vim.fn.getpid()
--- On linux/darwin if using a release build, otherwise under scripts/OmniSharp(.Core)(.cmd)
-local omnisharp_bin = "/home/rasmus/.omnisharp/run"
-require'lspconfig'.omnisharp.setup{
-    cmd = { omnisharp_bin, "--languageserver" , "--hostPID", tostring(pid) };
-}
-
--- Setup gopls
-require'lspconfig'.gopls.setup{}
-
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'omnisharp' }
+local servers = { 'omnisharp', 'gopls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -93,3 +82,14 @@ for _, lsp in ipairs(servers) do
     }
   }
 end
+
+-- Setup Omnisharp
+local pid = vim.fn.getpid()
+-- On linux/darwin if using a release build, otherwise under scripts/OmniSharp(.Core)(.cmd)
+local omnisharp_bin = '/home/rasmus/.local/share/nvim/lsp_servers/omnisharp/omnisharp/run'
+require'lspconfig'.omnisharp.setup{
+    cmd = { omnisharp_bin, "--languageserver" , "--hostPID", tostring(pid) };
+}
+
+-- Setup gopls
+require'lspconfig'.gopls.setup{}
