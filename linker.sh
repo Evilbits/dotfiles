@@ -30,15 +30,12 @@ function process() {
 }
 
 for file in home/.[^.]*; do
-  if [ -f "$file" ]
-  then
-    path="$(pwd)/$file"
-    base=$(basename $file)
-    baseFolder="~/$(basename $file)"
-    target="$HOME/$(basename $file)"
+  path="$(pwd)/$file"
+  base=$(basename $file)
+  baseFolder="~/$(basename $file)"
+  target="$HOME/$(basename $file)"
 
-    process
-  fi
+  process
 done
 
 for file in home/.config/[^.]*; do
