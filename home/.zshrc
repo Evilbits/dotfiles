@@ -183,6 +183,12 @@ alias tmux='tmux -2'
 # Always use xterm for SSH
 alias ssh='TERM=xterm-256color ssh'
 
+# Kubernetes
+alias kubegp='kubectl get pods'
+alias kubegd='kubectl get deployments'
+alias kubegs='kubectl get ingress'
+alias kubegi='kubectl get ingress'
+
 # Ruby 2.7.0 warnings
 export RUBYOPT='-W:no-deprecated -W:no-experimental'
 
