@@ -188,6 +188,7 @@ alias kubegp='kubectl get pods'
 alias kubegd='kubectl get deployments'
 alias kubegs='kubectl get ingress'
 alias kubegi='kubectl get ingress'
+alias kubelf="kubectl logs -f"
 
 # Ruby 2.7.0 warnings
 export RUBYOPT='-W:no-deprecated -W:no-experimental'
