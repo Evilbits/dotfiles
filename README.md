@@ -3,9 +3,9 @@ My usual setup. Note that the Arch setup is in a separate folder and does not ha
 
 ## installation
 
-Install Inconsolata.
+Install Cascadia Code font.
 ```sh
-$ sudo apt-get install fonts-inconsolata -y
+$ sudo apt-get install fonts-cascadia-code -y
 $ sudo fc-cache -fv
 ```
 
