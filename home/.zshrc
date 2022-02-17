@@ -166,17 +166,6 @@ alias grep="grep --color=auto"
 
 # git aliases
 alias g='git'
-alias be='bundle exec'
-
-# alias keepassxc
-alias kp='keepassxc'
-
-# alias tmuxinator
-alias mux="tmuxinator"
-
-# cd aliases for work
-alias cda='cd ~/dev/fanomena/hileadzz_api'
-alias cdf='cd ~/dev/fanomena/hileadzz_frontend_web'
 
 alias tmux='tmux -2'
 
@@ -190,27 +179,14 @@ alias kubegs='kubectl get ingress'
 alias kubegi='kubectl get ingress'
 alias kubelf="kubectl logs -f"
 
-# Ruby 2.7.0 warnings
-export RUBYOPT='-W:no-deprecated -W:no-experimental'
-
 export EDITOR=vim
-
-# Android Studio
-export ANDROID_HOME=/opt/android-sdk
-export PATH=$PATH:$ANDROID_HOME/emulator
-export PATH=$PATH:$ANDROID_HOME/tools
-export PATH=$PATH:$ANDROID_HOME/tools/bin
-export PATH=$PATH:$ANDROID_HOME/platform-tools
 
 fpath=($fpath "/home/rasmus/.zfunctions")
 
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
+# Custom global NPM
+export PATH=~/.npm-global/bin:$PATH
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load rvm into shell session
-
-# Export term for tmux
-#export TERM="rxvt-unicode-256color"
 
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*" --glob "!node_modules/*"'
 

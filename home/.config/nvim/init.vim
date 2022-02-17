@@ -20,19 +20,7 @@ Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
 
 " Code snippets
-Plug 'SirVer/ultisnips'
-
-" C#
-Plug 'OmniSharp/omnisharp-vim'
-
-" Go
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
-
-" Automatically add end to code
-Plug 'tpope/vim-endwise'
-
-" Static code analysis for Ruby
-Plug 'ngmy/vim-rubocop'
+"Plug 'SirVer/ultisnips'
 
 " Automatically close brackets
 Plug 'raimondi/delimitmate'
@@ -40,31 +28,17 @@ Plug 'raimondi/delimitmate'
 " Git status bar
 Plug 'airblade/vim-gitgutter'
 
-" Git
-"Plug 'tpope/vim-fugitive'
-
-" ruby
-Plug 'tpope/vim-rails'
-
-" vue
-Plug 'posva/vim-vue'
-
-" javascript
-Plug 'pangloss/vim-javascript'
-
-" tsx
-Plug 'leafgarland/typescript-vim'
-Plug 'peitalin/vim-jsx-typescript'
-
 " theme
 Plug 'arcticicestudio/nord-vim'
+Plug 'folke/tokyonight.nvim'
 "Plug 'dracula/vim',{'as':'dracula'}
 "Plug 'ntk148v/vim-horizon'
-Plug 'hzchirs/vim-material'
-Plug 'bluz71/vim-nightfly-guicolors'
-Plug 'folke/tokyonight.nvim'
-Plug 'connorholyday/vim-snazzy'
-Plug 'embark-theme/vim', { 'as': 'embark', 'branch': 'main' }
+"Plug 'gkeep/iceberg-dark'
+"Plug 'cocopon/iceberg.vim'
+"Plug 'hzchirs/vim-material'
+"Plug 'bluz71/vim-nightfly-guicolors'
+"Plug 'connorholyday/vim-snazzy'
+"Plug 'embark-theme/vim', { 'as': 'embark', 'branch': 'main' }
 call plug#end()
 endif
 
@@ -73,7 +47,6 @@ let NERDTreeShowHidden=1
 " Use Nerdtree for browsing directories
 " Auto start on opening Vim
 map <silent> <C-n> :NERDTreeToggle<CR>
-"autocmd vimenter * NERDTree
 " Go to previous (last accessed) window.
 autocmd VimEnter * wincmd p
 " Close Nerdtree if last in buffer
@@ -83,7 +56,7 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 let g:airline_powerline_fonts = 1
 
 if !exists('g:airline_symbols')
-    let g:airline_symbols = {}
+  let g:airline_symbols = {}
 endif
 
 " unicode symbols
@@ -109,12 +82,9 @@ let g:airline_symbols.branch = ''
 let g:airline_symbols.readonly = ''
 let g:airline_symbols.linenr = ''
 
-" Change default command for fzf.vim to show dotfiles
-set wildmode=list:longest,list:full
+" Use rg for fzf
+let $FZF_DEFAULT_COMMAND="rg --files --hidden --glob '!.git'"
 set wildignore+=*.o,*.obj,.git,*.rbc,*.pyc,__pycache__,node_modules/*
-" Set default Files to include hidden
-"let $FZF_DEFAULT_COMMAND="find . -path '*/\.*' -type d -prune -o -type f -print -o -type l -print 2> /dev/null | sed s/^..//"
-let $FZF_DEFAULT_COMMAND='rg --files'
 
 " fzf shortcut
 map ; :Files<CR>
@@ -135,13 +105,14 @@ noremap <Left> <Nop>
 noremap <Right> <Nop>
 
 " Fix files with prettier, and then ESLint.
-let b:ale_fixers = ['prettier', 'eslint']
+let g:ale_fixers = ['prettier', 'eslint']
 " Set this variable to 1 to fix files when you save them.
 let g:ale_fix_on_save = 1
+" Disable lsp as we use nvim native lsp
+let g:ale_disable_lsp = 1
 " Only use ESLint
-let b:ale_linters = {'javascript': ['prettier', 'eslint'], 'vue': ['eslint', 'vls'], 'cs': ['OmniSharp'], 'go': ['gopls']}
-" Run both javascript and vue linters for vue files.
-let g:ale_linter_aliases = {'vue': ['vue', 'javascript'], 'typescript': 'javascript', 'typescriptreact': 'javascript'}
+let g:ale_linters = {'javascript': ['prettier', 'eslint'] }
+let g:ale_linter_aliases = {'typescript': 'javascript', 'typescriptreact': 'javascript'}
 " Remove highlighting
 let g:ale_set_highlights = 0
 " Automatic Typescript import from external modules
@@ -174,15 +145,6 @@ let g:lessspace_enabled = 1
 " Don't enable for markdown as double space is a <br>
 let g:lessspace_blacklist = ['markdown']
 
-" Vue highligting
-" Sometimes the highlighting can't 'catch up' with Vim which leads to no
-" syntax highlighting.
-" See: https://github.com/posva/vim-vue/issues/72
-autocmd FileType vue syntax sync fromstart
-autocmd BufRead,BufNewFile *.vue setlocal filetype=vue.html.javascript.css.less.pug
-" Apparently helps with some of the speed concerns by disabling some
-" preprocessing
-let g:vue_disable_pre_processors=1
 
 " Stops delay on 'O' if pressed after ESC
 set ttimeoutlen=100
@@ -192,23 +154,11 @@ filetype on " Enable file type detection
 filetype plugin indent on " Enable loading the plugin files for specific file types
 set encoding=utf-8
 set ffs=unix,dos,mac
-let g:airline_theme='luna'
-
-nmap <space> <leader>
-
-"let g:OmniSharp_server_path = '/home/rasmus/.omnisharp/run'
-let g:OmniSharp_server_use_mono = 1
-let g:OmniSharp_selector_ui = 'fzf'
-let g:OmniSharp_selector_findusages = 'fzf'
 
 """ Load lua config
 lua << EOF
 		require('config')
 EOF
-augroup omnisharp_commands
-	autocmd!
-	autocmd CursorHold *.cs OmniSharpTypeLookup
-augroup END
 
 " Ultisnip
 let g:UltiSnipsExpandTrigger="<tab>"
@@ -216,6 +166,7 @@ let g:UltiSnipsJumpForwardTrigger="<c-b>"
 let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 
 " Below there be theming
+"let g:airline_theme='deus'
 set termguicolors
 if (has("termguicolors"))
   let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
@@ -223,9 +174,6 @@ if (has("termguicolors"))
 endif
 
 "set background=dark
-"colorscheme tokyonight
-"colorscheme vim-material
-"colorscheme embark
-"colorscheme nightfly
-colorscheme snazzy
-"colorscheme nord
+"colorscheme iceberg
+let g:airline_theme='luna'
+colorscheme tokyonight
