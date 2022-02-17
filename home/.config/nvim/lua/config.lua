@@ -29,13 +29,6 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
   buf_set_keymap('n', '<space>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
   buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
-
-	vim.api.nvim_exec([[
-		augroup omnisharp_commands
-	  	autocmd!
-	  	autocmd CursorHold *.cs OmniSharpTypeLookup
-	  augroup END
-	]], false)
 end
 
 -- Add additional capabilities supported by nvim-cmp
@@ -72,7 +65,7 @@ cmp.setup {
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'omnisharp', 'gopls' }
+local servers = { 'tsserver' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -83,13 +76,4 @@ for _, lsp in ipairs(servers) do
   }
 end
 
--- Setup Omnisharp
-local pid = vim.fn.getpid()
--- On linux/darwin if using a release build, otherwise under scripts/OmniSharp(.Core)(.cmd)
-local omnisharp_bin = '/home/rasmus/.local/share/nvim/lsp_servers/omnisharp/omnisharp/run'
-require'lspconfig'.omnisharp.setup{
-    cmd = { omnisharp_bin, "--languageserver" , "--hostPID", tostring(pid) };
-}
-
--- Setup gopls
-require'lspconfig'.gopls.setup{}
+require'lspconfig'.tsserver.setup{}
