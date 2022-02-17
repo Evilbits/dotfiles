@@ -18,6 +18,7 @@ Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
+Plug 'ray-x/lsp_signature.nvim' " Function signatures
 
 " Code snippets
 "Plug 'SirVer/ultisnips'
@@ -93,10 +94,6 @@ map ; :Files<CR>
 function! s:find_git_root()
   return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
 endfunction
-" search within git project
-command! PFiles execute 'Files' s:find_git_root()
-" search from home folder
-command! HFiles execute 'Files ~/'
 
 " remap cursor keys to practice using hjkl
 noremap <Up> <Nop>
@@ -157,7 +154,7 @@ set ffs=unix,dos,mac
 
 """ Load lua config
 lua << EOF
-		require('config')
+	require('config')
 EOF
 
 " Ultisnip
