@@ -315,8 +315,8 @@ live_config_reload: true
 #   - (macOS) /bin/bash --login
 #   - (Linux) user login shell
 #   - (Windows) powershell
-shell:
-  program: "C:\\Windows\\System32\\wsl.exe"
+#shell:
+#  program: /bin/bash
 #  args:
 #    - --login
 
@@ -324,7 +324,7 @@ shell:
 #
 # Directory the shell is started in. If this is unset, or `None`, the working
 # directory of the parent process will be used.
-working_directory: \\wsl$\Ubuntu-20.04\home\rasmus
+working_directory: None
 
 # Windows 10 ConPTY backend (Windows only)
 #

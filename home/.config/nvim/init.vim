@@ -3,10 +3,14 @@ Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'scrooloose/nerdtree'
 Plug 'yggdroot/indentline'
-Plug 'bling/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
+"Plug 'bling/vim-airline'
+"Plug 'vim-airline/vim-airline-themes'
 Plug 'w0rp/ale'
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+
+Plug 'nvim-lualine/lualine.nvim'
+" If you want to have icons in your statusline choose one of these
+Plug 'kyazdani42/nvim-web-devicons'
 
 " Nvim
 Plug 'neovim/nvim-lspconfig'
@@ -165,7 +169,7 @@ if (has("termguicolors"))
 endif
 
 "set background=dark
-let g:airline_theme='luna'
+"let g:airline_theme='luna'
 "colorscheme tokyonight
 let g:sonokai_style = 'andromeda'
 colorscheme sonokai
