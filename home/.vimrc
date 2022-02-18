@@ -1,1 +1,1 @@
-/home/rasmus/dotfiles/.config/nvim/init.vim
+.config/nvim/init.vim
