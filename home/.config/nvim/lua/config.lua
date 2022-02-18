@@ -58,6 +58,7 @@ end
 
 require'lspconfig'.tsserver.setup{}
 
+-- Setup function signatures
 require'lsp_signature'.setup({
   debug = false, -- set to true to enable debug logging
   log_path = vim.fn.stdpath("cache") .. "/lsp_signature.log", -- log dir when debug is on
@@ -76,7 +77,7 @@ require'lsp_signature'.setup({
   hint_enable = false, -- virtual hint enable
   max_height = 12, -- max height of signature floating_window, if content is more than max_height, you can scroll down
                    -- to view the hiding contents
-  max_width = 80, -- max_width of signature floating_window, line will be wrapped if exceed max_width
+  --max_width = 80, -- max_width of signature floating_window, line will be wrapped if exceed max_width
   handler_opts = {
     border = "rounded"   -- double, rounded, single, shadow, none
   },
@@ -95,3 +96,9 @@ require'lsp_signature'.setup({
   timer_interval = 200, -- default timer check interval set to lower value if you want to reduce latency
   toggle_key = nil -- toggle signature on and off in insert mode,  e.g. toggle_key = '<M-x>'
 })
+
+-- Lualine
+require('evil_lualine')
+--require('lualine').setup({
+--  options = { theme  = 'evil_lualine' },
+--})
