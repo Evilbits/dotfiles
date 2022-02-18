@@ -95,26 +95,26 @@ font:
   # Normal (roman) font face
   normal:
     #family: Inconsolata
-    family: 'Cascadia Code'
+    family: "Cascadia Code"
     # The `style` can be specified to pick a specific face.
     style: Regular
 
   # Bold font face
   bold:
     #family: Inconsolata
-    family: 'Cascadia Code'
+    family: "Cascadia Code"
     # The `style` can be specified to pick a specific face.
     style: Bold
 
   # Italic font face
   italic:
     #family: Inconsolata
-    family: 'Cascadia Code'
+    family: "Cascadia Code"
     # The `style` can be specified to pick a specific face.
     style: Italic
 
   # Point size
-  size: 12.0
+  size: 11.0
 
   # Offset is the extra space around each character. `offset.y` can be thought of
   # as modifying the line spacing, and `offset.x` as modifying the letter spacing.
@@ -140,61 +140,84 @@ draw_bold_text_with_bright_colors: false
 
 # Colors (Iceberg Dark)
 schemes:
-    iceberg: &dark
-        primary:
-            background: '#161821'
-            foreground: '#d2d4de'
+  iceberg: &dark
+    primary:
+      background: "#161821"
+      foreground: "#d2d4de"
 
-        normal:
-            black:   '#161821'
-            red:     '#e27878'
-            green:   '#b4be82'
-            yellow:  '#e2a478'
-            blue:    '#84a0c6'
-            magenta: '#a093c7'
-            cyan:    '#89b8c2'
-            white:   '#c6c8d1'
+    normal:
+      black: "#161821"
+      red: "#e27878"
+      green: "#b4be82"
+      yellow: "#e2a478"
+      blue: "#84a0c6"
+      magenta: "#a093c7"
+      cyan: "#89b8c2"
+      white: "#c6c8d1"
 
-        bright:
-            black:   '#6b7089'
-            red:     '#e98989'
-            green:   '#c0ca8e'
-            yellow:  '#e9b189'
-            blue:    '#91acd1'
-            magenta: '#ada0d3'
-            cyan:    '#95c4ce'
-            white:   '#d2d4de'
-            
-    tokyo-night-storm: &tokyo-night-storm
-        # Default colors
-        primary:
-          background: '0x24283b'
-          foreground: '0xa9b1d6'
+    bright:
+      black: "#6b7089"
+      red: "#e98989"
+      green: "#c0ca8e"
+      yellow: "#e9b189"
+      blue: "#91acd1"
+      magenta: "#ada0d3"
+      cyan: "#95c4ce"
+      white: "#d2d4de"
 
-        # Normal colors
-        normal:
-          black:   '0x32344a'
-          red:     '0xf7768e'
-          green:   '0x9ece6a'
-          yellow:  '0xe0af68'
-          blue:    '0x7aa2f7'
-          magenta: '0xad8ee6'
-          cyan:    '0x449dab'
-          white:   '0x9699a8'
+  tokyo-night-storm: &tokyo-night-storm
+    primary:
+      background: "0x24283b"
+      foreground: "0xa9b1d6"
 
-        # Bright colors
-        bright:
-          black:   '0x444b6a'
-          red:     '0xff7a93'
-          green:   '0xb9f27c'
-          yellow:  '0xff9e64'
-          blue:    '0x7da6ff'
-          magenta: '0xbb9af7'
-          cyan:    '0x0db9d7'
-          white:   '0xacb0d0'
-    
-colors: *tokyo-night-storm
-  
+    # Normal colors
+    normal:
+      black: "0x32344a"
+      red: "0xf7768e"
+      green: "0x9ece6a"
+      yellow: "0xe0af68"
+      blue: "0x7aa2f7"
+      magenta: "0xad8ee6"
+      cyan: "0x449dab"
+      white: "0x9699a8"
+
+    # Bright colors
+    bright:
+      black: "0x444b6a"
+      red: "0xff7a93"
+      green: "0xb9f27c"
+      yellow: "0xff9e64"
+      blue: "0x7da6ff"
+      magenta: "0xbb9af7"
+      cyan: "0x0db9d7"
+      white: "0xacb0d0"
+
+  sonokai-andromeda: &sonokai-andromeda
+    primary:
+      background: "0x2b2d3a"
+      foreground: "0xe1e3e4"
+
+    normal:
+      black: "0x181a1c"
+      red: "0xfb617e"
+      green: "0x9ed06c"
+      yellow: "0xedc763"
+      blue: "0x6dcae8"
+      magenta: "0xbb97ee"
+      cyan: "0xf89860"
+      white: "0xe1e3e4"
+
+    bright:
+      black: "0x7e8294"
+      red: "0xfb617e"
+      green: "0x9ed06c"
+      yellow: "0xedc763"
+      blue: "0x6dcae8"
+      magenta: "0xbb97ee"
+      cyan: "0xf89860"
+      white: "0xe1e3e4"
+
+colors: *sonokai-andromeda
 
 # Visual Bell
 #
@@ -220,7 +243,7 @@ colors: *tokyo-night-storm
 visual_bell:
   animation: EaseOutExpo
   duration: 0
-  color: '0xffffff'
+  color: "0xffffff"
 
 # Background opacity
 #
@@ -259,7 +282,7 @@ mouse:
   hide_when_typing: false
 
 selection:
-  semantic_escape_chars: ",│`|:\"' ()[]{}<>"
+  semantic_escape_chars: ',│`|:"'' ()[]{}<>'
 
   # When set to `true`, selected text will be copied to the primary clipboard.
   save_to_clipboard: false
@@ -343,111 +366,111 @@ debug:
 
 key_bindings:
   # (Windows/Linux only)
-  - { key: V,        mods: Control|Alt, action: Paste            }
-  - { key: C,        mods: Control|Alt, action: Copy             }
-  - { key: Paste,                   action: Paste                            }
-  - { key: Copy,                    action: Copy                             }
-  - { key: L,        mods: Control, action: ClearLogNotice                   }
-  - { key: L,        mods: Control, chars: "\x0c"                            }
-  - { key: Home,     mods: Alt,     chars: "\x1b[1;3H"                       }
-  - { key: Home,                    chars: "\x1bOH",        mode: AppCursor  }
-  - { key: Home,                    chars: "\x1b[H",        mode: ~AppCursor }
-  - { key: End,      mods: Alt,     chars: "\x1b[1;3F"                       }
-  - { key: End,                     chars: "\x1bOF",        mode: AppCursor  }
-  - { key: End,                     chars: "\x1b[F",        mode: ~AppCursor }
-  - { key: PageUp,   mods: Shift,   action: ScrollPageUp,   mode: ~Alt       }
-  - { key: PageUp,   mods: Shift,   chars: "\x1b[5;2~",     mode: Alt        }
-  - { key: PageUp,   mods: Control, chars: "\x1b[5;5~"                       }
-  - { key: PageUp,   mods: Alt,     chars: "\x1b[5;3~"                       }
-  - { key: PageUp,                  chars: "\x1b[5~"                         }
-  - { key: PageDown, mods: Shift,   action: ScrollPageDown, mode: ~Alt       }
-  - { key: PageDown, mods: Shift,   chars: "\x1b[6;2~",     mode: Alt        }
-  - { key: PageDown, mods: Control, chars: "\x1b[6;5~"                       }
-  - { key: PageDown, mods: Alt,     chars: "\x1b[6;3~"                       }
-  - { key: PageDown,                chars: "\x1b[6~"                         }
-  - { key: Tab,      mods: Shift,   chars: "\x1b[Z"                          }
-  - { key: Back,                    chars: "\x7f"                            }
-  - { key: Back,     mods: Alt,     chars: "\x1b\x7f"                        }
-  - { key: Insert,                  chars: "\x1b[2~"                         }
-  - { key: Delete,                  chars: "\x1b[3~"                         }
-  - { key: Left,     mods: Shift,   chars: "\x1b[1;2D"                       }
-  - { key: Left,     mods: Control, chars: "\x1b[1;5D"                       }
-  - { key: Left,     mods: Alt,     chars: "\x1b[1;3D"                       }
-  - { key: Left,                    chars: "\x1b[D",        mode: ~AppCursor }
-  - { key: Left,                    chars: "\x1bOD",        mode: AppCursor  }
-  - { key: Right,    mods: Shift,   chars: "\x1b[1;2C"                       }
-  - { key: Right,    mods: Control, chars: "\x1b[1;5C"                       }
-  - { key: Right,    mods: Alt,     chars: "\x1b[1;3C"                       }
-  - { key: Right,                   chars: "\x1b[C",        mode: ~AppCursor }
-  - { key: Right,                   chars: "\x1bOC",        mode: AppCursor  }
-  - { key: Up,       mods: Shift,   chars: "\x1b[1;2A"                       }
-  - { key: Up,       mods: Control, chars: "\x1b[1;5A"                       }
-  - { key: Up,       mods: Alt,     chars: "\x1b[1;3A"                       }
-  - { key: Up,                      chars: "\x1b[A",        mode: ~AppCursor }
-  - { key: Up,                      chars: "\x1bOA",        mode: AppCursor  }
-  - { key: Down,     mods: Shift,   chars: "\x1b[1;2B"                       }
-  - { key: Down,     mods: Control, chars: "\x1b[1;5B"                       }
-  - { key: Down,     mods: Alt,     chars: "\x1b[1;3B"                       }
-  - { key: Down,                    chars: "\x1b[B",        mode: ~AppCursor }
-  - { key: Down,                    chars: "\x1bOB",        mode: AppCursor  }
-  - { key: F1,                      chars: "\x1bOP"                          }
-  - { key: F2,                      chars: "\x1bOQ"                          }
-  - { key: F3,                      chars: "\x1bOR"                          }
-  - { key: F4,                      chars: "\x1bOS"                          }
-  - { key: F5,                      chars: "\x1b[15~"                        }
-  - { key: F6,                      chars: "\x1b[17~"                        }
-  - { key: F7,                      chars: "\x1b[18~"                        }
-  - { key: F8,                      chars: "\x1b[19~"                        }
-  - { key: F9,                      chars: "\x1b[20~"                        }
-  - { key: F10,                     chars: "\x1b[21~"                        }
-  - { key: F11,                     chars: "\x1b[23~"                        }
-  - { key: F12,                     chars: "\x1b[24~"                        }
-  - { key: F1,       mods: Shift,   chars: "\x1b[1;2P"                       }
-  - { key: F2,       mods: Shift,   chars: "\x1b[1;2Q"                       }
-  - { key: F3,       mods: Shift,   chars: "\x1b[1;2R"                       }
-  - { key: F4,       mods: Shift,   chars: "\x1b[1;2S"                       }
-  - { key: F5,       mods: Shift,   chars: "\x1b[15;2~"                      }
-  - { key: F6,       mods: Shift,   chars: "\x1b[17;2~"                      }
-  - { key: F7,       mods: Shift,   chars: "\x1b[18;2~"                      }
-  - { key: F8,       mods: Shift,   chars: "\x1b[19;2~"                      }
-  - { key: F9,       mods: Shift,   chars: "\x1b[20;2~"                      }
-  - { key: F10,      mods: Shift,   chars: "\x1b[21;2~"                      }
-  - { key: F11,      mods: Shift,   chars: "\x1b[23;2~"                      }
-  - { key: F12,      mods: Shift,   chars: "\x1b[24;2~"                      }
-  - { key: F1,       mods: Control, chars: "\x1b[1;5P"                       }
-  - { key: F2,       mods: Control, chars: "\x1b[1;5Q"                       }
-  - { key: F3,       mods: Control, chars: "\x1b[1;5R"                       }
-  - { key: F4,       mods: Control, chars: "\x1b[1;5S"                       }
-  - { key: F5,       mods: Control, chars: "\x1b[15;5~"                      }
-  - { key: F6,       mods: Control, chars: "\x1b[17;5~"                      }
-  - { key: F7,       mods: Control, chars: "\x1b[18;5~"                      }
-  - { key: F8,       mods: Control, chars: "\x1b[19;5~"                      }
-  - { key: F9,       mods: Control, chars: "\x1b[20;5~"                      }
-  - { key: F10,      mods: Control, chars: "\x1b[21;5~"                      }
-  - { key: F11,      mods: Control, chars: "\x1b[23;5~"                      }
-  - { key: F12,      mods: Control, chars: "\x1b[24;5~"                      }
-  - { key: F1,       mods: Alt,     chars: "\x1b[1;6P"                       }
-  - { key: F2,       mods: Alt,     chars: "\x1b[1;6Q"                       }
-  - { key: F3,       mods: Alt,     chars: "\x1b[1;6R"                       }
-  - { key: F4,       mods: Alt,     chars: "\x1b[1;6S"                       }
-  - { key: F5,       mods: Alt,     chars: "\x1b[15;6~"                      }
-  - { key: F6,       mods: Alt,     chars: "\x1b[17;6~"                      }
-  - { key: F7,       mods: Alt,     chars: "\x1b[18;6~"                      }
-  - { key: F8,       mods: Alt,     chars: "\x1b[19;6~"                      }
-  - { key: F9,       mods: Alt,     chars: "\x1b[20;6~"                      }
-  - { key: F10,      mods: Alt,     chars: "\x1b[21;6~"                      }
-  - { key: F11,      mods: Alt,     chars: "\x1b[23;6~"                      }
-  - { key: F12,      mods: Alt,     chars: "\x1b[24;6~"                      }
-  - { key: F1,       mods: Super,   chars: "\x1b[1;3P"                       }
-  - { key: F2,       mods: Super,   chars: "\x1b[1;3Q"                       }
-  - { key: F3,       mods: Super,   chars: "\x1b[1;3R"                       }
-  - { key: F4,       mods: Super,   chars: "\x1b[1;3S"                       }
-  - { key: F5,       mods: Super,   chars: "\x1b[15;3~"                      }
-  - { key: F6,       mods: Super,   chars: "\x1b[17;3~"                      }
-  - { key: F7,       mods: Super,   chars: "\x1b[18;3~"                      }
-  - { key: F8,       mods: Super,   chars: "\x1b[19;3~"                      }
-  - { key: F9,       mods: Super,   chars: "\x1b[20;3~"                      }
-  - { key: F10,      mods: Super,   chars: "\x1b[21;3~"                      }
-  - { key: F11,      mods: Super,   chars: "\x1b[23;3~"                      }
-  - { key: F12,      mods: Super,   chars: "\x1b[24;3~"                      }
-  - { key: NumpadEnter,             chars: "\n"                              }
+  - { key: V, mods: Control|Alt, action: Paste }
+  - { key: C, mods: Control|Alt, action: Copy }
+  - { key: Paste, action: Paste }
+  - { key: Copy, action: Copy }
+  - { key: L, mods: Control, action: ClearLogNotice }
+  - { key: L, mods: Control, chars: "\x0c" }
+  - { key: Home, mods: Alt, chars: "\x1b[1;3H" }
+  - { key: Home, chars: "\x1bOH", mode: AppCursor }
+  - { key: Home, chars: "\x1b[H", mode: ~AppCursor }
+  - { key: End, mods: Alt, chars: "\x1b[1;3F" }
+  - { key: End, chars: "\x1bOF", mode: AppCursor }
+  - { key: End, chars: "\x1b[F", mode: ~AppCursor }
+  - { key: PageUp, mods: Shift, action: ScrollPageUp, mode: ~Alt }
+  - { key: PageUp, mods: Shift, chars: "\x1b[5;2~", mode: Alt }
+  - { key: PageUp, mods: Control, chars: "\x1b[5;5~" }
+  - { key: PageUp, mods: Alt, chars: "\x1b[5;3~" }
+  - { key: PageUp, chars: "\x1b[5~" }
+  - { key: PageDown, mods: Shift, action: ScrollPageDown, mode: ~Alt }
+  - { key: PageDown, mods: Shift, chars: "\x1b[6;2~", mode: Alt }
+  - { key: PageDown, mods: Control, chars: "\x1b[6;5~" }
+  - { key: PageDown, mods: Alt, chars: "\x1b[6;3~" }
+  - { key: PageDown, chars: "\x1b[6~" }
+  - { key: Tab, mods: Shift, chars: "\x1b[Z" }
+  - { key: Back, chars: "\x7f" }
+  - { key: Back, mods: Alt, chars: "\x1b\x7f" }
+  - { key: Insert, chars: "\x1b[2~" }
+  - { key: Delete, chars: "\x1b[3~" }
+  - { key: Left, mods: Shift, chars: "\x1b[1;2D" }
+  - { key: Left, mods: Control, chars: "\x1b[1;5D" }
+  - { key: Left, mods: Alt, chars: "\x1b[1;3D" }
+  - { key: Left, chars: "\x1b[D", mode: ~AppCursor }
+  - { key: Left, chars: "\x1bOD", mode: AppCursor }
+  - { key: Right, mods: Shift, chars: "\x1b[1;2C" }
+  - { key: Right, mods: Control, chars: "\x1b[1;5C" }
+  - { key: Right, mods: Alt, chars: "\x1b[1;3C" }
+  - { key: Right, chars: "\x1b[C", mode: ~AppCursor }
+  - { key: Right, chars: "\x1bOC", mode: AppCursor }
+  - { key: Up, mods: Shift, chars: "\x1b[1;2A" }
+  - { key: Up, mods: Control, chars: "\x1b[1;5A" }
+  - { key: Up, mods: Alt, chars: "\x1b[1;3A" }
+  - { key: Up, chars: "\x1b[A", mode: ~AppCursor }
+  - { key: Up, chars: "\x1bOA", mode: AppCursor }
+  - { key: Down, mods: Shift, chars: "\x1b[1;2B" }
+  - { key: Down, mods: Control, chars: "\x1b[1;5B" }
+  - { key: Down, mods: Alt, chars: "\x1b[1;3B" }
+  - { key: Down, chars: "\x1b[B", mode: ~AppCursor }
+  - { key: Down, chars: "\x1bOB", mode: AppCursor }
+  - { key: F1, chars: "\x1bOP" }
+  - { key: F2, chars: "\x1bOQ" }
+  - { key: F3, chars: "\x1bOR" }
+  - { key: F4, chars: "\x1bOS" }
+  - { key: F5, chars: "\x1b[15~" }
+  - { key: F6, chars: "\x1b[17~" }
+  - { key: F7, chars: "\x1b[18~" }
+  - { key: F8, chars: "\x1b[19~" }
+  - { key: F9, chars: "\x1b[20~" }
+  - { key: F10, chars: "\x1b[21~" }
+  - { key: F11, chars: "\x1b[23~" }
+  - { key: F12, chars: "\x1b[24~" }
+  - { key: F1, mods: Shift, chars: "\x1b[1;2P" }
+  - { key: F2, mods: Shift, chars: "\x1b[1;2Q" }
+  - { key: F3, mods: Shift, chars: "\x1b[1;2R" }
+  - { key: F4, mods: Shift, chars: "\x1b[1;2S" }
+  - { key: F5, mods: Shift, chars: "\x1b[15;2~" }
+  - { key: F6, mods: Shift, chars: "\x1b[17;2~" }
+  - { key: F7, mods: Shift, chars: "\x1b[18;2~" }
+  - { key: F8, mods: Shift, chars: "\x1b[19;2~" }
+  - { key: F9, mods: Shift, chars: "\x1b[20;2~" }
+  - { key: F10, mods: Shift, chars: "\x1b[21;2~" }
+  - { key: F11, mods: Shift, chars: "\x1b[23;2~" }
+  - { key: F12, mods: Shift, chars: "\x1b[24;2~" }
+  - { key: F1, mods: Control, chars: "\x1b[1;5P" }
+  - { key: F2, mods: Control, chars: "\x1b[1;5Q" }
+  - { key: F3, mods: Control, chars: "\x1b[1;5R" }
+  - { key: F4, mods: Control, chars: "\x1b[1;5S" }
+  - { key: F5, mods: Control, chars: "\x1b[15;5~" }
+  - { key: F6, mods: Control, chars: "\x1b[17;5~" }
+  - { key: F7, mods: Control, chars: "\x1b[18;5~" }
+  - { key: F8, mods: Control, chars: "\x1b[19;5~" }
+  - { key: F9, mods: Control, chars: "\x1b[20;5~" }
+  - { key: F10, mods: Control, chars: "\x1b[21;5~" }
+  - { key: F11, mods: Control, chars: "\x1b[23;5~" }
+  - { key: F12, mods: Control, chars: "\x1b[24;5~" }
+  - { key: F1, mods: Alt, chars: "\x1b[1;6P" }
+  - { key: F2, mods: Alt, chars: "\x1b[1;6Q" }
+  - { key: F3, mods: Alt, chars: "\x1b[1;6R" }
+  - { key: F4, mods: Alt, chars: "\x1b[1;6S" }
+  - { key: F5, mods: Alt, chars: "\x1b[15;6~" }
+  - { key: F6, mods: Alt, chars: "\x1b[17;6~" }
+  - { key: F7, mods: Alt, chars: "\x1b[18;6~" }
+  - { key: F8, mods: Alt, chars: "\x1b[19;6~" }
+  - { key: F9, mods: Alt, chars: "\x1b[20;6~" }
+  - { key: F10, mods: Alt, chars: "\x1b[21;6~" }
+  - { key: F11, mods: Alt, chars: "\x1b[23;6~" }
+  - { key: F12, mods: Alt, chars: "\x1b[24;6~" }
+  - { key: F1, mods: Super, chars: "\x1b[1;3P" }
+  - { key: F2, mods: Super, chars: "\x1b[1;3Q" }
+  - { key: F3, mods: Super, chars: "\x1b[1;3R" }
+  - { key: F4, mods: Super, chars: "\x1b[1;3S" }
+  - { key: F5, mods: Super, chars: "\x1b[15;3~" }
+  - { key: F6, mods: Super, chars: "\x1b[17;3~" }
+  - { key: F7, mods: Super, chars: "\x1b[18;3~" }
+  - { key: F8, mods: Super, chars: "\x1b[19;3~" }
+  - { key: F9, mods: Super, chars: "\x1b[20;3~" }
+  - { key: F10, mods: Super, chars: "\x1b[21;3~" }
+  - { key: F11, mods: Super, chars: "\x1b[23;3~" }
+  - { key: F12, mods: Super, chars: "\x1b[24;3~" }
+  - { key: NumpadEnter, chars: "\n" }

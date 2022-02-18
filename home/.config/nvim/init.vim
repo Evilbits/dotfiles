@@ -20,8 +20,9 @@ Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'ray-x/lsp_signature.nvim' " Function signatures
 
-" Code snippets
-"Plug 'SirVer/ultisnips'
+" Snippets
+Plug 'SirVer/ultisnips'
+Plug 'quangnguyen30192/cmp-nvim-ultisnips'
 
 " Automatically close brackets
 Plug 'raimondi/delimitmate'
@@ -31,17 +32,17 @@ Plug 'airblade/vim-gitgutter'
 
 " theme
 Plug 'arcticicestudio/nord-vim'
+Plug 'sainnhe/sonokai'
 Plug 'folke/tokyonight.nvim'
-"Plug 'dracula/vim',{'as':'dracula'}
-"Plug 'ntk148v/vim-horizon'
-"Plug 'gkeep/iceberg-dark'
-"Plug 'cocopon/iceberg.vim'
-"Plug 'hzchirs/vim-material'
-"Plug 'bluz71/vim-nightfly-guicolors'
-"Plug 'connorholyday/vim-snazzy'
-"Plug 'embark-theme/vim', { 'as': 'embark', 'branch': 'main' }
 call plug#end()
 endif
+
+nnoremap <SPACE> <Nop>
+nmap <space> <leader>
+
+" reload vimrc when saved
+map <leader>v :sp ~/.config/nvim/init.vim<cr>
+au BufWritePost ~/.config/nvim/init.vim so ~/.config/nvim/init.vim
 
 " nerdtree
 let NERDTreeShowHidden=1
@@ -132,8 +133,8 @@ set undodir=~/.config/nvim/tmp/undo
 set tabstop=2       " The width of a TAB is set to 2.
 set shiftwidth=2    " Indents will have a width of 2.
 set softtabstop=0
-set noexpandtab
-"set expandtab       " Expand TABs to spaces.
+"set noexpandtab    " Keep TABs
+set expandtab       " Expand TABs to spaces.
 set autoindent
 set number
 
@@ -141,7 +142,6 @@ set number
 let g:lessspace_enabled = 1
 " Don't enable for markdown as double space is a <br>
 let g:lessspace_blacklist = ['markdown']
-
 
 " Stops delay on 'O' if pressed after ESC
 set ttimeoutlen=100
@@ -154,16 +154,10 @@ set ffs=unix,dos,mac
 
 """ Load lua config
 lua << EOF
-	require('config')
+require('config')
 EOF
 
-" Ultisnip
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<c-b>"
-let g:UltiSnipsJumpBackwardTrigger="<c-z>"
-
 " Below there be theming
-"let g:airline_theme='deus'
 set termguicolors
 if (has("termguicolors"))
   let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
@@ -171,6 +165,7 @@ if (has("termguicolors"))
 endif
 
 "set background=dark
-"colorscheme iceberg
 let g:airline_theme='luna'
-colorscheme tokyonight
+"colorscheme tokyonight
+let g:sonokai_style = 'andromeda'
+colorscheme sonokai
