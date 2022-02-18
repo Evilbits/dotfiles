@@ -1,20 +1,19 @@
 silent! if plug#begin('~/.vim/plugged')
-Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'scrooloose/nerdtree'
-Plug 'yggdroot/indentline'
-"Plug 'bling/vim-airline'
-"Plug 'vim-airline/vim-airline-themes'
-Plug 'w0rp/ale'
-Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+" UI 
+Plug 'nvim-lualine/lualine.nvim'        " Status bar
+Plug 'kyazdani42/nvim-web-devicons'     " Sweet icons
+Plug 'mhinz/vim-startify'               " Custome start screen
 
-Plug 'nvim-lualine/lualine.nvim'
-" If you want to have icons in your statusline choose one of these
-Plug 'kyazdani42/nvim-web-devicons'
+" Themes
+Plug 'sainnhe/sonokai'
+"Plug 'arcticicestudio/nord-vim'
+"Plug 'folke/tokyonight.nvim'
 
-" Nvim
-Plug 'neovim/nvim-lspconfig'
-Plug 'williamboman/nvim-lsp-installer'
+" LSP support & syntax handling
+Plug 'neovim/nvim-lspconfig'            " LSP configuration
+Plug 'williamboman/nvim-lsp-installer'  " Language server installation tool
+Plug 'w0rp/ale'                         " Async syntax highlighting and linting
+Plug 'ray-x/lsp_signature.nvim'         " Function signatures
 
 " nvim-cmp autocompletion
 Plug 'hrsh7th/cmp-nvim-lsp'
@@ -22,83 +21,72 @@ Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
-Plug 'ray-x/lsp_signature.nvim' " Function signatures
 
 " Snippets
-Plug 'SirVer/ultisnips'
-Plug 'quangnguyen30192/cmp-nvim-ultisnips'
+Plug 'hrsh7th/cmp-vsnip'
+Plug 'hrsh7th/vim-vsnip'
 
-" Automatically close brackets
-Plug 'raimondi/delimitmate'
+" Git
+Plug 'airblade/vim-gitgutter'           " Git status bar
 
-" Git status bar
-Plug 'airblade/vim-gitgutter'
+" Navigation
+Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'                 " Fuzzy finder
+Plug 'scrooloose/nerdtree'              " Folder navigation
 
-" theme
-Plug 'arcticicestudio/nord-vim'
-Plug 'sainnhe/sonokai'
-Plug 'folke/tokyonight.nvim'
+" Other
+Plug 'raimondi/delimitmate'             " Automatically close brackets
+Plug 'psliwka/vim-smoothie'             " Smooth scrolling
+Plug 'yggdroot/indentline'
+Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 call plug#end()
 endif
 
-nnoremap <SPACE> <Nop>
-nmap <space> <leader>
+" ====== Load lua config ======
+lua << EOF
+require('config')
+EOF
 
 " reload vimrc when saved
 map <leader>v :sp ~/.config/nvim/init.vim<cr>
 au BufWritePost ~/.config/nvim/init.vim so ~/.config/nvim/init.vim
 
-" nerdtree
-let NERDTreeShowHidden=1
-" Use Nerdtree for browsing directories
-" Auto start on opening Vim
-map <silent> <C-n> :NERDTreeToggle<CR>
-" Go to previous (last accessed) window.
-autocmd VimEnter * wincmd p
-" Close Nerdtree if last in buffer
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+" ====== General config ======
+set ttimeoutlen=100                       " Stops delay on 'O' if pressed after ESC
+set autoread                              " Auto load file if changed
+set encoding=utf-8                        " Default encoding
+set ffs=unix,dos,mac                      " Set fileformat
+set undofile                              " Maintain undo history between sessions
+set backupdir=~/.config/nvim/tmp/backup   " Set backup directory
+set directory=~/.config/nvim/tmp/swap     " Set swapfile directory
+set undodir=~/.config/nvim/tmp/undo       " Set undo directory
+set scrolljump=5                          " Change default amount of lines scrolled
+set termguicolors                         " Rich colors
+filetype on                               " Enable file type detection
+filetype plugin indent on                 " Enable loading the plugin files for specific file types
 
-" air-line
-let g:airline_powerline_fonts = 1
+" Tabs
+set tabstop=2                             " The width of a TAB is set to 2.
+set shiftwidth=2                          " Indents will have a width of 2.
+set expandtab                             " Expand TABs to spaces.
+set number                                " Enable gutter line numbers
+set softtabstop=0
+set autoindent
 
-if !exists('g:airline_symbols')
-  let g:airline_symbols = {}
+" ====== Theme ======
+if (has("termguicolors"))
+  let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
 endif
 
-" unicode symbols
-let g:airline_left_sep = '»'
-let g:airline_left_sep = '▶'
-let g:airline_right_sep = '«'
-let g:airline_right_sep = '◀'
-let g:airline_symbols.linenr = '␊'
-let g:airline_symbols.linenr = '␤'
-let g:airline_symbols.linenr = '¶'
-let g:airline_symbols.branch = '⎇'
-let g:airline_symbols.paste = 'ρ'
-let g:airline_symbols.paste = 'Þ'
-let g:airline_symbols.paste = '∥'
-let g:airline_symbols.whitespace = 'Ξ'
+let g:sonokai_style = 'andromeda'
+colorscheme sonokai
 
-" airline symbols
-let g:airline_left_sep = ''
-let g:airline_left_alt_sep = ''
-let g:airline_right_sep = ''
-let g:airline_right_alt_sep = ''
-let g:airline_symbols.branch = ''
-let g:airline_symbols.readonly = ''
-let g:airline_symbols.linenr = ''
-
-" Use rg for fzf
-let $FZF_DEFAULT_COMMAND="rg --files --hidden --glob '!.git'"
-set wildignore+=*.o,*.obj,.git,*.rbc,*.pyc,__pycache__,node_modules/*
-
+" ====== Key remapping ======
+nnoremap <SPACE> <Nop>
+nmap <space> <leader>
 " fzf shortcut
 map ; :Files<CR>
-
-" fzf extra commands
-function! s:find_git_root()
-  return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
-endfunction
 
 " remap cursor keys to practice using hjkl
 noremap <Up> <Nop>
@@ -106,19 +94,32 @@ noremap <Down> <Nop>
 noremap <Left> <Nop>
 noremap <Right> <Nop>
 
-" Fix files with prettier, and then ESLint.
-let g:ale_fixers = ['prettier', 'eslint']
-" Set this variable to 1 to fix files when you save them.
-let g:ale_fix_on_save = 1
-" Disable lsp as we use nvim native lsp
-let g:ale_disable_lsp = 1
-" Only use ESLint
+" ====== Nerdtree config ======
+" Keybind for opening Nerdtree
+map <silent> <C-n> :NERDTreeToggle<CR>
+let NERDTreeShowHidden=1                  " Start closed
+autocmd VimEnter * wincmd p               " Go to previous (last accessed) window.
+" Close Nerdtree if last in buffer
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+" ====== Ale config ======
+let g:ale_fixers = ['prettier', 'eslint'] " Fix files with prettier, and then ESLint.
+let g:ale_fix_on_save = 1                 " Set this variable to 1 to fix files when you save them.
+let g:ale_disable_lsp = 1                 " Disable lsp as we use nvim native lsp
+let g:ale_set_highlights = 0              " Remove highlighting
+" Set which linters to use
 let g:ale_linters = {'javascript': ['prettier', 'eslint'] }
+" Map different languages to above linters
 let g:ale_linter_aliases = {'typescript': 'javascript', 'typescriptreact': 'javascript'}
-" Remove highlighting
-let g:ale_set_highlights = 0
 " Automatic Typescript import from external modules
 let g:ale_completion_tsserver_autoimport = 1
+
+" ====== fzf config ======
+" Use ripgrep for fzf
+let g:fzf_layout = {'up':'~90%', 'window': { 'width': 0.8, 'height': 0.8,'yoffset':0.5,'xoffset': 0.5, 'border': 'sharp' } }
+let g:fzf_tags_command = 'ctags -R'
+let $FZF_DEFAULT_COMMAND="rg --files --hidden --glob '!.git' --glob '!node_modules'"
+set wildignore+=*.o,*.obj,.git,*.rbc,*.pyc,__pycache__,node_modules/*
 
 " change grep to use RipGrep
 if executable('rg')
@@ -126,50 +127,3 @@ if executable('rg')
   set grepformat=%f:%l:%c:%m
 endif
 
-" History and backup
-set backupdir=~/.config/nvim/tmp/backup
-set directory=~/.config/nvim/tmp/swap
-" persit undo history
-set undofile " Maintain undo history between sessions
-set undodir=~/.config/nvim/tmp/undo
-
-" Tabs
-set tabstop=2       " The width of a TAB is set to 2.
-set shiftwidth=2    " Indents will have a width of 2.
-set softtabstop=0
-"set noexpandtab    " Keep TABs
-set expandtab       " Expand TABs to spaces.
-set autoindent
-set number
-
-" Remove whitespaces
-let g:lessspace_enabled = 1
-" Don't enable for markdown as double space is a <br>
-let g:lessspace_blacklist = ['markdown']
-
-" Stops delay on 'O' if pressed after ESC
-set ttimeoutlen=100
-syntax on
-set autoread " Auto load file if changed
-filetype on " Enable file type detection
-filetype plugin indent on " Enable loading the plugin files for specific file types
-set encoding=utf-8
-set ffs=unix,dos,mac
-
-""" Load lua config
-lua << EOF
-require('config')
-EOF
-
-" Below there be theming
-set termguicolors
-if (has("termguicolors"))
-  let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
-  let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
-endif
-
-"set background=dark
-"let g:airline_theme='luna'
-"colorscheme tokyonight
-let g:sonokai_style = 'andromeda'
-colorscheme sonokai

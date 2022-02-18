@@ -20,7 +20,7 @@ local cmp = require 'cmp'
 cmp.setup {
   snippet = {
     expand = function(args)
-      vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+      vim.fn["vsnip#anonymous"](args.body) -- For `ultisnips` users.
     end,
   },
   mapping = {
@@ -37,7 +37,8 @@ cmp.setup {
   },
   sources = cmp.config.sources({
     { name = 'nvim_lsp' },
-    { name = 'ultisnips' },
+    { name = 'vsnip' },
+    --{ name = 'ultisnips' },
   }, {
     { name = 'buffer' },
   })
@@ -99,6 +100,3 @@ require'lsp_signature'.setup({
 
 -- Lualine
 require('evil_lualine')
---require('lualine').setup({
---  options = { theme  = 'evil_lualine' },
---})
