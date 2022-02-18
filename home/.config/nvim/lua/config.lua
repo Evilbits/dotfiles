@@ -1,8 +1,8 @@
 local nvim_lsp = require('lspconfig')
 
 local on_attach = function(client, bufnr)
-	-- Add any attach functionality here
-	local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+  -- Add any attach functionality here
+  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
   local opts = { noremap=true, silent=true }
 
   -- See `:help vim.lsp.*` for documentation on any of the below functions
@@ -18,12 +18,12 @@ capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 -- nvim-cmp setup
 local cmp = require 'cmp'
 cmp.setup {
-	snippet = {
-		expand = function(args)
-			vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-		end,
-	},
-	mapping = {
+  snippet = {
+    expand = function(args)
+      vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+    end,
+  },
+  mapping = {
     ['<C-p>'] = cmp.mapping.select_prev_item(),
     ['<C-n>'] = cmp.mapping.select_next_item(),
     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
@@ -35,12 +35,12 @@ cmp.setup {
       select = true,
     },
   },
-	sources = cmp.config.sources({
+  sources = cmp.config.sources({
     { name = 'nvim_lsp' },
     { name = 'ultisnips' },
   }, {
     { name = 'buffer' },
-	})
+  })
 }
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
@@ -49,7 +49,7 @@ local servers = { 'tsserver' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
-		capabilities = capabilities,
+    capabilities = capabilities,
     flags = {
       debounce_text_changes = 150,
     }
