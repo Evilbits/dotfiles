@@ -2,6 +2,13 @@ local nvim_lsp = require('lspconfig')
 
 local on_attach = function(client, bufnr)
 	-- Add any attach functionality here
+	local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+  local opts = { noremap=true, silent=true }
+
+  -- See `:help vim.lsp.*` for documentation on any of the below functions
+  buf_set_keymap('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+  buf_set_keymap('n', '<leader>gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+  buf_set_keymap('n', '<leader>ge', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
 end
 
 -- Add additional capabilities supported by nvim-cmp
@@ -11,15 +18,16 @@ capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 -- nvim-cmp setup
 local cmp = require 'cmp'
 cmp.setup {
-  snippet = {
-    expand = function(args)
-			vim.fn["vsnip#anonymous"](args.body)
-    end,
-  },
-  mapping = {
+	snippet = {
+		expand = function(args)
+			vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+		end,
+	},
+	mapping = {
     ['<C-p>'] = cmp.mapping.select_prev_item(),
     ['<C-n>'] = cmp.mapping.select_next_item(),
     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete(),
     ['<C-e>'] = cmp.mapping.close(),
     ['<CR>'] = cmp.mapping.confirm {
@@ -29,6 +37,7 @@ cmp.setup {
   },
 	sources = cmp.config.sources({
     { name = 'nvim_lsp' },
+    { name = 'ultisnips' },
   }, {
     { name = 'buffer' },
 	})
