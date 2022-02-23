@@ -14,6 +14,7 @@ Plug 'neovim/nvim-lspconfig'            " LSP configuration
 Plug 'williamboman/nvim-lsp-installer'  " Language server installation tool
 Plug 'w0rp/ale'                         " Async syntax highlighting and linting
 Plug 'ray-x/lsp_signature.nvim'         " Function signatures
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'} " Better syntax highlighting
 
 " nvim-cmp autocompletion
 Plug 'hrsh7th/cmp-nvim-lsp'
@@ -31,13 +32,16 @@ Plug 'airblade/vim-gitgutter'           " Git status bar
 
 " Navigation
 Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'                 " Fuzzy finder
 Plug 'scrooloose/nerdtree'              " Folder navigation
+"" Fuzzy finding for lists
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
 
 " Other
 Plug 'raimondi/delimitmate'             " Automatically close brackets
 Plug 'psliwka/vim-smoothie'             " Smooth scrolling
-Plug 'yggdroot/indentline'
+Plug 'yggdroot/indentline'              " Adds a symbol at line indents
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 call plug#end()
 endif
@@ -85,8 +89,6 @@ colorscheme sonokai
 " ====== Key remapping ======
 nnoremap <SPACE> <Nop>
 nmap <space> <leader>
-" fzf shortcut
-map ; :Files<CR>
 
 " remap cursor keys to practice using hjkl
 noremap <Up> <Nop>
@@ -102,6 +104,9 @@ autocmd VimEnter * wincmd p               " Go to previous (last accessed) windo
 " Close Nerdtree if last in buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
+" ====== Nerdtree config ======
+let g:startify_change_to_dir = 0          " Don't cd to dir when opening file
+
 " ====== Ale config ======
 let g:ale_fixers = ['prettier', 'eslint'] " Fix files with prettier, and then ESLint.
 let g:ale_fix_on_save = 1                 " Set this variable to 1 to fix files when you save them.
@@ -116,14 +121,4 @@ let g:ale_completion_tsserver_autoimport = 1
 
 " ====== fzf config ======
 " Use ripgrep for fzf
-let g:fzf_layout = {'up':'~90%', 'window': { 'width': 0.8, 'height': 0.8,'yoffset':0.5,'xoffset': 0.5, 'border': 'sharp' } }
-let g:fzf_tags_command = 'ctags -R'
 let $FZF_DEFAULT_COMMAND="rg --files --hidden --glob '!.git' --glob '!node_modules'"
-set wildignore+=*.o,*.obj,.git,*.rbc,*.pyc,__pycache__,node_modules/*
-
-" change grep to use RipGrep
-if executable('rg')
-  set grepprg=rg\ --no-heading\ --vimgrep\ --smart-case
-  set grepformat=%f:%l:%c:%m
-endif
-

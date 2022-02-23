@@ -8,6 +8,7 @@
   a = add
   co = checkout
   ls = log --pretty=format:"%C(yellow)%h%C(green)%d\\ %Creset%s%C(cyan)\\ [%cn]" --decorate
+	upstream = !git push -u origin HEAD
 [color]
   branch = auto
   diff = auto

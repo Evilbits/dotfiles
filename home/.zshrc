@@ -186,6 +186,9 @@ fpath=($fpath "/home/rasmus/.zfunctions")
 # Custom global NPM
 export PATH=~/.npm-global/bin:$PATH
 
+# Go
+export PATH=$PATH:/usr/local/go/bin
+
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load rvm into shell session
 
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*" --glob "!node_modules/*"'
