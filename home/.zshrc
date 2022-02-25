@@ -175,9 +175,13 @@ alias ssh='TERM=xterm-256color ssh'
 # Kubernetes
 alias kubegp='kubectl get pods'
 alias kubegd='kubectl get deployments'
-alias kubegs='kubectl get ingress'
+alias kubegs='kubectl get service'
 alias kubegi='kubectl get ingress'
 alias kubelf="kubectl logs -f"
+alias kubedp='kubectl describe pod'
+alias kubedd='kubectl describe deployment'
+alias kubeds='kubectl describe servier'
+alias kubedi='kubectl describe ingress'
 
 export EDITOR=vim
 
@@ -188,6 +192,7 @@ export PATH=~/.npm-global/bin:$PATH
 
 # Go
 export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:$HOME/go/bin
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load rvm into shell session
 
