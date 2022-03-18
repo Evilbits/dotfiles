@@ -15,6 +15,8 @@ Plug 'williamboman/nvim-lsp-installer'  " Language server installation tool
 Plug 'w0rp/ale'                         " Async syntax highlighting and linting
 Plug 'ray-x/lsp_signature.nvim'         " Function signatures
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'} " Better syntax highlighting
+Plug 'kyazdani42/nvim-web-devicons'     " Development icons
+Plug 'folke/trouble.nvim'               " LSP results in separate buffer
 
 " nvim-cmp autocompletion
 Plug 'hrsh7th/cmp-nvim-lsp'
@@ -29,10 +31,12 @@ Plug 'hrsh7th/vim-vsnip'
 
 " Git
 Plug 'airblade/vim-gitgutter'           " Git status bar
+Plug 'rhysd/git-messenger.vim'
 
 " Navigation
 Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'scrooloose/nerdtree'              " Folder navigation
+Plug 'ryanoasis/vim-devicons'           " Nerdtree icons
 "" Fuzzy finding for lists
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
@@ -103,6 +107,9 @@ let NERDTreeShowHidden=1                  " Start closed
 autocmd VimEnter * wincmd p               " Go to previous (last accessed) window.
 " Close Nerdtree if last in buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+" If another buffer tries to replace NERDTree, put it in the other window, and bring back NERDTree.
+autocmd BufEnter * if bufname('#') =~ 'NERD_tree_\d\+' && bufname('%') !~ 'NERD_tree_\d\+' && winnr('$') > 1 |
+    \ let buf=bufnr() | buffer# | execute "normal! \<C-W>w" | execute 'buffer'.buf | endif
 
 " ====== Nerdtree config ======
 let g:startify_change_to_dir = 0          " Don't cd to dir when opening file

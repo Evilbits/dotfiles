@@ -125,12 +125,6 @@ ins_left {
   cond = conditions.buffer_not_empty,
 }
 
-ins_left {
-  'filename',
-  cond = conditions.buffer_not_empty,
-  color = { fg = colors.magenta, gui = 'bold' },
-}
-
 ins_left { 'location' }
 
 ins_left { 'progress', color = { fg = colors.fg, gui = 'bold' } }
@@ -190,10 +184,16 @@ ins_right {
   color = { fg = colors.green, gui = 'bold' },
 }
 
+--ins_right {
+--  'branch',
+--  icon = '',
+--  color = { fg = colors.violet, gui = 'bold' },
+--}
 ins_right {
-  'branch',
-  icon = '',
-  color = { fg = colors.violet, gui = 'bold' },
+  'filename',
+  path = 1,
+  cond = conditions.buffer_not_empty,
+  color = { fg = colors.magenta, gui = 'bold' },
 }
 
 ins_right {

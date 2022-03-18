@@ -11,6 +11,33 @@ local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 
 -- nvim-cmp setup
+local lspkindicons = {
+    Text = "",
+    Method = "",
+    Function = "",
+    Constructor = "",
+    Field = "",
+    Variable = "",
+    Class = "ﴯ",
+    Interface = "",
+    Module = "",
+    Property = "ﰠ",
+    Unit = "",
+    Value = "",
+    Enum = "",
+    Keyword = "",
+    Snippet = "",
+    Color = "",
+    File = "",
+    Reference = "",
+    Folder = "",
+    EnumMember = "",
+    Constant = "",
+    Struct = "",
+    Event = "",
+    Operator = "",
+    TypeParameter = "",
+}
 local cmp = require 'cmp'
 cmp.setup {
   snippet = {
@@ -29,6 +56,16 @@ cmp.setup {
       behavior = cmp.ConfirmBehavior.Replace,
       select = true,
     },
+  },
+  formatting = {
+    format = function(entry, vim_item)
+      vim_item.kind = string.format(
+        "%s %s",
+        lspkindicons[vim_item.kind],
+        vim_item.kind
+      )
+      return vim_item
+    end,
   },
   sources = cmp.config.sources({
     { name = 'nvim_lsp' },
@@ -113,6 +150,9 @@ require'nvim-treesitter.configs'.setup {
       node_decremental = "grm",
     },
   },
+  indent = {
+    enabled = true,
+  }
 }
 
 -- Telescope fzf
@@ -120,16 +160,29 @@ require('telescope').setup {
   defaults = {
     file_ignore_patterns = {
       '.git/', 'node_modules/', '__pycache__/'
-    }
+    },
   }
 }
 
+-- Trouble setup
+require('trouble').setup {}
+
 require('telescope').load_extension('fzf')
+local theme = require('telescope.themes').get_dropdown({})
+-- Search keybinds
 vim.api.nvim_set_keymap('n', '<Leader>ff', '<cmd>lua require("telescope.builtin").find_files({hidden = true})<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>lua require("telescope.builtin").live_grep({grep_open_files = true})<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>lua require("telescope.builtin").current_buffer_fuzzy_find()<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>fG', '<cmd>lua require("telescope.builtin").live_grep()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>fb', '<cmd>lua require("telescope.builtin").buffers()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>fh', '<cmd>lua require("telescope.builtin").help_tags()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>gd', '<cmd>lua require("telescope.builtin").lsp_definitions()<CR>', {})
+-- LSP Keybinds
+vim.api.nvim_set_keymap('n', '<leader>gd', '<cmd>lua require("telescope.builtin").lsp_references()<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>gD', '<cmd>lua require("telescope.builtin").lsp_definitions()<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>gc', ':Trouble document_diagnostics<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gi', '<cmd>lua require("telescope.builtin").lsp_implementations()<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gt', '<cmd>lua require("telescope.builtin").lsp_type_definitions()<CR>', {})
+-- Git keybinds
+vim.api.nvim_set_keymap('n', '<leader>gs', '<cmd>lua require("telescope.builtin").git_status()<CR>', {})
+-- Treesitter keybinds
+vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua require("telescope.builtin").treesitter()<CR>', {})
+-- Other keybinds
+vim.api.nvim_set_keymap('n', '<leader>gb', ':GitMessenger<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>r', ':NERDTreeFind<CR>', {})
