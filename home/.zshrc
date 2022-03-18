@@ -2,7 +2,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-  export ZSH="/home/rasmus/.oh-my-zsh"
+export ZSH="/home/rbr/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -185,17 +185,32 @@ alias kubedi='kubectl describe ingress'
 
 export EDITOR=vim
 
-fpath=($fpath "/home/rasmus/.zfunctions")
+# Source custom fzf widgets
+source /usr/share/doc/fzf/examples/key-bindings.zsh
+fpath=($fpath "/home/rbr/.zfunctions")
+export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*" --glob "!node_modules/*"'
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+bindkey '^r' fzf-history-widget # CTRL-r - Search history
+bindkey '\ec' fzf-cd-widget     # ALT-c  - Deep cd using fzf
 
 # Custom global NPM
 export PATH=~/.npm-global/bin:$PATH
 
-# Go
-export PATH=$PATH:/usr/local/go/bin
-export PATH=$PATH:$HOME/go/bin
+# Android SDK
+export ANDROID_HOME=/usr/lib/android-sdk # Legacy
+export ANDROID_SDK_HOME=/home/rbr/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/tools/bin
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
 
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # load rvm into shell session
+# Load in extra env that we don't want to store in Git
+if [ -f ~/.env ]; then
+    . ~/.env
+fi
 
-export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*" --glob "!node_modules/*"'
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
