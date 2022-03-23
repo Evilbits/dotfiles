@@ -174,9 +174,6 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
-# bind for locking screen
-bindsym $mod+shift+x exec multilockscreen -l dim
-
 # bind for screenshot all screens
 bindsym $mod+p exec "flameshot full -c -p ~/Pictures/flameshot"
 # screenshot current window
@@ -202,8 +199,12 @@ default_border          none
 default_floating_border none
 
 # set background
-set $bg_path $HOME/backgrounds/pretty_circle.png
+set $bg_path $HOME/backgrounds/drawn-mountain.webp
 exec_always feh --bg-scale $bg_path
+
+# bind for locking screen
+exec_always betterlockscreen -u $bg_path
+bindsym $mod+shift+x exec betterlockscreen --lock
 
 # exec polybar
 exec_always --no-startup-id $HOME/.config/polybar/launch.sh
