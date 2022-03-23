@@ -7,3 +7,4 @@ configuration {
   yoffset: -50;
   xoffset: -20;
 }
+@theme "/usr/share/rofi/themes/android_notification.rasi"

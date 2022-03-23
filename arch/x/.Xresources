@@ -116,5 +116,5 @@ Xcursor.size: 16
 
 ! ROFI setup
 !rofi.theme: Adapta-Nokto
-rofi.theme: gruvbox-dark-soft
+rofi.theme: android_notificaiton
 rofi.modi:  drun
