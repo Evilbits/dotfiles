@@ -198,8 +198,8 @@ bindkey '\ec' fzf-cd-widget     # ALT-c  - Deep cd using fzf
 export PATH=~/.npm-global/bin:$PATH
 
 # Android SDK
-export ANDROID_HOME=/usr/lib/android-sdk # Legacy
-export ANDROID_SDK_HOME=/home/rbr/Android/Sdk
+export ANDROID_HOME=/opt/android-sdk # Legacy
+export ANDROID_SDK_HOME=$ANDROID_HOME
 export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/tools
 export PATH=$PATH:$ANDROID_HOME/tools/bin

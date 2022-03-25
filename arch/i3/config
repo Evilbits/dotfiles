@@ -45,8 +45,12 @@ bindsym $mod+Shift+q kill
 
 # start dmenu (a program launcher)
 #bindsym $mod+d exec dmenu_run
-set $execute exec rofi -show drun
+#set $execute exec rofi -theme ~/.config/rofi/config.rasi -show drun -modi drun
+# rofi keybinds
+set $execute exec rofi -no-config -no-lazy-grab -show drun -modi drun -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi
+set $applist exec rofi -no-config -no-lazy-grab -show window -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi
 bindsym $mod+d $execute
+bindsym $mod+Shift+d exec $applist
 
 # There also is the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
@@ -89,7 +93,7 @@ bindsym $mod+f fullscreen toggle
 # change container layout (stacked, tabbed, toggle split)
 #bindsym $mod+s layout stacking
 #bindsym $mod+w layout tabbed
-bindsym $mod+e layout toggle split
+#bindsym $mod+e layout toggle split
 
 # toggle tiling / floating
 bindsym $mod+Shift+space floating toggle
@@ -105,7 +109,7 @@ bindsym $mod+space focus mode_toggle
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
-set $ws1 "www"
+set $ws1 "1"
 set $ws2 "2"
 set $ws3 "3"
 set $ws4 "4"
@@ -172,7 +176,7 @@ mode "resize" {
         bindsym $mod+r mode "default"
 }
 
-bindsym $mod+r mode "resize"
+#bindsym $mod+r mode "resize"
 
 # bind for screenshot all screens
 bindsym $mod+p exec "flameshot full -c -p ~/Pictures/flameshot"
@@ -187,19 +191,19 @@ bindsym $mod+z exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spoti
 bindsym $mod+x exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause"
 bindsym $mod+c exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next"
 
-# rofi keybinds
-bindsym $mod+Shift+d exec "rofi -show window"
-
 # i3 gaps setup :)
 gaps inner 15
 gaps outer 15
+gaps top 73
 
 # remove top border of urxvt windows
 default_border          none
 default_floating_border none
+# Remove all borders
+for_window [class="^.*"] border pixel 0
 
 # set background
-set $bg_path $HOME/backgrounds/drawn-mountain.webp
+set $bg_path $HOME/backgrounds/mount-fuji.jpg
 exec_always feh --bg-scale $bg_path
 
 # bind for locking screen
@@ -207,7 +211,18 @@ exec_always betterlockscreen -u $bg_path
 bindsym $mod+shift+x exec betterlockscreen --lock
 
 # exec polybar
-exec_always --no-startup-id $HOME/.config/polybar/launch.sh
+exec_always --no-startup-id $HOME/.config/polybar/launch.sh --forest
+
+# binds for monitor setup
+bindsym $mod+r exec "xrandr --output DP2 --primary --left-of eDP1 --output HDMI1 --left-of DP2"
+bindsym $mod+e exec "xrandr --output DP2 --primary --mode 2560x1440 --left-of eDP1"
+
+# manage audio
+bindsym $mod+m exec "pavucontrol"
 
 # Compositor
-exec_always picom --config $HOME/.config/picom/picom.conf
+exec_always --no-startup-id pkill picom; picom --no-use-damage
+#exec_always picom --config $HOME/.config/picom/picom.conf
+
+# Lock on statup
+exec_always betterlockscreen --lock
