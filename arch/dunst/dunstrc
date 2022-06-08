@@ -73,7 +73,7 @@
     #  %% Literal %
 
     markup = full
-    format = "<b>%a</b>\n%s"
+    format = "<b>%a</b>\n%b"
 
     # Left align the text
     alignment = left
@@ -94,7 +94,7 @@
     ignore_newline = no
 
     # Don't stack together notifications
-    stack_duplicates = false
+    stack_duplicates = true
 
     # Hide the count of stacked notifications
     # hide_duplicate_count = false

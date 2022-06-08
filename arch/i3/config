@@ -101,6 +101,8 @@ bindsym $mod+Shift+space floating toggle
 # change focus between tiling / floating windows
 bindsym $mod+space focus mode_toggle
 
+for_window [title="^Android Emulator"] floating enable
+
 # focus the parent container
 #bindsym $mod+a focus parent
 
@@ -181,7 +183,7 @@ mode "resize" {
 # bind for screenshot all screens
 bindsym $mod+p exec "flameshot full -c -p ~/Pictures/flameshot"
 # screenshot current window
-bindsym $mod+shift+p exec "flameshot gui -p ~/Pictures/flameshot"
+bindsym $mod+shift+p exec "flameshot gui"
 
 # bind for connecting to VPN - disabled since it requires sudo
 #bindsym $mod+shift+v exec "sudo openvpn --cd '/etc/openvpn/client' --config 'Denmark.conf'"
@@ -211,7 +213,7 @@ exec_always betterlockscreen -u $bg_path
 bindsym $mod+shift+x exec betterlockscreen --lock
 
 # exec polybar
-exec_always --no-startup-id $HOME/.config/polybar/launch.sh --forest
+exec_always --no-startup-id $HOME/.config/polybar/forest/launch.sh
 
 # binds for monitor setup
 bindsym $mod+r exec "xrandr --output DP2 --primary --left-of eDP1 --output HDMI1 --left-of DP2"
@@ -221,8 +223,8 @@ bindsym $mod+e exec "xrandr --output DP2 --primary --mode 2560x1440 --left-of eD
 bindsym $mod+m exec "pavucontrol"
 
 # Compositor
-exec_always --no-startup-id pkill picom; picom --no-use-damage
-#exec_always picom --config $HOME/.config/picom/picom.conf
+#exec_always --no-startup-id pkill picom; picom --no-use-damage
+exec_always picom --config $HOME/.config/picom/picom.conf
 
 # Lock on statup
-exec_always betterlockscreen --lock
+#exec_always betterlockscreen --lock

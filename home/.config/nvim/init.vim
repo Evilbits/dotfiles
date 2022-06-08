@@ -37,6 +37,7 @@ Plug 'rhysd/git-messenger.vim'
 Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'scrooloose/nerdtree'              " Folder navigation
 Plug 'ryanoasis/vim-devicons'           " Nerdtree icons
+Plug 'easymotion/vim-easymotion'        " Jump to words or chars
 "" Fuzzy finding for lists
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
@@ -46,6 +47,8 @@ Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
 Plug 'raimondi/delimitmate'             " Automatically close brackets
 Plug 'psliwka/vim-smoothie'             " Smooth scrolling
 Plug 'yggdroot/indentline'              " Adds a symbol at line indents
+Plug 'prettier/vim-prettier', { 'do': 'yarn install --frozen-lockfile --production' } " JS code formatter
+Plug 'eslint/eslint'
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 call plug#end()
 endif
@@ -125,6 +128,12 @@ let g:ale_linters = {'javascript': ['prettier', 'eslint'] }
 let g:ale_linter_aliases = {'typescript': 'javascript', 'typescriptreact': 'javascript'}
 " Automatic Typescript import from external modules
 let g:ale_completion_tsserver_autoimport = 1
+
+" easymotion
+" Jump to word with `s{char}{char}{label}`
+nmap s <Plug>(easymotion-overwin-f2)
+let g:EasyMotion_smartcase = 1 " Case insensitive search
+let g:EasyMotion_do_mapping = 0 " Disable default mappings
 
 " ====== fzf config ======
 " Use ripgrep for fzf
