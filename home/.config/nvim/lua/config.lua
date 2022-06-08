@@ -25,7 +25,7 @@ require('trouble').setup {} -- Code diagnostics
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 
-local servers = { 'tsserver', 'gopls' }
+local servers = { 'tsserver', 'gopls', 'graphql' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
