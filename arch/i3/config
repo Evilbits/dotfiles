@@ -47,8 +47,10 @@ bindsym $mod+Shift+q kill
 #bindsym $mod+d exec dmenu_run
 #set $execute exec rofi -theme ~/.config/rofi/config.rasi -show drun -modi drun
 # rofi keybinds
-set $execute exec rofi -no-config -no-lazy-grab -show drun -modi drun -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi
-set $applist exec rofi -no-config -no-lazy-grab -show window -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi
+#set $execute exec rofi -no-config -no-lazy-grab -show drun -modi drun -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi
+#set $applist exec rofi -no-config -no-lazy-grab -show window -theme ~/.config/polybar/forest/scripts/rofi/launcher.rasi
+set $execute exec ~/.config/rofi/launchers/text/launcher.sh
+set $applist exec ~/.config/rofi/launchers/text/launcher_window.sh
 bindsym $mod+d $execute
 bindsym $mod+Shift+d exec $applist
 
@@ -205,7 +207,7 @@ default_floating_border none
 for_window [class="^.*"] border pixel 0
 
 # set background
-set $bg_path $HOME/backgrounds/mount-fuji.jpg
+set $bg_path $HOME/backgrounds/arch.png
 exec_always feh --bg-scale $bg_path
 
 # bind for locking screen
@@ -227,4 +229,4 @@ bindsym $mod+m exec "pavucontrol"
 exec_always picom --config $HOME/.config/picom/picom.conf
 
 # Lock on statup
-#exec_always betterlockscreen --lock
+exec_always betterlockscreen --lock
