@@ -32,6 +32,7 @@ Plug 'hrsh7th/vim-vsnip'
 " Git
 Plug 'airblade/vim-gitgutter'           " Git status bar
 Plug 'rhysd/git-messenger.vim'
+Plug 'tpope/vim-fugitive'
 
 " Navigation
 Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
@@ -50,6 +51,9 @@ Plug 'yggdroot/indentline'              " Adds a symbol at line indents
 Plug 'prettier/vim-prettier', { 'do': 'yarn install --frozen-lockfile --production' } " JS code formatter
 Plug 'eslint/eslint'
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+Plug 'folke/zen-mode.nvim'
+Plug 'folke/which-key.nvim'             " Vim keybind helper
+Plug 'norcalli/nvim-colorizer.lua'      " Color hex codes 
 call plug#end()
 endif
 
@@ -73,6 +77,7 @@ set directory=~/.config/nvim/tmp/swap     " Set swapfile directory
 set undodir=~/.config/nvim/tmp/undo       " Set undo directory
 set scrolljump=5                          " Change default amount of lines scrolled
 set termguicolors                         " Rich colors
+set cursorline                            " Highlight current line
 filetype on                               " Enable file type detection
 filetype plugin indent on                 " Enable loading the plugin files for specific file types
 
@@ -83,6 +88,8 @@ set expandtab                             " Expand TABs to spaces.
 set number                                " Enable gutter line numbers
 set softtabstop=0
 set autoindent
+
+lua require'colorizer'.setup()
 
 " ====== Theme ======
 if (has("termguicolors"))
@@ -129,9 +136,14 @@ let g:ale_linter_aliases = {'typescript': 'javascript', 'typescriptreact': 'java
 " Automatic Typescript import from external modules
 let g:ale_completion_tsserver_autoimport = 1
 
-" easymotion
+" ====== GitMessenger config ======
+let g:git_messenger_always_into_popup = v:true
+let g:git_messenger_include_diff = "current"
+
+" ====== easymotion config ======
 " Jump to word with `s{char}{char}{label}`
-nmap s <Plug>(easymotion-overwin-f2)
+nmap s <Plug>(easymotion-overwin-f)
+nmap <leader>s <Plug>(easymotion-overwin-f2)
 let g:EasyMotion_smartcase = 1 " Case insensitive search
 let g:EasyMotion_do_mapping = 0 " Disable default mappings
 

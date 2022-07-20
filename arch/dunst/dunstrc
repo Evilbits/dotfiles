@@ -19,7 +19,6 @@
     progress_bar_min_width = 150
     progress_bar_max_width = 300
 
-
     # Show how many messages are hidden
     indicate_hidden = yes
 
@@ -27,7 +26,7 @@
     shrink = no
 
     # The transparency of the window.
-    transparency = 1
+    transparency = 0
 
     # Draw a line between multiple notifications
     separator_height = 4
@@ -166,7 +165,7 @@
     per_monitor_dpi = false
 
 [urgency_low]
-    background = "#1e2137fa"
+    background = "#646a8b"
     highlight = "#fe6c5a"
     frame_color = "#52426e"
     
@@ -174,12 +173,12 @@
     timeout = 8
 
 [urgency_normal]
-    background = "#1e2137fa"
+    background = "#646a8b"
     foreground = "#ffffffff"
     timeout = 8
 
 [urgency_critical]
-    background = "#dd130ddd"
+    background = "#646a8b"
     foreground = "#ffffff"
     timeout = 0
     icon = abrt

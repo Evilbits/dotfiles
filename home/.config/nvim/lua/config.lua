@@ -14,9 +14,12 @@ require('plugins.lualine')
 require('plugins.telescope')
 require('plugins.treesitter')
 require('plugins.nvim_cmp')
+require('plugins.zenmode')
 
 -- Simple plugin setup
 require('trouble').setup {} -- Code diagnostics
+
+require("which-key").setup {} -- Keybind helper
 
 ---- LSP final setup ----
 -- Use a loop to conveniently call 'setup' on multiple servers and
@@ -54,4 +57,6 @@ vim.api.nvim_set_keymap('n', '<leader>gs', '<cmd>lua require("telescope.builtin"
 vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua require("telescope.builtin").treesitter()<CR>', {})
 -- Other keybinds
 vim.api.nvim_set_keymap('n', '<leader>gb', ':GitMessenger<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>gB', ':Git blame<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>r', ':NERDTreeFind<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>z', ':ZenMode<CR>', {})
