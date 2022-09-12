@@ -14,11 +14,10 @@
     offset = 29x80
 
     progress_bar = true
-    progress_bar_height = 14
+    progress_bar_height = 10
     progress_bar_frame_width = 1
     progress_bar_min_width = 150
     progress_bar_max_width = 300
-
 
     # Show how many messages are hidden
     indicate_hidden = yes
@@ -27,12 +26,12 @@
     shrink = no
 
     # The transparency of the window.
-    transparency = 1
+    transparency = 0
 
     # Draw a line between multiple notifications
-    separator_height = 6
+    separator_height = 4
 
-    separator_color = "#272f57"
+    separator_color = "#1e2137aa"
 
     # Set notification padding
     padding = 16
@@ -94,7 +93,7 @@
     ignore_newline = no
 
     # Don't stack together notifications
-    stack_duplicates = false
+    stack_duplicates = true
 
     # Hide the count of stacked notifications
     # hide_duplicate_count = false
@@ -109,14 +108,16 @@
     icon_position = left
 
     # Scale small icons up to this size, set to 0 to disable.
-    min_icon_size = 50
+    min_icon_size = 20
 
     # Scale larger icons down to this size, set to 0 to disable
-    max_icon_size = 60
+    max_icon_size = 20
 
     # Paths to default icons.
-    icon_path = /usr/share/icons/kora/apps/scalable:/usr/share/icons/kora/status/scalable:/usr/share/icons/kora/actions/scalable:/usr/share/icons/kora/emblems/scalable:/usr/share/icons/kora/devices/scalable
- 
+    icon_path = /usr/share/icons/Adwaita/16x16/status/:/usr/share/icons/Adwaita/16x16/devices/
+    #icon_path = /home/rasmus/.icons/Reversal-blue/apps/scalable:/usr/share/icons/Adwaita/256x256/legacy/
+
+
     # --- History --- #
 
     # Avoid timing out hidden notifications
@@ -165,39 +166,82 @@
     per_monitor_dpi = false
 
 [urgency_low]
-    background = "#141929fe"
-    highlight = "#6fa6e7"
-    frame_color = "#272f57"
-    foreground = "#dae1f2"
+    background = "#646a8b"
+    highlight = "#fe6c5a"
+    frame_color = "#52426e"
+    
+    foreground = "#ffffff"
     timeout = 8
 
 [urgency_normal]
-    background = "#141929fe"
-    highlight = "#5ca1ff"
-
-    frame_color = "#272f57"
-    foreground = "#dae1f2"
+    background = "#646a8b"
+    foreground = "#ffffffff"
     timeout = 8
 
 [urgency_critical]
-    background = "#5ca1ffff"
-    highlight = "#fe6c5a"
-    foreground = "#1c2138"
-    frame_color = "#52426e"
+    background = "#646a8b"
+    foreground = "#ffffff"
     timeout = 0
-    icon = battery-ac-adapter
+    icon = abrt
 
-[backlight]
-    appname = "Backlight"
-    highlight = "#fc7b80"
-
-[music]
-    appname = "Music"
-
-[volume]
-    summary = "Volume*"
-    highlight = "#cb8cf4"
-
-[battery]
-    appname = "Power Warning"
-
+# Old config
+# [global]
+#     font = "Droid Sans 8"
+#     allow_markup = yes
+#     format = "<b>%s</b>\n%b"
+#     sort = yes
+#     indicate_hidden = yes
+#     alignment = center
+#     bounce_freq = 0
+#     show_age_threshold = 60
+#     word_wrap = yes
+#     ignore_newline = no
+#     geometry = "300x5-6+5"
+#     transparency = 0
+#     idle_threshold = 120
+#     monitor = 0
+#     follow = mouse
+#     sticky_history = yes
+#     line_height = 0
+#     separator_height = 2
+#     padding = 8
+#     horizontal_padding = 8
+#     separator_color = "#585858"
+#     startup_notification = false
+#     # https://github.com/knopwob/dunst/issues/26#issuecomment-36159395
+#     icon_position = left
+#     icon_path = /usr/share/icons/Adwaita/16x16/status/:/usr/share/icons/Adwaita/16x16/devices/
+#     max_icon_size = 32
+# 
+# [frame]
+#     width = 1
+#     color = "#00BCD4"
+#     #color = "#383838"
+# 
+# [shortcuts]
+#     close = ctrl+space
+#     close_all = ctrl+shift+space
+#     history = ctrl+grave
+#     context = ctrl+shift+period
+# 
+# [urgency_low]
+#     background = "#263238"
+#     foreground = "#DFDFDF"
+#     timeout = 5
+# 
+# [urgency_normal]
+#     #background = "#ffffff"
+#     background = "#263238"
+#     #foreground = "#595959"
+#     foreground = "#DFDFDF"
+#     timeout = 5
+# 
+# [urgency_critical]
+#     background = "#263238"
+#     foreground = "#DFDFDF"
+#     timeout = 0
+# 
+# [Spotify]
+#     appname = Spotify
+#     format = "<b>Now Playing:</b>\n%s\n%b"
+#     timeout = 10

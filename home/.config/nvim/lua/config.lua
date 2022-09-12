@@ -51,12 +51,50 @@ vim.api.nvim_set_keymap('n', '<leader>gv', ':Trouble quickfix<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gi', '<cmd>lua require("telescope.builtin").lsp_implementations()<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gt', '<cmd>lua require("telescope.builtin").lsp_type_definitions()<CR>', {})
 vim.api.nvim_set_keymap('n', '<C-s>', '<cmd>lua vim.lsp.buf.hover()<CR>', {})
+-- CHADtree
+vim.api.nvim_set_keymap('n', '<C-n>', ':CHADopen<CR>', {})
 -- Git keybinds
 vim.api.nvim_set_keymap('n', '<leader>gs', '<cmd>lua require("telescope.builtin").git_status()<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>g', ':Magit<CR>', {})
 -- Treesitter keybinds
 vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua require("telescope.builtin").treesitter()<CR>', {})
 -- Other keybinds
 vim.api.nvim_set_keymap('n', '<leader>gb', ':GitMessenger<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gB', ':Git blame<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>r', ':NERDTreeFind<CR>', {})
+--vim.api.nvim_set_keymap('n', '<leader>r', ':NERDTreeFind<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>z', ':ZenMode<CR>', {})
+
+local function reload(name)
+  require('plenary.reload').reload_module(name, true)
+  return require(name)
+end
+
+return require('packer').startup(function()
+  use 'wbthomason/packer.nvim'
+
+  use "nvim-lua/plenary.nvim"
+
+  use {
+    'ms-jpq/chadtree',
+    run = ':CHADdeps',
+    requires = { 'arcticicestudio/nord-dircolors' },
+    config = function()
+      vim.api.nvim_set_var("chadtree_settings", {
+        ["keymap.change_dir"] = { "B" },
+        ["keymap.refresh"] = { "<c-r>", "R" },
+        ["keymap.primary"] = { "<enter>", "o" },
+        ["keymap.h_split"] = { "go" },
+        ["keymap.v_split"] = { "w" },
+        ["keymap.open_sys"] = { "O" },
+        ["view.width"] = 35,
+        ["view.window_options"] = {
+          ["number"] = true,
+          ["relativenumber"] = true,
+        },
+      })
+    end
+  }
+
+  -- external config files
+  reload('plugins.theme').init(use)
+end)

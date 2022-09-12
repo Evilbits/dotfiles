@@ -9,6 +9,9 @@
 #
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
 
+set $light ~/.bin/backlight.sh
+set $volume ~/.bin/volume.sh
+
 # Set mod to ALT
 set $mod Mod1
 # Set mod to WINDOWS-KEY
@@ -191,9 +194,16 @@ bindsym $mod+shift+p exec "flameshot gui"
 #bindsym $mod+shift+v exec "sudo openvpn --cd '/etc/openvpn/client' --config 'Denmark.conf'"
 
 # spotify keybinds
-bindsym $mod+z exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous"
-bindsym $mod+x exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause"
-bindsym $mod+c exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next"
+#bindsym $mod+z exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous"
+#bindsym $mod+x exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause"
+#bindsym $mod+c exec "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next"
+
+bindsym $mod+x                        exec $light inc 15
+bindsym $mod+z                        exec $light dec 15
+#bindsym $mod+Shift+x                       exec $light inc 5
+#bindsym $mod+Shift+z                       exec $light dec 5
+bindsym $mod+s                        exec $volume inc 15
+bindsym $mod+a                        exec $volume dec 15
 
 # i3 gaps setup :)
 gaps inner 15
