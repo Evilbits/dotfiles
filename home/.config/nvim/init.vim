@@ -4,11 +4,6 @@ Plug 'nvim-lualine/lualine.nvim'        " Status bar
 Plug 'kyazdani42/nvim-web-devicons'     " Sweet icons
 Plug 'mhinz/vim-startify'               " Custome start screen
 
-" Themes
-Plug 'sainnhe/sonokai'
-"Plug 'arcticicestudio/nord-vim'
-"Plug 'folke/tokyonight.nvim'
-
 " LSP support & syntax handling
 Plug 'neovim/nvim-lspconfig'            " LSP configuration
 Plug 'williamboman/nvim-lsp-installer'  " Language server installation tool
@@ -24,6 +19,7 @@ Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
+" Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
 
 " Snippets
 Plug 'hrsh7th/cmp-vsnip'
@@ -33,6 +29,7 @@ Plug 'hrsh7th/vim-vsnip'
 Plug 'airblade/vim-gitgutter'           " Git status bar
 Plug 'rhysd/git-messenger.vim'
 Plug 'tpope/vim-fugitive'
+Plug 'jreybert/vimagit'
 
 " Navigation
 Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
@@ -48,12 +45,14 @@ Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
 Plug 'raimondi/delimitmate'             " Automatically close brackets
 Plug 'psliwka/vim-smoothie'             " Smooth scrolling
 Plug 'yggdroot/indentline'              " Adds a symbol at line indents
+Plug 'tpope/vim-surround'               " Smarter surrounding of words
 Plug 'prettier/vim-prettier', { 'do': 'yarn install --frozen-lockfile --production' } " JS code formatter
 Plug 'eslint/eslint'
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 Plug 'folke/zen-mode.nvim'
 Plug 'folke/which-key.nvim'             " Vim keybind helper
 Plug 'norcalli/nvim-colorizer.lua'      " Color hex codes 
+Plug 'vim-scripts/LargeFile'            " Stop crashing when indexing large files
 call plug#end()
 endif
 
@@ -61,6 +60,12 @@ endif
 lua << EOF
 require('config')
 EOF
+
+" Automatically recompile Packer when saving config file
+augroup packer_user_config
+  autocmd!
+  autocmd BufWritePost config.lua source <afile> | PackerCompile
+augroup end
 
 " reload vimrc when saved
 map <leader>v :sp ~/.config/nvim/init.vim<cr>
@@ -78,6 +83,7 @@ set undodir=~/.config/nvim/tmp/undo       " Set undo directory
 set scrolljump=5                          " Change default amount of lines scrolled
 set termguicolors                         " Rich colors
 set cursorline                            " Highlight current line
+set mouse=                                " Disable mouse 
 filetype on                               " Enable file type detection
 filetype plugin indent on                 " Enable loading the plugin files for specific file types
 
@@ -97,9 +103,6 @@ if (has("termguicolors"))
   let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
 endif
 
-let g:sonokai_style = 'andromeda'
-colorscheme sonokai
-
 " ====== Key remapping ======
 nnoremap <SPACE> <Nop>
 nmap <space> <leader>
@@ -112,14 +115,14 @@ noremap <Right> <Nop>
 
 " ====== Nerdtree config ======
 " Keybind for opening Nerdtree
-map <silent> <C-n> :NERDTreeToggle<CR>
-let NERDTreeShowHidden=1                  " Start closed
-autocmd VimEnter * wincmd p               " Go to previous (last accessed) window.
-" Close Nerdtree if last in buffer
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-" If another buffer tries to replace NERDTree, put it in the other window, and bring back NERDTree.
-autocmd BufEnter * if bufname('#') =~ 'NERD_tree_\d\+' && bufname('%') !~ 'NERD_tree_\d\+' && winnr('$') > 1 |
-    \ let buf=bufnr() | buffer# | execute "normal! \<C-W>w" | execute 'buffer'.buf | endif
+"map <silent> <C-n> :NERDTreeToggle<CR>
+"let NERDTreeShowHidden=1                  " Start closed
+"autocmd VimEnter * wincmd p               " Go to previous (last accessed) window.
+"" Close Nerdtree if last in buffer
+"autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+"" If another buffer tries to replace NERDTree, put it in the other window, and bring back NERDTree.
+"autocmd BufEnter * if bufname('#') =~ 'NERD_tree_\d\+' && bufname('%') !~ 'NERD_tree_\d\+' && winnr('$') > 1 |
+"    \ let buf=bufnr() | buffer# | execute "normal! \<C-W>w" | execute 'buffer'.buf | endif
 
 " ====== Nerdtree config ======
 let g:startify_change_to_dir = 0          " Don't cd to dir when opening file
@@ -146,6 +149,11 @@ nmap s <Plug>(easymotion-overwin-f)
 nmap <leader>s <Plug>(easymotion-overwin-f2)
 let g:EasyMotion_smartcase = 1 " Case insensitive search
 let g:EasyMotion_do_mapping = 0 " Disable default mappings
+" Better colors when searching
+hi link EasyMotionTarget ErrorMsg
+hi link EasyMotionShade  Comment
+hi link EasyMotionTarget2First MatchParen
+hi link EasyMotionTarget2Second MatchParen
 
 " ====== fzf config ======
 " Use ripgrep for fzf
