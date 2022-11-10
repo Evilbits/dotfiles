@@ -60,6 +60,7 @@ require('telescope').setup {
   }
 }
 require('telescope').load_extension('fzf')
+require("telescope").load_extension('harpoon')
 
 -- Truncate large files to avoid preview window crashing
 local previewers = require('telescope.previewers')
