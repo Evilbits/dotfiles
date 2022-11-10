@@ -9,7 +9,6 @@ Plug 'neovim/nvim-lspconfig'            " LSP configuration
 Plug 'williamboman/nvim-lsp-installer'  " Language server installation tool
 Plug 'w0rp/ale'                         " Async syntax highlighting and linting
 Plug 'ray-x/lsp_signature.nvim'         " Function signatures
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'} " Better syntax highlighting
 Plug 'kyazdani42/nvim-web-devicons'     " Development icons
 Plug 'folke/trouble.nvim'               " LSP results in separate buffer
 
@@ -29,7 +28,7 @@ Plug 'hrsh7th/vim-vsnip'
 Plug 'airblade/vim-gitgutter'           " Git status bar
 Plug 'rhysd/git-messenger.vim'
 Plug 'tpope/vim-fugitive'
-Plug 'jreybert/vimagit'
+" Plug 'jreybert/vimagit'
 
 " Navigation
 Plug 'junegunn/fzf' , { 'dir': '~/.fzf', 'do': './install --all' }
@@ -91,7 +90,8 @@ filetype plugin indent on                 " Enable loading the plugin files for 
 set tabstop=2                             " The width of a TAB is set to 2.
 set shiftwidth=2                          " Indents will have a width of 2.
 set expandtab                             " Expand TABs to spaces.
-set number                                " Enable gutter line numbers
+set relativenumber                        " Relative gutter line numbers
+"set number                                " Enable gutter line numbers
 set softtabstop=0
 set autoindent
 
@@ -128,12 +128,12 @@ noremap <Right> <Nop>
 let g:startify_change_to_dir = 0          " Don't cd to dir when opening file
 
 " ====== Ale config ======
+" Set which linters to use
+let g:ale_linters = {'javascript': ['prettier', 'eslint'] }
 let g:ale_fixers = ['prettier', 'eslint'] " Fix files with prettier, and then ESLint.
 let g:ale_fix_on_save = 1                 " Set this variable to 1 to fix files when you save them.
 let g:ale_disable_lsp = 1                 " Disable lsp as we use nvim native lsp
 let g:ale_set_highlights = 0              " Remove highlighting
-" Set which linters to use
-let g:ale_linters = {'javascript': ['prettier', 'eslint'] }
 " Map different languages to above linters
 let g:ale_linter_aliases = {'typescript': 'javascript', 'typescriptreact': 'javascript'}
 " Automatic Typescript import from external modules

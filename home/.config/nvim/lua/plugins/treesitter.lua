@@ -18,5 +18,10 @@ require'nvim-treesitter.configs'.setup {
   },
   indent = {
     enabled = true,
-  }
+  },
+  -- nvim-ts-autotag
+  autotag = {
+    enable = true,
+  },
 }
+-- require'treesitter-context'.setup{}
