@@ -1,0 +1,1099 @@
+import = [
+  "~/dotfiles/home/catppuccin-macchiato.toml"
+]
+
+#dynamic_title = true
+#enable_experimental_conpty_backend = false
+live_config_reload = true
+#tabspaces = 8
+working_directory = "None"
+
+[colors]
+draw_bold_text_with_bright_colors = false
+
+[[colors.indexed_colors]]
+color = "#F5A97F"
+index = 16
+
+[[colors.indexed_colors]]
+color = "#F4DBD6"
+index = 17
+
+[colors.bright]
+black = "#5B6078"
+blue = "#8AADF4"
+cyan = "#8BD5CA"
+green = "#A6DA95"
+magenta = "#F5BDE6"
+red = "#ED8796"
+white = "#A5ADCB"
+yellow = "#EED49F"
+
+[colors.cursor]
+cursor = "#F4DBD6"
+text = "#24273A"
+
+[colors.dim]
+black = "#494D64"
+blue = "#8AADF4"
+cyan = "#8BD5CA"
+green = "#A6DA95"
+magenta = "#F5BDE6"
+red = "#ED8796"
+white = "#B8C0E0"
+yellow = "#EED49F"
+
+[colors.hints.end]
+background = "#A5ADCB"
+foreground = "#24273A"
+
+[colors.hints.start]
+background = "#EED49F"
+foreground = "#24273A"
+
+[colors.normal]
+black = "#494D64"
+blue = "#8AADF4"
+cyan = "#8BD5CA"
+green = "#A6DA95"
+magenta = "#F5BDE6"
+red = "#ED8796"
+white = "#B8C0E0"
+yellow = "#EED49F"
+
+[colors.primary]
+background = "#24273A"
+bright_foreground = "#CAD3F5"
+dim_foreground = "#CAD3F5"
+foreground = "#CAD3F5"
+
+[colors.search.focused_match]
+background = "#A6DA95"
+foreground = "#24273A"
+
+#[colors.search.footer_bar]
+#background = "#A5ADCB"
+#foreground = "#24273A"
+
+[colors.search.matches]
+background = "#A5ADCB"
+foreground = "#24273A"
+
+[colors.selection]
+background = "#F4DBD6"
+text = "#24273A"
+
+[colors.vi_mode_cursor]
+cursor = "#B7BDF8"
+text = "#24273A"
+
+[cursor]
+style = "Block"
+unfocused_hollow = true
+
+[debug]
+log_level = "Warn"
+persistent_logging = false
+print_events = false
+render_timer = false
+
+[env]
+TERM = "xterm-256color"
+WINIT_HIDPI_FACTOR = "1"
+
+[font]
+size = 8.0
+
+[font.bold]
+family = "CaskaydiaCove Nerd Font"
+style = "Bold"
+
+[font.glyph_offset]
+x = 0
+y = 0
+
+[font.italic]
+family = "CaskaydiaCove Nerd Font"
+style = "Italic"
+
+[font.normal]
+family = "CaskaydiaCove Nerd Font"
+style = "Regular"
+
+[font.offset]
+x = 0
+y = 0
+
+[[keyboard.bindings]]
+action = "Paste"
+key = "V"
+mods = "Control|Alt"
+
+[[keyboard.bindings]]
+action = "Copy"
+key = "C"
+mods = "Control|Alt"
+
+[[keyboard.bindings]]
+action = "Paste"
+key = "Paste"
+
+[[keyboard.bindings]]
+action = "Copy"
+key = "Copy"
+
+[[keyboard.bindings]]
+action = "ClearLogNotice"
+key = "L"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\f"
+key = "L"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;3H"
+key = "Home"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001BOH"
+key = "Home"
+mode = "AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001B[H"
+key = "Home"
+mode = "~AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;3F"
+key = "End"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001BOF"
+key = "End"
+mode = "AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001B[F"
+key = "End"
+mode = "~AppCursor"
+
+[[keyboard.bindings]]
+action = "ScrollPageUp"
+key = "PageUp"
+mode = "~Alt"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[5;2~"
+key = "PageUp"
+mode = "Alt"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[5;5~"
+key = "PageUp"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[5;3~"
+key = "PageUp"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[5~"
+key = "PageUp"
+
+[[keyboard.bindings]]
+action = "ScrollPageDown"
+key = "PageDown"
+mode = "~Alt"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[6;2~"
+key = "PageDown"
+mode = "Alt"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[6;5~"
+key = "PageDown"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[6;3~"
+key = "PageDown"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[6~"
+key = "PageDown"
+
+[[keyboard.bindings]]
+chars = "\u001B[Z"
+key = "Tab"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u007F"
+key = "Back"
+
+[[keyboard.bindings]]
+chars = "\u001B\u007F"
+key = "Back"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[2~"
+key = "Insert"
+
+[[keyboard.bindings]]
+chars = "\u001B[3~"
+key = "Delete"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;2D"
+key = "Left"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;5D"
+key = "Left"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;3D"
+key = "Left"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[D"
+key = "Left"
+mode = "~AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001BOD"
+key = "Left"
+mode = "AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;2C"
+key = "Right"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;5C"
+key = "Right"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;3C"
+key = "Right"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[C"
+key = "Right"
+mode = "~AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001BOC"
+key = "Right"
+mode = "AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;2A"
+key = "Up"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;5A"
+key = "Up"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;3A"
+key = "Up"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[A"
+key = "Up"
+mode = "~AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001BOA"
+key = "Up"
+mode = "AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;2B"
+key = "Down"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;5B"
+key = "Down"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;3B"
+key = "Down"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[B"
+key = "Down"
+mode = "~AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001BOB"
+key = "Down"
+mode = "AppCursor"
+
+[[keyboard.bindings]]
+chars = "\u001BOP"
+key = "F1"
+
+[[keyboard.bindings]]
+chars = "\u001BOQ"
+key = "F2"
+
+[[keyboard.bindings]]
+chars = "\u001BOR"
+key = "F3"
+
+[[keyboard.bindings]]
+chars = "\u001BOS"
+key = "F4"
+
+[[keyboard.bindings]]
+chars = "\u001B[15~"
+key = "F5"
+
+[[keyboard.bindings]]
+chars = "\u001B[17~"
+key = "F6"
+
+[[keyboard.bindings]]
+chars = "\u001B[18~"
+key = "F7"
+
+[[keyboard.bindings]]
+chars = "\u001B[19~"
+key = "F8"
+
+[[keyboard.bindings]]
+chars = "\u001B[20~"
+key = "F9"
+
+[[keyboard.bindings]]
+chars = "\u001B[21~"
+key = "F10"
+
+[[keyboard.bindings]]
+chars = "\u001B[23~"
+key = "F11"
+
+[[keyboard.bindings]]
+chars = "\u001B[24~"
+key = "F12"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;2P"
+key = "F1"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;2Q"
+key = "F2"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;2R"
+key = "F3"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;2S"
+key = "F4"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[15;2~"
+key = "F5"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[17;2~"
+key = "F6"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[18;2~"
+key = "F7"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[19;2~"
+key = "F8"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[20;2~"
+key = "F9"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[21;2~"
+key = "F10"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[23;2~"
+key = "F11"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[24;2~"
+key = "F12"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;5P"
+key = "F1"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;5Q"
+key = "F2"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;5R"
+key = "F3"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;5S"
+key = "F4"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[15;5~"
+key = "F5"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[17;5~"
+key = "F6"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[18;5~"
+key = "F7"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[19;5~"
+key = "F8"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[20;5~"
+key = "F9"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[21;5~"
+key = "F10"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[23;5~"
+key = "F11"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[24;5~"
+key = "F12"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;6P"
+key = "F1"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;6Q"
+key = "F2"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;6R"
+key = "F3"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;6S"
+key = "F4"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[15;6~"
+key = "F5"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[17;6~"
+key = "F6"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[18;6~"
+key = "F7"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[19;6~"
+key = "F8"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[20;6~"
+key = "F9"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[21;6~"
+key = "F10"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[23;6~"
+key = "F11"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[24;6~"
+key = "F12"
+mods = "Alt"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;3P"
+key = "F1"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;3Q"
+key = "F2"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;3R"
+key = "F3"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[1;3S"
+key = "F4"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[15;3~"
+key = "F5"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[17;3~"
+key = "F6"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[18;3~"
+key = "F7"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[19;3~"
+key = "F8"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[20;3~"
+key = "F9"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[21;3~"
+key = "F10"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[23;3~"
+key = "F11"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = "\u001B[24;3~"
+key = "F12"
+mods = "Super"
+
+[[keyboard.bindings]]
+chars = """
+
+"""
+key = "NumpadEnter"
+
+[mouse]
+hide_when_typing = false
+
+[[mouse.bindings]]
+action = "PasteSelection"
+mouse = "Middle"
+
+#[mouse.double_click]
+#threshold = 300
+#
+#[mouse.triple_click]
+#threshold = 300
+
+#[[schemes.frappe.indexed_colors]]
+#color = "#EF9F76"
+#index = 16
+#
+#[[schemes.frappe.indexed_colors]]
+#color = "#F2D5CF"
+#index = 17
+#
+#[schemes.frappe.bright]
+#black = "#626880"
+#blue = "#8CAAEE"
+#cyan = "#81C8BE"
+#green = "#A6D189"
+#magenta = "#F4B8E4"
+#red = "#E78284"
+#white = "#A5ADCE"
+#yellow = "#E5C890"
+#
+#[schemes.frappe.cursor]
+#cursor = "#F2D5CF"
+#text = "#303446"
+#
+#[schemes.frappe.dim]
+#black = "#51576D"
+#blue = "#8CAAEE"
+#cyan = "#81C8BE"
+#green = "#A6D189"
+#magenta = "#F4B8E4"
+#red = "#E78284"
+#white = "#B5BFE2"
+#yellow = "#E5C890"
+#
+#[schemes.frappe.hints.end]
+#background = "#A5ADCE"
+#foreground = "#303446"
+#
+#[schemes.frappe.hints.start]
+#background = "#E5C890"
+#foreground = "#303446"
+#
+#[schemes.frappe.normal]
+#black = "#51576D"
+#blue = "#8CAAEE"
+#cyan = "#81C8BE"
+#green = "#A6D189"
+#magenta = "#F4B8E4"
+#red = "#E78284"
+#white = "#B5BFE2"
+#yellow = "#E5C890"
+#
+#[schemes.frappe.primary]
+#background = "#303446"
+#bright_foreground = "#C6D0F5"
+#dim_foreground = "#C6D0F5"
+#foreground = "#C6D0F5"
+#
+#[schemes.frappe.search.focused_match]
+#background = "#A6D189"
+#foreground = "#303446"
+#
+#[schemes.frappe.search.footer_bar]
+#background = "#A5ADCE"
+#foreground = "#303446"
+#
+#[schemes.frappe.search.matches]
+#background = "#A5ADCE"
+#foreground = "#303446"
+#
+#[schemes.frappe.selection]
+#background = "#F2D5CF"
+#text = "#303446"
+#
+#[schemes.frappe.vi_mode_cursor]
+#cursor = "#BABBF1"
+#text = "#303446"
+#
+#[schemes.iceberg.bright]
+#black = "#6b7089"
+#blue = "#91acd1"
+#cyan = "#95c4ce"
+#green = "#c0ca8e"
+#magenta = "#ada0d3"
+#red = "#e98989"
+#white = "#d2d4de"
+#yellow = "#e9b189"
+#
+#[schemes.iceberg.normal]
+#black = "#161821"
+#blue = "#84a0c6"
+#cyan = "#89b8c2"
+#green = "#b4be82"
+#magenta = "#a093c7"
+#red = "#e27878"
+#white = "#c6c8d1"
+#yellow = "#e2a478"
+#
+#[schemes.iceberg.primary]
+#background = "#161821"
+#foreground = "#d2d4de"
+#
+#[[schemes.latte.indexed_colors]]
+#color = "#FE640B"
+#index = 16
+#
+#[[schemes.latte.indexed_colors]]
+#color = "#DC8A78"
+#index = 17
+#
+#[schemes.latte.bright]
+#black = "#6C6F85"
+#blue = "#1E66F5"
+#cyan = "#179299"
+#green = "#40A02B"
+#magenta = "#EA76CB"
+#red = "#D20F39"
+#white = "#BCC0CC"
+#yellow = "#DF8E1D"
+#
+#[schemes.latte.cursor]
+#cursor = "#DC8A78"
+#text = "#EFF1F5"
+#
+#[schemes.latte.dim]
+#black = "#5C5F77"
+#blue = "#1E66F5"
+#cyan = "#179299"
+#green = "#40A02B"
+#magenta = "#EA76CB"
+#red = "#D20F39"
+#white = "#ACB0BE"
+#yellow = "#DF8E1D"
+#
+#[schemes.latte.hints.end]
+#background = "#6C6F85"
+#foreground = "#EFF1F5"
+#
+#[schemes.latte.hints.start]
+#background = "#DF8E1D"
+#foreground = "#EFF1F5"
+#
+#[schemes.latte.normal]
+#black = "#5C5F77"
+#blue = "#1E66F5"
+#cyan = "#179299"
+#green = "#40A02B"
+#magenta = "#EA76CB"
+#red = "#D20F39"
+#white = "#ACB0BE"
+#yellow = "#DF8E1D"
+#
+#[schemes.latte.primary]
+#background = "#EFF1F5"
+#bright_foreground = "#4C4F69"
+#dim_foreground = "#4C4F69"
+#foreground = "#4C4F69"
+#
+#[schemes.latte.search.focused_match]
+#background = "#40A02B"
+#foreground = "#EFF1F5"
+#
+#[schemes.latte.search.footer_bar]
+#background = "#6C6F85"
+#foreground = "#EFF1F5"
+#
+#[schemes.latte.search.matches]
+#background = "#6C6F85"
+#foreground = "#EFF1F5"
+#
+#[schemes.latte.selection]
+#background = "#DC8A78"
+#text = "#EFF1F5"
+#
+#[schemes.latte.vi_mode_cursor]
+#cursor = "#7287FD"
+#text = "#EFF1F5"
+#
+#[[schemes.macchiato.indexed_colors]]
+#color = "#F5A97F"
+#index = 16
+#
+#[[schemes.macchiato.indexed_colors]]
+#color = "#F4DBD6"
+#index = 17
+#
+#[schemes.macchiato.bright]
+#black = "#5B6078"
+#blue = "#8AADF4"
+#cyan = "#8BD5CA"
+#green = "#A6DA95"
+#magenta = "#F5BDE6"
+#red = "#ED8796"
+#white = "#A5ADCB"
+#yellow = "#EED49F"
+#
+#[schemes.macchiato.cursor]
+#cursor = "#F4DBD6"
+#text = "#24273A"
+#
+#[schemes.macchiato.dim]
+#black = "#494D64"
+#blue = "#8AADF4"
+#cyan = "#8BD5CA"
+#green = "#A6DA95"
+#magenta = "#F5BDE6"
+#red = "#ED8796"
+#white = "#B8C0E0"
+#yellow = "#EED49F"
+#
+#[schemes.macchiato.hints.end]
+#background = "#A5ADCB"
+#foreground = "#24273A"
+#
+#[schemes.macchiato.hints.start]
+#background = "#EED49F"
+#foreground = "#24273A"
+#
+#[schemes.macchiato.normal]
+#black = "#494D64"
+#blue = "#8AADF4"
+#cyan = "#8BD5CA"
+#green = "#A6DA95"
+#magenta = "#F5BDE6"
+#red = "#ED8796"
+#white = "#B8C0E0"
+#yellow = "#EED49F"
+#
+#[schemes.macchiato.primary]
+#background = "#24273A"
+#bright_foreground = "#CAD3F5"
+#dim_foreground = "#CAD3F5"
+#foreground = "#CAD3F5"
+#
+#[schemes.macchiato.search.focused_match]
+#background = "#A6DA95"
+#foreground = "#24273A"
+#
+#[schemes.macchiato.search.footer_bar]
+#background = "#A5ADCB"
+#foreground = "#24273A"
+#
+#[schemes.macchiato.search.matches]
+#background = "#A5ADCB"
+#foreground = "#24273A"
+#
+#[schemes.macchiato.selection]
+#background = "#F4DBD6"
+#text = "#24273A"
+#
+#[schemes.macchiato.vi_mode_cursor]
+#cursor = "#B7BDF8"
+#text = "#24273A"
+#
+#[[schemes.mocha.indexed_colors]]
+#color = "#FAB387"
+#index = 16
+#
+#[[schemes.mocha.indexed_colors]]
+#color = "#F5E0DC"
+#index = 17
+#
+#[schemes.mocha.bright]
+#black = "#585B70"
+#blue = "#89B4FA"
+#cyan = "#94E2D5"
+#green = "#A6E3A1"
+#magenta = "#F5C2E7"
+#red = "#F38BA8"
+#white = "#A6ADC8"
+#yellow = "#F9E2AF"
+#
+#[schemes.mocha.cursor]
+#cursor = "#F5E0DC"
+#text = "#1E1E2E"
+#
+#[schemes.mocha.dim]
+#black = "#45475A"
+#blue = "#89B4FA"
+#cyan = "#94E2D5"
+#green = "#A6E3A1"
+#magenta = "#F5C2E7"
+#red = "#F38BA8"
+#white = "#BAC2DE"
+#yellow = "#F9E2AF"
+#
+#[schemes.mocha.hints.end]
+#background = "#A6ADC8"
+#foreground = "#1E1E2E"
+#
+#[schemes.mocha.hints.start]
+#background = "#F9E2AF"
+#foreground = "#1E1E2E"
+#
+#[schemes.mocha.normal]
+#black = "#45475A"
+#blue = "#89B4FA"
+#cyan = "#94E2D5"
+#green = "#A6E3A1"
+#magenta = "#F5C2E7"
+#red = "#F38BA8"
+#white = "#BAC2DE"
+#yellow = "#F9E2AF"
+#
+#[schemes.mocha.primary]
+#background = "#1E1E2E"
+#bright_foreground = "#CDD6F4"
+#dim_foreground = "#CDD6F4"
+#foreground = "#CDD6F4"
+#
+#[schemes.mocha.search.focused_match]
+#background = "#A6E3A1"
+#foreground = "#1E1E2E"
+#
+#[schemes.mocha.search.footer_bar]
+#background = "#A6ADC8"
+#foreground = "#1E1E2E"
+#
+#[schemes.mocha.search.matches]
+#background = "#A6ADC8"
+#foreground = "#1E1E2E"
+#
+#[schemes.mocha.selection]
+#background = "#F5E0DC"
+#text = "#1E1E2E"
+#
+#[schemes.mocha.vi_mode_cursor]
+#cursor = "#B4BEFE"
+#text = "#1E1E2E"
+#
+#[[schemes.nightfox.indexed_colors]]
+#color = "0xf4a261"
+#index = 16
+#
+#[[schemes.nightfox.indexed_colors]]
+#color = "0xd67ad2"
+#index = 17
+#
+#[schemes.nightfox.bright]
+#black = "0x575860"
+#blue = "0x86abdc"
+#cyan = "0x7ad4d6"
+#green = "0x8ebaa4"
+#magenta = "0xbaa1e2"
+#red = "0xd16983"
+#white = "0xe4e4e5"
+#yellow = "0xe0c989"
+#
+#[schemes.nightfox.normal]
+#black = "0x393b44"
+#blue = "0x719cd6"
+#cyan = "0x63cdcf"
+#green = "0x81b29a"
+#magenta = "0x9d79d6"
+#red = "0xc94f6d"
+#white = "0xdfdfe0"
+#yellow = "0xdbc074"
+#
+#[schemes.nightfox.primary]
+#background = "0x192330"
+#foreground = "0xcdcecf"
+#
+#[schemes.sonokai-andromeda.bright]
+#black = "0x7e8294"
+#blue = "0x6dcae8"
+#cyan = "0xf89860"
+#green = "0x9ed06c"
+#magenta = "0xbb97ee"
+#red = "0xfb617e"
+#white = "0xe1e3e4"
+#yellow = "0xedc763"
+#
+#[schemes.sonokai-andromeda.normal]
+#black = "0x181a1c"
+#blue = "0x6dcae8"
+#cyan = "0xf89860"
+#green = "0x9ed06c"
+#magenta = "0xbb97ee"
+#red = "0xfb617e"
+#white = "0xe1e3e4"
+#yellow = "0xedc763"
+#
+#[schemes.sonokai-andromeda.primary]
+#background = "0x2b2d3a"
+#foreground = "0xe1e3e4"
+#
+#[schemes.tokyo-night-storm.bright]
+#black = "0x444b6a"
+#blue = "0x7da6ff"
+#cyan = "0x0db9d7"
+#green = "0xb9f27c"
+#magenta = "0xbb9af7"
+#red = "0xff7a93"
+#white = "0xacb0d0"
+#yellow = "0xff9e64"
+#
+#[schemes.tokyo-night-storm.normal]
+#black = "0x32344a"
+#blue = "0x7aa2f7"
+#cyan = "0x449dab"
+#green = "0x9ece6a"
+#magenta = "0xad8ee6"
+#red = "0xf7768e"
+#white = "0x9699a8"
+#yellow = "0xe0af68"
+#
+#[schemes.tokyo-night-storm.primary]
+#background = "0x24283b"
+#foreground = "0xa9b1d6"
+
+[scrolling]
+#auto_scroll = false
+history = 10000
+multiplier = 3
+
+[selection]
+save_to_clipboard = false
+semantic_escape_chars = ",│`|:\"' ()[]{}<>"
+
+#[visual_bell]
+#animation = "EaseOutExpo"
+#color = "0xffffff"
+#duration = 0
+
+[window]
+decorations = "full"
+dynamic_padding = false
+startup_mode = "Windowed"
+
+[window.dimensions]
+columns = 0
+lines = 0
+
+[window.padding]
+x = 5
+y = 5
