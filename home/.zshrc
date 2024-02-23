@@ -72,6 +72,7 @@ plugins=(
   git
   zsh-autosuggestions
   zsh-syntax-highlighting
+  # zsh-vi-mode
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -206,10 +207,20 @@ export PATH=$PATH:$ANDROID_HOME/tools/bin
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
 
+# Add custom scripts
+export PATH=$PATH:~/scripts
+
 # Load in extra env that we don't want to store in Git
 if [ -f ~/.env ]; then
     . ~/.env
 fi
+
+# PNPM
+export PNPM_HOME="/home/rasmus/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm

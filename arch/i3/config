@@ -166,10 +166,10 @@ mode "resize" {
         # Pressing right will grow the window’s width.
         # Pressing up will shrink the window’s height.
         # Pressing down will grow the window’s height.
-        bindsym j resize shrink width 10 px or 10 ppt
+        bindsym h resize grow width 10 px or 10 ppt
+        bindsym l resize shrink width 10 px or 10 ppt
         bindsym k resize grow height 10 px or 10 ppt
-        bindsym l resize shrink height 10 px or 10 ppt
-        bindsym semicolon resize grow width 10 px or 10 ppt
+        bindsym j resize shrink height 10 px or 10 ppt
 
         # same bindings, but for the arrow keys
         bindsym Left resize shrink width 10 px or 10 ppt
@@ -180,10 +180,11 @@ mode "resize" {
         # back to normal: Enter or Escape or $mod+r
         bindsym Return mode "default"
         bindsym Escape mode "default"
+        bindsym q mode "default"
         bindsym $mod+r mode "default"
 }
 
-#bindsym $mod+r mode "resize"
+bindsym $mod+r mode "resize"
 
 # bind for screenshot all screens
 bindsym $mod+p exec "flameshot full -c -p ~/Pictures/flameshot"
@@ -218,6 +219,7 @@ for_window [class="^.*"] border pixel 0
 
 # set background
 set $bg_path $HOME/backgrounds/arch.png
+# set $bg_path $HOME/backgrounds/drawn-mountain.webp
 exec_always feh --bg-scale $bg_path
 
 # bind for locking screen
@@ -228,8 +230,8 @@ bindsym $mod+shift+x exec betterlockscreen --lock
 exec_always --no-startup-id $HOME/.config/polybar/forest/launch.sh
 
 # binds for monitor setup
-bindsym $mod+r exec "xrandr --output DP2 --primary --left-of eDP1 --output HDMI1 --left-of DP2"
-bindsym $mod+e exec "xrandr --output DP2 --primary --mode 2560x1440 --left-of eDP1"
+# bindsym $mod+r exec "xrandr --output DP2 --primary --left-of eDP1 --output HDMI1 --left-of DP2"
+# bindsym $mod+e exec "xrandr --output DP2 --primary --mode 2560x1440 --left-of eDP1"
 
 # manage audio
 bindsym $mod+m exec "pavucontrol"
