@@ -15,9 +15,7 @@
 
 [diff]
     colorMoved = default
-#[user]
-#  email = rasmus.reiler@lenus.io
-#  name = Rasmus
+
 [alias]
   d = diff
   s = status
@@ -35,5 +33,5 @@
 [pull]
   rebase = true
 [user]
-	email = rasmus.reiler@lenus.io
+	email = 562749+Evilbits@users.noreply.github.com
 	name = Rasmus Reiler
