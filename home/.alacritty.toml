@@ -102,7 +102,7 @@ TERM = "xterm-256color"
 WINIT_HIDPI_FACTOR = "1"
 
 [font]
-size = 8.0
+size = 11.0
 
 [font.bold]
 family = "CaskaydiaCove Nerd Font"
@@ -267,7 +267,7 @@ key = "Left"
 mods = "Control"
 
 [[keyboard.bindings]]
-chars = "\u001B[1;3D"
+chars = "\u001BB"
 key = "Left"
 mods = "Alt"
 
@@ -292,7 +292,7 @@ key = "Right"
 mods = "Control"
 
 [[keyboard.bindings]]
-chars = "\u001B[1;3C"
+chars = "\u001BF"
 key = "Right"
 mods = "Alt"
 

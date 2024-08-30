@@ -2,7 +2,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/home/rasmus/.oh-my-zsh"
+export ZSH="/Users/rasmusreiler/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -158,7 +158,7 @@ SPACESHIP_PROMPT_ORDER=(
 #ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=4'
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
 
-alias ls='ls --color=auto --group-directories-first'
+alias ls='ls --color=auto'
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
@@ -184,16 +184,17 @@ alias kubedd='kubectl describe deployment'
 alias kubeds='kubectl describe servier'
 alias kubedi='kubectl describe ingress'
 
-export EDITOR=vim
+export EDITOR=nvim
 
 # Source custom fzf widgets
-source /usr/share/doc/fzf/examples/key-bindings.zsh
+source /Users/rasmusreiler/.config/fzf/key-bindings.zsh
 fpath=($fpath "/home/rbr/.zfunctions")
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*" --glob "!node_modules/*"'
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 bindkey '^r' fzf-history-widget # CTRL-r - Search history
 bindkey '\ec' fzf-cd-widget     # ALT-c  - Deep cd using fzf
+bindkey -s '^b' "git branch | fzf --height=20% --reverse --info=inline | awk '{print $1}' | xargs git checkout^M"
 
 # Custom global NPM
 export PATH=~/.npm-global/bin:$PATH
@@ -222,6 +223,14 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 
+alias vim="nvim"
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+
+# Created by `pipx` on 2024-07-15 13:38:21
+export PATH="$PATH:/Users/rasmusreiler/.local/bin"
