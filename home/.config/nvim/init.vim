@@ -3,6 +3,7 @@ silent! if plug#begin('~/.vim/plugged')
 Plug 'nvim-lualine/lualine.nvim'        " Status bar
 Plug 'kyazdani42/nvim-web-devicons'     " Sweet icons
 Plug 'mhinz/vim-startify'               " Custome start screen
+Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
 
 " LSP support & syntax handling
 Plug 'neovim/nvim-lspconfig'            " LSP configuration
@@ -52,6 +53,7 @@ Plug 'folke/zen-mode.nvim'
 Plug 'folke/which-key.nvim'             " Vim keybind helper
 Plug 'norcalli/nvim-colorizer.lua'      " Color hex codes 
 Plug 'vim-scripts/LargeFile'            " Stop crashing when indexing large files
+Plug 'ThePrimeagen/harpoon'
 call plug#end()
 endif
 
@@ -123,7 +125,7 @@ autocmd BufEnter * if bufname('#') =~ 'NERD_tree_\d\+' && bufname('%') !~ 'NERD_
     \ let buf=bufnr() | buffer# | execute "normal! \<C-W>w" | execute 'buffer'.buf | endif
 " Fix for: https://github.com/preservim/nerdtree/issues/1321?ts=4
 let g:NERDTreeMinimalMenu=1
-let g:NERDTreeWinSize=70 " Increase width
+let g:NERDTreeWinSize=50 " Increase width
 
 " ====== Nerdtree config ======
 let g:startify_change_to_dir = 0          " Don't cd to dir when opening file

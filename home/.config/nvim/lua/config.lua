@@ -7,6 +7,8 @@ local on_attach = function(client, bufnr)
 end
 
 require'lspconfig'.tsserver.setup{}
+--require'lspconfig'.ruby_lsp.setup{}
+require'lspconfig'.solargraph.setup{}
 
 -- Plugins with configuration
 require('plugins.lsp_signature')
@@ -25,9 +27,9 @@ require("which-key").setup {} -- Keybind helper
 -- map buffer local keybindings when the language server attaches
 -- Add additional capabilities supported by nvim-cmp
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
-local servers = { 'tsserver', 'gopls', 'graphql' }
+local servers = { 'tsserver', 'gopls', 'graphql', 'solargraph', 'pyright' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -42,10 +44,6 @@ end
 vim.api.nvim_set_keymap('n', '<Leader>ff', '<cmd>lua require("telescope.builtin").find_files({hidden = true})<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>lua require("telescope.builtin").current_buffer_fuzzy_find()<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>fG', '<cmd>lua require("telescope.builtin").live_grep()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>fh', '<cmd>lua require("harpoon.ui").toggle_quick_menu()<CR>', {})
--- Harpoon
-vim.api.nvim_set_keymap('n', '<leader>h', '<cmd>lua require("harpoon.mark").add_file()<CR>', {}) -- <C-D> to delete marks
-vim.api.nvim_set_keymap('n', 'gh', '<cmd>lua require("harpoon.ui").nav_next()<CR>', {})
 -- LSP Keybinds
 vim.api.nvim_set_keymap('n', '<leader>gd', '<cmd>lua require("telescope.builtin").lsp_references()<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gD', '<cmd>lua require("telescope.builtin").lsp_definitions()<CR>', {})
@@ -101,12 +99,12 @@ return require('packer').startup(function()
  --   end
  -- }
 
-  use {
-    'numToStr/Comment.nvim',
-    config = function()
-        require('Comment').setup()
-    end
-  }
+  -- use {
+  --   'numToStr/Comment.nvim',
+  --   config = function()
+  --       require('Comment').setup()
+  --   end
+  -- }
 
   use {
     'ThePrimeagen/harpoon',
@@ -115,18 +113,22 @@ return require('packer').startup(function()
     end
   }
 
-  use({
-    {
-      'nvim-treesitter/nvim-treesitter',
-      event = 'CursorHold',
-      run = ':TSUpdate',
-      config = function()
-        require('plugins.treesitter')
-      end,
-    },
-    { 'windwp/nvim-ts-autotag', after = 'nvim-treesitter' },
-    { 'JoosepAlviste/nvim-ts-context-commentstring', after = 'nvim-treesitter' },
-  })
+  --use({
+  --  {
+  --    'nvim-treesitter/nvim-treesitter',
+  --    event = 'CursorHold',
+  --    run = ':TSUpdate',
+  --    --run = function()
+  --    --    local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
+  --    --    ts_update()
+  --    --end,
+  --    config = function()
+  --      require('plugins.treesitter')
+  --    end,
+  --  },
+  --  { 'windwp/nvim-ts-autotag', after = 'nvim-treesitter' },
+  --  { 'JoosepAlviste/nvim-ts-context-commentstring', after = 'nvim-treesitter' },
+  --})
 
   -- use({ 
   --   'nvim-treesitter/nvim-treesitter-context', 
