@@ -1,5 +1,5 @@
 # App commands
-cmd - 1  : open -a "Firefox"
+cmd - 1  : open -a "Firefox Nightly"
 cmd - 2  : open -a "Slack"
 cmd - 3  : open -a "Alacritty"
 
