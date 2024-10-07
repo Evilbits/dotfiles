@@ -6,10 +6,6 @@ local on_attach = function(client, bufnr)
   local opts = { noremap=true, silent=true }
 end
 
-require'lspconfig'.tsserver.setup{}
---require'lspconfig'.ruby_lsp.setup{}
-require'lspconfig'.solargraph.setup{}
-
 -- Plugins with configuration
 require('plugins.lsp_signature')
 require('plugins.lualine')
@@ -21,6 +17,16 @@ require('plugins.zenmode')
 require('trouble').setup {} -- Code diagnostics
 
 require("which-key").setup {} -- Keybind helper
+require("noice").setup({
+  lsp = {
+    signature = {
+      enabled = false
+    }
+  },
+  messages = {
+    enabled = false
+  }
+})
 
 ---- LSP final setup ----
 -- Use a loop to conveniently call 'setup' on multiple servers and
@@ -29,7 +35,7 @@ require("which-key").setup {} -- Keybind helper
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
-local servers = { 'tsserver', 'gopls', 'graphql', 'solargraph', 'pyright' }
+local servers = { 'pylsp', 'ts_ls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -39,6 +45,29 @@ for _, lsp in ipairs(servers) do
     }
   }
 end
+
+nvim_lsp.pylsp.setup {
+  settings = {
+      pylsp = {
+        plugins = {
+            -- formatter options
+            black = { enabled = true },
+            -- autopep8 = { enabled = false },
+            -- yapf = { enabled = false },
+            -- -- linter options
+            -- pylint = { enabled = true, executable = "pylint" },
+            -- pyflakes = { enabled = false },
+            -- pycodestyle = { enabled = false },
+            -- type checker
+            pylsp_mypy = { enabled = true },
+            -- auto-completion options
+            jedi_completion = { fuzzy = true },
+            -- -- import sorting
+            pyls_isort = { enabled = true },
+        },
+      },
+  },
+}
 
 -- Search keybinds
 vim.api.nvim_set_keymap('n', '<Leader>ff', '<cmd>lua require("telescope.builtin").find_files({hidden = true})<CR>', {})
@@ -73,38 +102,18 @@ end
 
 return require('packer').startup(function()
   use 'wbthomason/packer.nvim'
-
   use "nvim-lua/plenary.nvim"
 
- -- use {
- --   'ms-jpq/chadtree',
- --   run = ':CHADdeps',
- --   requires = { 'arcticicestudio/nord-dircolors' },
- --   config = function()
- --     vim.api.nvim_set_var("chadtree_settings", {
- --       ["keymap.change_dir"] = {  },
- --       ["keymap.change_focus"] = {  },
- --       ["keymap.change_focus_up"] = {  },
- --       ["keymap.refresh"] = { "<c-r>", "R" },
- --       ["keymap.primary"] = { "<enter>", "o" },
- --       ["keymap.h_split"] = { "go" },
- --       ["keymap.v_split"] = { "w" },
- --       ["keymap.open_sys"] = { "O" },
- --       ["view.width"] = 60,
- --       ["view.window_options"] = {
- --         ["number"] = true,
- --         ["relativenumber"] = true,
- --       },
- --     })
- --   end
- -- }
-
-  -- use {
-  --   'numToStr/Comment.nvim',
-  --   config = function()
-  --       require('Comment').setup()
-  --   end
-  -- }
+  use {
+    'rcarriga/nvim-notify',
+    config = function ()
+      require("notify").setup {
+        animate = false,
+        stages = 'static',
+      }
+      vim.notify = require('notify')
+    end
+  }
 
   use {
     'ThePrimeagen/harpoon',
@@ -113,29 +122,25 @@ return require('packer').startup(function()
     end
   }
 
-  --use({
-  --  {
-  --    'nvim-treesitter/nvim-treesitter',
-  --    event = 'CursorHold',
-  --    run = ':TSUpdate',
-  --    --run = function()
-  --    --    local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
-  --    --    ts_update()
-  --    --end,
-  --    config = function()
-  --      require('plugins.treesitter')
-  --    end,
-  --  },
-  --  { 'windwp/nvim-ts-autotag', after = 'nvim-treesitter' },
-  --  { 'JoosepAlviste/nvim-ts-context-commentstring', after = 'nvim-treesitter' },
-  --})
+  use {
+    'nvim-treesitter/nvim-treesitter',
+    event = 'CursorHold',
+    run = ':TSUpdate',
+    --run = function()
+    --    local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
+    --    ts_update()
+    --end,
+    config = function()
+      require('plugins.treesitter')
+    end
+  }
 
-  -- use({ 
-  --   'nvim-treesitter/nvim-treesitter-context', 
-  --   config = function()
-  --     require('plugins.treesitter_context')
-  --   end
-  -- })
+  use { 
+    'nvim-treesitter/nvim-treesitter-context', 
+    config = function()
+      require('plugins.treesitter_context')
+    end
+  }
 
 
   -- external config files

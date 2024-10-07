@@ -25,6 +25,10 @@ Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/vim-vsnip'
 
+" Sweet CLI and notifications
+Plug 'folke/noice.nvim'
+Plug 'MunifTanjim/nui.nvim'
+
 " Git
 Plug 'airblade/vim-gitgutter'           " Git status bar
 Plug 'rhysd/git-messenger.vim'

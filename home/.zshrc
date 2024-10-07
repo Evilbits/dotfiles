@@ -2,7 +2,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/rasmusreiler/.oh-my-zsh"
+export ZSH="/Users/rasmus.reiler/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -72,6 +72,7 @@ plugins=(
   git
   zsh-autosuggestions
   zsh-syntax-highlighting
+  poetry
   # zsh-vi-mode
 )
 
@@ -187,8 +188,7 @@ alias kubedi='kubectl describe ingress'
 export EDITOR=nvim
 
 # Source custom fzf widgets
-source /Users/rasmusreiler/.config/fzf/key-bindings.zsh
-fpath=($fpath "/home/rbr/.zfunctions")
+source /Users/rasmus.reiler/.config/fzf/key-bindings.zsh
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*" --glob "!node_modules/*"'
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
@@ -216,21 +216,21 @@ if [ -f ~/.env ]; then
     . ~/.env
 fi
 
-# PNPM
-export PNPM_HOME="/home/rasmus/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-
 alias vim="nvim"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
+# Pyenv
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
 
-# Created by `pipx` on 2024-07-15 13:38:21
-export PATH="$PATH:/Users/rasmusreiler/.local/bin"
+# Setup poetry
+export PATH="/Users/rasmus.reiler/.local/bin:$PATH"
+
+# Setup Oak CLI helper
+export OAK_ENV="$HOME/dev/oak"
+eval "$($OAK_ENV/bin/oak init -)"
+export PATH="/opt/homebrew/opt/node@20/bin:$PATH"
