@@ -2,3 +2,5 @@
 home/.config/nvim/tmp/swap/*
 home/.config/nvim/tmp/backup/*
 home/.config/nvim/tmp/undo/*
+home/.config/pip/*
+home/.config/configstore/*
