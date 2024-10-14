@@ -85,7 +85,6 @@ vim.api.nvim_set_keymap('n', '<C-s>', '<cmd>lua vim.lsp.buf.hover()<CR>', {})
 --vim.api.nvim_set_keymap('n', '<C-n>', ':CHADopen<CR>', {})
 -- Git keybinds
 vim.api.nvim_set_keymap('n', '<leader>gs', '<cmd>lua require("telescope.builtin").git_status()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>g', ':Magit<CR>', {})
 -- Treesitter keybinds
 vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua require("telescope.builtin").treesitter()<CR>', {})
 -- Other keybinds
@@ -117,6 +116,8 @@ return require('packer').startup(function()
 
   use {
     'ThePrimeagen/harpoon',
+    branch = "harpoon2",
+    requires = { {"nvim-lua/plenary.nvim"} },
     config = function()
         require('harpoon').setup()
     end
