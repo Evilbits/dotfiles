@@ -11,8 +11,6 @@ return {
     end
   },
   {'junegunn/fzf.vim'},
-  -- NerdTree icons
-  {'ryanoasis/vim-devicons'},
   -- Jump to words/chars
   {
     'easymotion/vim-easymotion',

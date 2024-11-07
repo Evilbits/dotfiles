@@ -20,6 +20,13 @@ return {
   },
   -- Keybind helper
   {'folke/which-key.nvim'},
+  {
+    'echasnovski/mini.ai', 
+    version = '*',
+    config = function()
+      require('mini.ai').setup()
+    end,
+  },
   -- Automatically color hex codes
   {'norcalli/nvim-colorizer.lua'},
   -- Stops crashing when indexing large files
