@@ -1,5 +1,6 @@
 return {
   'scrooloose/nerdtree',
+  dependencies = {'ryanoasis/vim-devicons'},
   config = function()
     vim.cmd([[
       " ====== Nerdtree config ======
@@ -16,6 +17,14 @@ return {
       
       " ====== Nerdtree config ======
       let g:startify_change_to_dir = 0          " Don't cd to dir when opening file
+      let g:WebDevIconsNerdTreeBeforeGlyphPadding = ''
+      let g:WebDevIconsUnicodeDecorateFolderNodes = v:true
+
+      " Get rid of [] around icons
+      syntax enable
+      if exists("g:loaded_webdevicons")
+      	call webdevicons#refresh()
+      endif
     ]])
   end
 }

@@ -46,9 +46,7 @@ vim.api.nvim_set_keymap('n', '<leader>gc', ':Trouble document_diagnostics<CR>', 
 vim.api.nvim_set_keymap('n', '<leader>gv', ':Trouble quickfix<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gi', '<cmd>lua require("telescope.builtin").lsp_implementations()<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gt', '<cmd>lua require("telescope.builtin").lsp_type_definitions()<CR>', {})
-vim.api.nvim_set_keymap('n', '<C-s>', '<cmd>lua vim.lsp.buf.hover()<CR>', {})
--- CHADtree
---vim.api.nvim_set_keymap('n', '<C-n>', ':CHADopen<CR>', {})
+vim.keymap.set("n", "<C-x>", vim.lsp.buf.hover, {})
 -- Git keybinds
 vim.api.nvim_set_keymap('n', '<leader>gs', '<cmd>lua require("telescope.builtin").git_status()<CR>', {})
 -- Treesitter keybinds
@@ -61,6 +59,7 @@ vim.keymap.set({'n', 'v'}, '<C-s>r', ':PrtChatResponde<CR>', {})
 vim.keymap.set({'v'}, '<C-s>ac', ':PrtComplete<CR>', {})
 vim.keymap.set({'v'}, '<C-s>aC', ':PrtCompleteFullContext<CR>', {})
 vim.keymap.set({'v'}, '<C-s>ab', ':PrtFixBugs<CR>', {})
+vim.keymap.set({'v'}, '<C-s>ar', ':PrtFixRewrite<CR>', {})
 vim.keymap.set({'v'}, '<C-s>e', ':PrtExplain<CR>', {})
 -- Other keybinds
 vim.api.nvim_set_keymap('n', '<leader>gb', ':GitMessenger<CR>', {})

@@ -2,11 +2,14 @@ return {
   {
     'nvim-telescope/telescope.nvim',
     dependencies = {
-      "nvim-telescope/telescope-fzf-native.nvim",
-      build = "make",
-      config = function()
-        require("telescope").load_extension("fzf")
-      end,
+      {
+        "nvim-telescope/telescope-fzf-native.nvim",
+        build = "make",
+        config = function()
+          require("telescope").load_extension("fzf")
+        end,
+      },
+      {'sharkdp/fd'}
     },
     config = function()
       require('telescope').setup {
@@ -18,10 +21,11 @@ return {
              "rg",
              "--color=never",
              "--no-heading",
+             "--hidden",
              "--with-filename",
              "--line-number",
              "--column",
-             "--smart-case",
+             "--ignore-case",
           },
           prompt_prefix = "   ",
           selection_caret = "  ",

@@ -2,13 +2,3 @@
 cmd - 1  : open -a "Firefox Nightly"
 cmd - 2  : open -a "Slack"
 cmd - 3  : open -a "Alacritty"
-
-#cmd - Enter  : open -a "Alacritty"
-
-## open Lenus only local notes
-#cmd + shift - 9  : open -u 'obsidian://open?vault=lenus'
-#cmd + shift - 0  : open -u 'obsidian://open?vault=obs-work'
-
-
-## open Simulator
-#cmd + shift - 0x2F  : open -a "Simulator"
