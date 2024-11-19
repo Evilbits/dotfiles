@@ -1,9 +1,10 @@
 # Ignore vim tmp files created after symlinking
+home/.config/*
+
+!home/.config/nvim
 home/.config/nvim/tmp/swap/*
 home/.config/nvim/tmp/backup/*
 home/.config/nvim/tmp/undo/*
-home/.config/pip/*
-home/.config/raycast
-home/.config/htop
-home/.config/configstore/*
 home/.config/nvim/plugin/packer_compiled.lua
+
+!home/.config/fzf
