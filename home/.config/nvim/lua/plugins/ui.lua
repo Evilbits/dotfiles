@@ -26,26 +26,18 @@ return {
         },
         -- Display popup menu right below cmdline for nicer UI when autocompleting
         views = {
-          cmdline_popup = {
-            position = {
-              row = "50%",
-              col = "50%",
-            },
-            size = {
-              width = 60,
-              height = "auto",
-            },
-          },
+          --cmdline_popup = {
+          --  position = {
+          --    row = "50%",
+          --    col = "50%",
+          --  },
+          --},
           popupmenu = {
             relative = "editor",
-            position = {
-              row = "60%",
-              col = "50%",
-            },
-            size = {
-              width = 60,
-              height = 10,
-            },
+            --position = {
+            --  row = "60%",
+            --  col = "50%",
+            --},
             border = {
               style = "rounded",
               padding = { 0, 1 },
