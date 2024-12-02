@@ -1,6 +1,6 @@
 {
   "Comment.nvim": { "branch": "master", "commit": "e30b7f2008e52442154b66f7c519bfd2f1e32acb" },
-  "CopilotChat.nvim": { "branch": "canary", "commit": "451d365928a994cda3505a84905303f790e28df8" },
+  "CopilotChat.nvim": { "branch": "main", "commit": "4c60726a58ef4d744c150d13ffef186d00edf4ed" },
   "LargeFile": { "branch": "master", "commit": "3941a37b2b0288524300348a39521a46539bf9f6" },
   "ale": { "branch": "master", "commit": "65b49c1b8172d0ab1b08ffe8fdcabb93fc1328df" },
   "blink.cmp": { "branch": "main", "commit": "12d9ecd98055423fa76dfcf05b856967129b8847" },
