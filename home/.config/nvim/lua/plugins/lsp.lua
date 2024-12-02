@@ -1,53 +1,61 @@
 return {
   -- LSP installer
-  {'williamboman/nvim-lsp-installer'},
+  {
+    "williamboman/mason.nvim",
+    config = function()
+      require("mason").setup()
+    end,
+  },
   {
     "rachartier/tiny-inline-diagnostic.nvim",
-    event = "VeryLazy", -- Or `LspAttach`
+    event = "BufEnter", -- Or `LspAttach`
     priority = 1000, -- needs to be loaded in first
     config = function()
-      vim.diagnostic.config({ virtual_text = false })
       require('tiny-inline-diagnostic').setup({
         options = {
+          show_source = true,
           -- If multiple diagnostics are under the cursor, display all of them.
 		      multiple_diag_under_cursor = true,
           -- Enable diagnostic message on all lines.
           multilines = true,
         }
       })
-      vim.diagnostic.config({ virtual_text = false })
+      vim.diagnostic.config({ virtual_text = false, update_in_insert = true })
     end
   },
   -- lspconfig
   {
     "neovim/nvim-lspconfig",
     dependencies = { 'saghen/blink.cmp', 'ray-x/lsp_signature.nvim' },
-    opts = { diagnostics = { virtual_text = false } },
+    opts = {
+      diagnostics = {
+        virtual_text = false,
+        update_in_insert = true,
+      },
+    },
     config = function(_, _)
       local lspconfig = require('lspconfig')
-      local servers = { 'pylsp', 'ts_ls', 'lua_ls', 'terraformls' }
+      --local servers = { 'pylsp', 'ts_ls', 'lua_ls', 'terraformls' }
+      local capabilities = require('blink.cmp').get_lsp_capabilities()
 
-      local on_attach = function(client, bufnr)
+      local on_attach = function(_, bufnr)
         require "lsp_signature".on_attach({
           hint = true
         }, bufnr)
-        -- Add any attach functionality here
-        local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-        local opts = { noremap=true, silent=true }
+        vim.diagnostic.config({ virtual_text = false, update_in_insert = true })
       end
 
-      for _, config in pairs(servers) do
-        capabilities = require('blink.cmp').get_lsp_capabilities(config.capabilities)
-        lspconfig[config].setup {
-          on_attach = on_attach,
-          capabilities = capabilities,
-          --flags = {
-          --  debounce_text_changes = 150,
-          --}
-        }
-      end
+      lspconfig.terraformls.setup {
+        on_attach = on_attach,
+        capabilities = capabilities,
+      }
+      lspconfig.ts_ls.setup {
+        on_attach = on_attach,
+        capabilities = capabilities,
+      }
 
       lspconfig.pylsp.setup {
+        on_attach = on_attach,
         settings = {
           pylsp = {
             plugins = {
@@ -55,8 +63,10 @@ return {
               black = { enabled = true },
               -- type checker
               pylsp_mypy = { enabled = true },
+              -- Linter
+              pyflakes = { enabled = true },
               -- auto-completion options
-              jedi_completion = { fuzzy = true },
+              -- jedi_completion = { fuzzy = true },
               -- -- import sorting
               pyls_isort = { enabled = true },
             },
@@ -73,7 +83,6 @@ return {
               return
             end
           end
-      
           client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
             runtime = {
               -- Tell the language server which version of Lua you're using

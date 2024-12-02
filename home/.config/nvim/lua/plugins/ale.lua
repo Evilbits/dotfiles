@@ -1,5 +1,6 @@
 return {
   'w0rp/ale',
+  enabled = false,
   config = function()
     vim.cmd([[
       " ====== Ale config ======
