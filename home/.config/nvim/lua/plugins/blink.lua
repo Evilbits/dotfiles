@@ -28,8 +28,16 @@ return {
     windows = {
       autocomplete = {
         selection = "auto_insert",
-        draw = "reversed",
-        border = "single", 
+        draw = {
+          components = {
+            label_description = {
+              width = { max = 80 },
+              text = function(ctx) return ctx.label_description end,
+              highlight = 'BlinkCmpLabelDescription',
+            },
+          },
+        },
+        border = "single",
         min_width = 20,
         max_height = 15,
       },
