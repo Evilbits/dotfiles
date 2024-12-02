@@ -1,10 +1,28 @@
 return {
   -- LSP installer
   {'williamboman/nvim-lsp-installer'},
+  {
+    "rachartier/tiny-inline-diagnostic.nvim",
+    event = "VeryLazy", -- Or `LspAttach`
+    priority = 1000, -- needs to be loaded in first
+    config = function()
+      vim.diagnostic.config({ virtual_text = false })
+      require('tiny-inline-diagnostic').setup({
+        options = {
+          -- If multiple diagnostics are under the cursor, display all of them.
+		      multiple_diag_under_cursor = true,
+          -- Enable diagnostic message on all lines.
+          multilines = true,
+        }
+      })
+      vim.diagnostic.config({ virtual_text = false })
+    end
+  },
   -- lspconfig
   {
     "neovim/nvim-lspconfig",
     dependencies = { 'saghen/blink.cmp', 'ray-x/lsp_signature.nvim' },
+    opts = { diagnostics = { virtual_text = false } },
     config = function(_, _)
       local lspconfig = require('lspconfig')
       local servers = { 'pylsp', 'ts_ls', 'lua_ls', 'terraformls' }
