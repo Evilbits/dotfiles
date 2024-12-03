@@ -23,10 +23,42 @@ return {
       vim.diagnostic.config({ virtual_text = false, update_in_insert = true })
     end
   },
+  -- Auto format on save
+  {
+    'stevearc/conform.nvim',
+    config = function ()
+      require("conform").setup({
+        formatters_by_ft = {
+            -- Conform will run multiple formatters sequentially
+            python = { "isort", "ruff_format" },
+            -- Conform will run the first available formatter
+            javascript = { "prettierd", "prettier", stop_after_first = true },
+          },
+        format_on_save = {
+          -- These options will be passed to conform.format()
+          timeout_ms = 500,
+          lsp_format = "fallback",
+        },
+      })
+    end,
+  },
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = { 'williamboman/mason.nvim' },
+    config = function()
+      require("mason-lspconfig").setup({
+        ensure_installed = { "lua_ls", "pylsp", "ts_ls", "terraformls" },
+      })
+    end,
+  },
   -- lspconfig
   {
     "neovim/nvim-lspconfig",
-    dependencies = { 'saghen/blink.cmp', 'ray-x/lsp_signature.nvim' },
+    dependencies = {
+      'saghen/blink.cmp',
+      'ray-x/lsp_signature.nvim',
+      "williamboman/mason-lspconfig.nvim",
+    },
     opts = {
       diagnostics = {
         virtual_text = false,
@@ -62,12 +94,19 @@ return {
               -- formatter options
               black = { enabled = true },
               -- type checker
-              pylsp_mypy = { enabled = true },
+              pylsp_mypy = {
+                enabled = true,
+              },
               -- Linter
-              pyflakes = { enabled = true },
-              -- auto-completion options
-              -- jedi_completion = { fuzzy = true },
-              -- -- import sorting
+              pylint = {
+                enabled = true,
+                executable = "pylint",
+                -- Disable specific errors (E0401: Unable to import)
+                args = {'--disable=E0401'}
+              },
+              pyflakes = { enabled = false },
+              pycodestyle = { enabled = false },
+              -- import sorting
               pyls_isort = { enabled = true },
             },
           },
