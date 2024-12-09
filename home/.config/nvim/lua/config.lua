@@ -6,7 +6,7 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
   if vim.v.shell_error ~= 0 then
     vim.api.nvim_echo({
       { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-      { out, "WarningMsg" },
+      { out,                            "WarningMsg" },
       { "\nPress any key to exit..." },
     }, true, {})
     vim.fn.getchar()
@@ -41,7 +41,7 @@ vim.api.nvim_set_keymap('n', '<leader>fG', '<cmd>lua require("telescope.builtin"
 vim.api.nvim_set_keymap('n', '<leader>fb', ':Buffers<CR>', {})
 -- LSP Keybinds
 vim.api.nvim_set_keymap('n', '<leader>gd', '<cmd>lua require("telescope.builtin").lsp_references()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>gD', '<cmd>lua require("telescope.builtin").lsp_definitions()<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>gD', '<cmd>vsplit | lua require("telescope.builtin").lsp_definitions()<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gc', ':Trouble document_diagnostics<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gv', ':Trouble quickfix<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gi', '<cmd>lua require("telescope.builtin").lsp_implementations()<CR>', {})
@@ -62,12 +62,12 @@ vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua require("telescope.builtin")
 --vim.keymap.set({'v'}, '<C-s>ab', ':PrtFixBugs<CR>', {})
 --vim.keymap.set({'v'}, '<C-s>ar', ':PrtFixRewrite<CR>', {})
 --vim.keymap.set({'v'}, '<C-s>e', ':PrtExplain<CR>', {})
-vim.keymap.set({'n'}, '<C-s>g', ':CopilotChatCommit<CR>', {})
-vim.keymap.set({'n', 'v'}, '<C-s>c', ':CopilotChatToggle<CR>', {})
-vim.keymap.set({'v'}, '<C-s>ac', ':CopilotChatComplete<CR>', {})
-vim.keymap.set({'v'}, '<C-s>ao', ':CopilotChatOptimize<CR>', {})
-vim.keymap.set({'v'}, '<C-s>af', ':CopilotChatFix<CR>', {})
-vim.keymap.set({'v'}, '<C-s>e', ':CopilotChatExplain<CR>', {})
+vim.keymap.set({ 'n' }, '<C-s>g', ':CopilotChatCommit<CR>', {})
+vim.keymap.set({ 'n', 'v' }, '<C-s>c', ':CopilotChatToggle<CR>', {})
+vim.keymap.set({ 'v' }, '<C-s>ac', ':CopilotChatComplete<CR>', {})
+vim.keymap.set({ 'v' }, '<C-s>ao', ':CopilotChatOptimize<CR>', {})
+vim.keymap.set({ 'v' }, '<C-s>af', ':CopilotChatFix<CR>', {})
+vim.keymap.set({ 'v' }, '<C-s>e', ':CopilotChatExplain<CR>', {})
 -- Other keybinds
 vim.api.nvim_set_keymap('n', '<leader>gb', ':GitMessenger<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gB', ':Git blame<CR>', {})
@@ -89,11 +89,11 @@ vim.cmd([[
   set scrolljump=5                          " Change default amount of lines scrolled
   set termguicolors                         " Rich colors
   set cursorline                            " Highlight current line
-  set mouse=                                " Disable mouse 
+  set mouse=                                " Disable mouse
   filetype on                               " Enable file type detection
   filetype plugin indent on                 " Enable loading the plugin files for specific file types
   set clipboard=unnamed " Copy to global clipboard
-  
+
   " Tabs
   set tabstop=2                             " The width of a TAB is set to 2.
   set shiftwidth=2                          " Indents will have a width of 2.
@@ -102,17 +102,17 @@ vim.cmd([[
   "set number                                " Enable gutter line numbers
   set softtabstop=0
   set autoindent
-  
+
   " ====== Theme ======
   if (has("termguicolors"))
     let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
     let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
   endif
-  
+
   " ====== Key remapping ======
   nnoremap <SPACE> <Nop>
   nmap <space> <leader>
 ]])
 
 vim.g.catppuccin_flavour = "macchiato"
-vim.cmd[[colorscheme catppuccin]]
+vim.cmd [[colorscheme catppuccin]]
