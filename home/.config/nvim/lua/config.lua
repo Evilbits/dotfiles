@@ -41,7 +41,9 @@ vim.api.nvim_set_keymap('n', '<leader>fG', '<cmd>lua require("telescope.builtin"
 vim.api.nvim_set_keymap('n', '<leader>fb', ':Buffers<CR>', {})
 -- LSP Keybinds
 vim.api.nvim_set_keymap('n', '<leader>gd', '<cmd>lua require("telescope.builtin").lsp_references()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>gD', '<cmd>vsplit | lua require("telescope.builtin").lsp_definitions()<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>gDd', '<cmd>vsplit | lua require("telescope.builtin").lsp_definitions()<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>gDh', '<cmd>split | lua require("telescope.builtin").lsp_definitions()<CR>', {})
+vim.api.nvim_set_keymap('n', '<leader>gDD', '<cmd>lua require("telescope.builtin").lsp_definitions()<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gc', ':Trouble document_diagnostics<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gv', ':Trouble quickfix<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gi', '<cmd>lua require("telescope.builtin").lsp_implementations()<CR>', {})

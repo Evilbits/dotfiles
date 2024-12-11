@@ -14,47 +14,44 @@ return {
     -- 'enter' for mappings similar to 'super-tab' but with 'enter' to accept
     -- see the "default configuration" section below for full documentation on how to define
     -- your own keymap.
-    keymap = { 
-      preset = 'default',
+    keymap = {
+      preset    = 'default',
       ['<C-k>'] = { 'select_prev', 'fallback' },
       ['<C-j>'] = { 'select_next', 'fallback' },
       ['<CR>']  = { 'select_and_accept', 'fallback' },
     },
-    accept = {
-      auto_brackets = {
-        enabled = true,
+    completion = {
+      accept = {
+        auto_brackets = {
+          enabled = true,
+        },
       },
-    },
-    windows = {
-      autocomplete = {
-        selection = "auto_insert",
+      list = {
+        --selection = 'auto_insert'
+        selection = 'preselect'
+      },
+      menu = {
+        border = 'single',
         draw = {
+          treesitter = true,
           components = {
             label_description = {
-              width = { max = 80 },
+              width = { min = 20, max = 20 },
               text = function(ctx) return ctx.label_description end,
               highlight = 'BlinkCmpLabelDescription',
             },
           },
         },
-        border = "single",
-        min_width = 20,
-        max_height = 15,
       },
       documentation = {
         auto_show = true,
-        border = "single",
+        window = {
+          border = 'single',
+        },
       },
     },
-
-    highlight = {
-      -- sets the fallback highlight groups to nvim-cmp's highlight groups
-      -- useful for when your theme doesn't support blink.cmp
-      -- will be removed in a future release, assuming themes add support
-      use_nvim_cmp_as_default = true,
-    },
-    -- set to 'mono' for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
-    -- adjusts spacing to ensure icons are aligned
-    nerd_font_variant = 'mono',
+  },
+  signature = {
+    enabled = true
   }
 }
