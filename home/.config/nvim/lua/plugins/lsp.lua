@@ -9,13 +9,13 @@ return {
   {
     "rachartier/tiny-inline-diagnostic.nvim",
     event = "BufEnter", -- Or `LspAttach`
-    priority = 1000, -- needs to be loaded in first
+    priority = 1000,    -- needs to be loaded in first
     config = function()
       require('tiny-inline-diagnostic').setup({
         options = {
           show_source = true,
           -- If multiple diagnostics are under the cursor, display all of them.
-		      multiple_diag_under_cursor = true,
+          multiple_diag_under_cursor = true,
           -- Enable diagnostic message on all lines.
           multilines = true,
         }
@@ -26,14 +26,14 @@ return {
   -- Auto format on save
   {
     'stevearc/conform.nvim',
-    config = function ()
+    config = function()
       require("conform").setup({
         formatters_by_ft = {
-            -- Conform will run multiple formatters sequentially
-            python = { "isort", "ruff_format" },
-            -- Conform will run the first available formatter
-            javascript = { "prettierd", "prettier", stop_after_first = true },
-          },
+          -- Conform will run multiple formatters sequentially
+          python = { "isort", "ruff_format" },
+          -- Conform will run the first available formatter
+          javascript = { "prettierd", "prettier", stop_after_first = true },
+        },
         format_on_save = {
           -- These options will be passed to conform.format()
           timeout_ms = 500,
@@ -70,7 +70,21 @@ return {
       --local servers = { 'pylsp', 'ts_ls', 'lua_ls', 'terraformls' }
       local capabilities = require('blink.cmp').get_lsp_capabilities()
 
-      local on_attach = function(_, bufnr)
+      local on_attach = function(client, bufnr)
+        -- if client.supports_method("textDocument/formatting") then
+        --   local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
+        --   vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
+        --   vim.api.nvim_create_autocmd(
+        --     "BufWritePre",
+        --     {
+        --       group = augroup,
+        --       buffer = bufnr,
+        --       callback = function()
+        --         vim.lsp.buf.format({ async = false })
+        --       end,
+        --     }
+        --   )
+        -- end
         require "lsp_signature".on_attach({
           hint = true
         }, bufnr)
@@ -98,11 +112,17 @@ return {
                 enabled = true,
               },
               -- Linter
-              pylint = {
+              ruff = {
                 enabled = true,
+                -- formatEnabled = true,
+                -- format = { "I" },
+                executable = "ruff",
+              },
+              pylint = {
+                enabled = false,
                 executable = "pylint",
                 -- Disable specific errors (E0401: Unable to import)
-                args = {'--disable=E0401'}
+                args = { '--disable=E0401' }
               },
               pyflakes = { enabled = false },
               pycodestyle = { enabled = false },
@@ -113,12 +133,12 @@ return {
         },
       }
 
-      -- Setup LSP for Nvim Lua 
+      -- Setup LSP for Nvim Lua
       lspconfig.lua_ls.setup {
         on_init = function(client)
           if client.workspace_folders then
             local path = client.workspace_folders[1].name
-            if vim.uv.fs_stat(path..'/.luarc.json') or vim.uv.fs_stat(path..'/.luarc.jsonc') then
+            if vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc') then
               return
             end
           end
