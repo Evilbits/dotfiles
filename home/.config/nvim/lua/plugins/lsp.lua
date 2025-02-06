@@ -30,13 +30,17 @@ return {
       require("conform").setup({
         formatters_by_ft = {
           -- Conform will run multiple formatters sequentially
-          python = { "isort", "ruff_format" },
+          python = { "ruff_fix", "ruff_format" }, -- { "isort", }
           -- Conform will run the first available formatter
-          javascript = { "prettierd", "prettier", stop_after_first = true },
+          -- javascript = { "prettierd", "prettier", stop_after_first = true },
+          javascript = { "prettierd", "prettier" },
+          typescript = { "prettierd", "prettier" },
+          javascriptreact = { "prettierd", "prettier" },
+          typescriptreact = { "prettierd", "prettier" },
         },
         format_on_save = {
           -- These options will be passed to conform.format()
-          timeout_ms = 500,
+          timeout_ms = 1000,
           lsp_format = "fallback",
         },
       })
@@ -47,7 +51,7 @@ return {
     dependencies = { 'williamboman/mason.nvim' },
     config = function()
       require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "pylsp", "ts_ls", "terraformls" },
+        ensure_installed = { "lua_ls", "pylsp", "ts_ls", "terraformls", "eslint" },
       })
     end,
   },
@@ -98,6 +102,23 @@ return {
       lspconfig.ts_ls.setup {
         on_attach = on_attach,
         capabilities = capabilities,
+      }
+      lspconfig.eslint.setup {
+        capabilities = capabilities,
+        settings = {
+          -- helps eslint find the eslintrc when it's placed in a subfolder
+          workingDirectory = { mode = "auto" },
+        },
+        -- Run ESLint when you save the file
+        on_attach = function(client, bufnr)
+          vim.api.nvim_create_autocmd("BufWritePre", {
+            buffer = bufnr,
+            command = "EslintFixAll",
+          })
+
+          -- Call your existing on_attach if you have one
+          on_attach(client, bufnr)
+        end,
       }
 
       lspconfig.pylsp.setup {
