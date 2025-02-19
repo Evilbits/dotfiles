@@ -54,21 +54,13 @@ vim.api.nvim_set_keymap('n', '<leader>gs', '<cmd>lua require("telescope.builtin"
 vim.api.nvim_set_keymap('n', '<leader>d', ':GitGutterDiffOrig<CR>', {})
 -- Treesitter keybinds
 vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua require("telescope.builtin").treesitter()<CR>', {})
--- Parrot keybinds
---vim.keymap.set({'n'}, '<C-s>g', ':PrtCommitMsg<CR>', {})
---vim.keymap.set({'n', 'v'}, '<C-s>c', ':PrtChatToggle<CR>', {})
---vim.keymap.set({'n', 'v'}, '<C-s>C', ':PrtChatNew<CR>', {})
---vim.keymap.set({'n', 'v'}, '<C-s>r', ':PrtChatResponde<CR>', {})
---vim.keymap.set({'v'}, '<C-s>ac', ':PrtComplete<CR>', {})
---vim.keymap.set({'v'}, '<C-s>aC', ':PrtCompleteFullContext<CR>', {})
---vim.keymap.set({'v'}, '<C-s>ab', ':PrtFixBugs<CR>', {})
---vim.keymap.set({'v'}, '<C-s>ar', ':PrtFixRewrite<CR>', {})
---vim.keymap.set({'v'}, '<C-s>e', ':PrtExplain<CR>', {})
+-- CopilotChat keybinds
 vim.keymap.set({ 'n' }, '<C-s>g', ':CopilotChatCommit<CR>', {})
 vim.keymap.set({ 'n', 'v' }, '<C-s>c', ':CopilotChatToggle<CR>', {})
 vim.keymap.set({ 'v' }, '<C-s>ac', ':CopilotChatComplete<CR>', {})
 vim.keymap.set({ 'v' }, '<C-s>ao', ':CopilotChatOptimize<CR>', {})
 vim.keymap.set({ 'v' }, '<C-s>af', ':CopilotChatFix<CR>', {})
+vim.keymap.set({ 'v' }, '<C-s>at', ':CopilotChatTests<CR>', {})
 vim.keymap.set({ 'v' }, '<C-s>e', ':CopilotChatExplain<CR>', {})
 -- Other keybinds
 vim.api.nvim_set_keymap('n', '<leader>gb', ':GitMessenger<CR>', {})
