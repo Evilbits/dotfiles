@@ -20,15 +20,20 @@ return {
     "CopilotC-Nvim/CopilotChat.nvim",
     dependencies = {
       { "zbirenbaum/copilot.lua" }, -- or github/copilot.vim
-      { "nvim-lua/plenary.nvim" }, -- for curl, log wrapper
+      { "nvim-lua/plenary.nvim" },  -- for curl, log wrapper
     },
-    build = "make tiktoken", -- Only on MacOS or Linux
+    build = "make tiktoken",        -- Only on MacOS or Linux
     branch = "main",
     opts = {
       debug = true, -- Enable debugging
       model = "claude-3.5-sonnet",
       -- See Configuration section for rest
       prompts = {},
+      mappings = {
+        complete = {
+          insert = '<C-s>',
+        }
+      }
     },
     config = function(_, opts)
       local chat = require("CopilotChat")
@@ -38,7 +43,7 @@ return {
           Your task is to take the code snippet and explain it with gradually increasing complexity.
           Break down the code's functionality, purpose, and key components.
           The goal is to help the reader understand what the code does and how it works.
-      
+
           Use the markdown format with codeblocks and inline code.
         ]],
       }
@@ -56,7 +61,7 @@ return {
       opts.prompts.Complete = {
         prompt = [[/COPILOT_GENERATE
           I have the following code.
-    
+
           Please finish the code above carefully and logically.
           Respond just with the snippet of code that should be inserted.
         ]],
@@ -89,10 +94,10 @@ return {
 
       -- Merge default prompts with custom prompts
       local function mergeTables(t1, t2)
-          for k, v in pairs(t2) do
-              t1[k] = v
-          end
-          return t1
+        for k, v in pairs(t2) do
+          t1[k] = v
+        end
+        return t1
       end
       opts.prompts = mergeTables(opts.prompts, prompts)
       chat.setup(opts)
