@@ -57,6 +57,9 @@ vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua require("telescope.builtin")
 -- CopilotChat keybinds
 vim.keymap.set({ 'n' }, '<C-s>g', ':CopilotChatCommit<CR>', {})
 vim.keymap.set({ 'n', 'v' }, '<C-s>c', ':CopilotChatToggle<CR>', {})
+vim.keymap.set({ 'v' }, '<C-s>aa',
+  ":lua require('CopilotChat.integrations.telescope').pick(require('CopilotChat.actions').prompt_actions({selection = require('CopilotChat.select').visual}))<CR>",
+  {}) -- Opens up a Telescope buffer for the current selection and can execute commands on it
 vim.keymap.set({ 'v' }, '<C-s>ac', ':CopilotChatComplete<CR>', {})
 vim.keymap.set({ 'v' }, '<C-s>ao', ':CopilotChatOptimize<CR>', {})
 vim.keymap.set({ 'v' }, '<C-s>af', ':CopilotChatFix<CR>', {})
