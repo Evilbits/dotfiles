@@ -1,17 +1,17 @@
 return {
   -- Automatically close brackets
-  {'raimondi/delimitmate'},             
+  { 'raimondi/delimitmate' },
   -- Smooth scrolling
-  {'psliwka/vim-smoothie'},
+  { 'psliwka/vim-smoothie', enabled = false },
   -- Adds a symbol at line indents
-  {'yggdroot/indentline'},
+  { 'yggdroot/indentline' },
   -- Smarter surrounding of words
-  {'tpope/vim-surround'},
+  { 'tpope/vim-surround' },
   -- JS code formatter
   {
     'prettier/vim-prettier',
     build = 'yarn install --frozen-lockfile --production'
-  }, 
+  },
   {
     "iamcco/markdown-preview.nvim",
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
@@ -19,16 +19,16 @@ return {
     build = function() vim.fn["mkdp#util#install"]() end,
   },
   -- Keybind helper
-  {'folke/which-key.nvim'},
+  { 'folke/which-key.nvim' },
   {
-    'echasnovski/mini.ai', 
+    'echasnovski/mini.ai',
     version = '*',
     config = function()
       require('mini.ai').setup()
     end,
   },
   -- Automatically color hex codes
-  {'norcalli/nvim-colorizer.lua'},
+  { 'norcalli/nvim-colorizer.lua' },
   -- Stops crashing when indexing large files
-  {'vim-scripts/LargeFile'},
+  { 'vim-scripts/LargeFile' },
 }

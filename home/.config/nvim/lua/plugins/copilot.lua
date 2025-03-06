@@ -19,14 +19,14 @@ return {
   {
     "CopilotC-Nvim/CopilotChat.nvim",
     dependencies = {
-      { "zbirenbaum/copilot.lua" }, -- or github/copilot.vim
-      { "nvim-lua/plenary.nvim" },  -- for curl, log wrapper
+      { "github/copilot.vim" },    -- or zbirenbaum/copilot.lua
+      { "nvim-lua/plenary.nvim" }, -- for curl, log wrapper
     },
-    build = "make tiktoken",        -- Only on MacOS or Linux
+    build = "make tiktoken",       -- Only on MacOS or Linux
     branch = "main",
     opts = {
       debug = true, -- Enable debugging
-      model = "claude-3.5-sonnet",
+      model = "claude-3.7-sonnet-thought",
       -- See Configuration section for rest
       prompts = {},
       mappings = {
