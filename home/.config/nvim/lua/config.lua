@@ -34,6 +34,10 @@ require("lazy").setup({
   checker = { enabled = true },
 })
 
+
+vim.api.nvim_set_keymap('n', '<C-d>', '<C-d>zz', { noremap = true })
+vim.api.nvim_set_keymap('n', '<C-u>', '<C-u>zz', { noremap = true })
+
 -- Search keybinds
 vim.api.nvim_set_keymap('n', '<Leader>ff', '<cmd>lua require("telescope.builtin").find_files({hidden = true})<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>lua require("telescope.builtin").current_buffer_fuzzy_find()<CR>', {})
@@ -63,6 +67,7 @@ vim.keymap.set({ 'v' }, '<C-s>af', ':CopilotChatFix<CR>', {})
 vim.keymap.set({ 'v' }, '<C-s>at', ':CopilotChatTests<CR>', {})
 vim.keymap.set({ 'v' }, '<C-s>e', ':CopilotChatExplain<CR>', {})
 -- Other keybinds
+vim.keymap.set("n", "<leader>rr", vim.lsp.buf.rename, {})
 vim.api.nvim_set_keymap('n', '<leader>gb', ':GitMessenger<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>gB', ':Git blame<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>r', ':NERDTreeFind<CR>', {})
@@ -92,7 +97,8 @@ vim.cmd([[
   set tabstop=2                             " The width of a TAB is set to 2.
   set shiftwidth=2                          " Indents will have a width of 2.
   set expandtab                             " Expand TABs to spaces.
-  set relativenumber                        " Relative gutter line numbers
+  "set relativenumber                        " Relative gutter line numbers
+  set number relativenumber
   "set number                                " Enable gutter line numbers
   set softtabstop=0
   set autoindent
