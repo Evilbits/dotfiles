@@ -2,7 +2,7 @@ return {
   -- Automatically close brackets
   { 'raimondi/delimitmate' },
   -- Smooth scrolling
-  { 'psliwka/vim-smoothie', enabled = false },
+  { 'psliwka/vim-smoothie' },
   -- Adds a symbol at line indents
   { 'yggdroot/indentline' },
   -- Smarter surrounding of words
