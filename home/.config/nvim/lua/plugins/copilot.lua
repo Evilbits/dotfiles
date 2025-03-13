@@ -15,7 +15,7 @@ local prompts = {
   Concise = "Please rewrite the following text to make it more concise.",
 }
 return {
-  { 'github/copilot.vim' },
+  { 'github/copilot.vim', enabled = false },
   {
     "CopilotC-Nvim/CopilotChat.nvim",
     dependencies = {
@@ -25,7 +25,7 @@ return {
     build = "make tiktoken",       -- Only on MacOS or Linux
     branch = "main",
     opts = {
-      debug = true, -- Enable debugging
+      -- debug = true, -- Enable debugging
       model = "claude-3.7-sonnet-thought",
       -- See Configuration section for rest
       prompts = {},
