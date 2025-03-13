@@ -35,8 +35,8 @@ require("lazy").setup({
 })
 
 
-vim.api.nvim_set_keymap('n', '<C-d>', '<C-d>zz', { noremap = true })
-vim.api.nvim_set_keymap('n', '<C-u>', '<C-u>zz', { noremap = true })
+-- vim.api.nvim_set_keymap('n', '<C-d>', '<C-d>zz', { noremap = true })
+-- vim.api.nvim_set_keymap('n', '<C-u>', '<C-u>zz', { noremap = true })
 
 -- Search keybinds
 vim.api.nvim_set_keymap('n', '<Leader>ff', '<cmd>lua require("telescope.builtin").find_files({hidden = true})<CR>', {})
