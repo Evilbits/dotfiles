@@ -75,20 +75,16 @@ return {
       local capabilities = require('blink.cmp').get_lsp_capabilities()
 
       local on_attach = function(client, bufnr)
-        -- if client.supports_method("textDocument/formatting") then
-        --   local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
-        --   vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
-        --   vim.api.nvim_create_autocmd(
-        --     "BufWritePre",
-        --     {
-        --       group = augroup,
-        --       buffer = bufnr,
-        --       callback = function()
-        --         vim.lsp.buf.format({ async = false })
-        --       end,
-        --     }
-        --   )
-        -- end
+        local opts = { buffer = bufnr, remap = false }
+
+        -- Setup Telescope keymaps that rely on an LSP attaching
+        local builtin = require('telescope.builtin')
+        vim.keymap.set('n', '<leader>gd', builtin.lsp_references, opts)
+        vim.keymap.set('n', '<leader>gD', builtin.lsp_definitions, opts)
+        vim.keymap.set('n', '<leader>gi', builtin.lsp_implementations, opts)
+        vim.keymap.set('n', '<leader>gt', builtin.lsp_type_definitions, opts)
+        vim.keymap.set("n", "<C-x>", vim.lsp.buf.hover, opts)
+
         require "lsp_signature".on_attach({
           hint = true
         }, bufnr)
@@ -156,6 +152,7 @@ return {
 
       -- Setup LSP for Nvim Lua
       lspconfig.lua_ls.setup {
+        on_attach = on_attach,
         on_init = function(client)
           if client.workspace_folders then
             local path = client.workspace_folders[1].name
