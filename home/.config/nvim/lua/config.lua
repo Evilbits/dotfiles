@@ -38,18 +38,6 @@ require("lazy").setup({
 -- vim.api.nvim_set_keymap('n', '<C-d>', '<C-d>zz', { noremap = true })
 -- vim.api.nvim_set_keymap('n', '<C-u>', '<C-u>zz', { noremap = true })
 
--- Search keybinds
-vim.api.nvim_set_keymap('n', '<Leader>ff', '<cmd>lua require("telescope.builtin").find_files({hidden = true})<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>lua require("telescope.builtin").current_buffer_fuzzy_find()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>fG', '<cmd>lua require("telescope.builtin").live_grep()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>fb', ':Buffers<CR>', {})
--- LSP Keybinds
-vim.api.nvim_set_keymap('n', '<leader>gd', '<cmd>lua require("telescope.builtin").lsp_references()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>gDd', '<cmd>vsplit | lua require("telescope.builtin").lsp_definitions()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>gDD', '<cmd>lua require("telescope.builtin").lsp_definitions()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>gi', '<cmd>lua require("telescope.builtin").lsp_implementations()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>gt', '<cmd>lua require("telescope.builtin").lsp_type_definitions()<CR>', {})
-vim.keymap.set("n", "<C-x>", vim.lsp.buf.hover, {})
 -- Git keybinds
 vim.api.nvim_set_keymap('n', '<leader>gs', '<cmd>lua require("telescope.builtin").git_status()<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>d', ':GitGutterDiffOrig<CR>', {})

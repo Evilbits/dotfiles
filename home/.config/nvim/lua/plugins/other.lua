@@ -31,4 +31,10 @@ return {
   { 'norcalli/nvim-colorizer.lua' },
   -- Stops crashing when indexing large files
   { 'vim-scripts/LargeFile' },
+  {
+    'mbbill/undotree',
+    config = function()
+      vim.keymap.set('n', '<Leader>u', vim.cmd.UndotreeToggle, {})
+    end
+  }
 }
