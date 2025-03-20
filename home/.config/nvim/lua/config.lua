@@ -37,6 +37,9 @@ require("lazy").setup({
 
 -- vim.api.nvim_set_keymap('n', '<C-d>', '<C-d>zz', { noremap = true })
 -- vim.api.nvim_set_keymap('n', '<C-u>', '<C-u>zz', { noremap = true })
+-- Sets the cursor to the middle of the screen when searching and jumping
+vim.keymap.set('n', 'n', 'nzzzv')
+vim.keymap.set('n', 'N', 'Nzzzv')
 
 -- Git keybinds
 vim.api.nvim_set_keymap('n', '<leader>gs', '<cmd>lua require("telescope.builtin").git_status()<CR>', {})
@@ -61,6 +64,9 @@ vim.api.nvim_set_keymap('n', '<leader>gB', ':Git blame<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>r', ':NERDTreeFind<CR>', {})
 vim.api.nvim_set_keymap('n', '<C-n>', ':NERDTreeToggle<CR>', {})
 vim.api.nvim_set_keymap('n', '<leader>z', ':ZenMode<CR>', {})
+
+vim.opt.scrolloff = 10  -- Always have a minimum of x lines above/below cursor
+vim.opt.updatetime = 50 -- Faster update
 
 -- TODO: Covert to Lua
 vim.cmd([[
