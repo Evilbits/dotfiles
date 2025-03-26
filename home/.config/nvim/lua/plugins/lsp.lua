@@ -85,9 +85,9 @@ return {
         vim.keymap.set('n', '<leader>gt', builtin.lsp_type_definitions, opts)
         vim.keymap.set("n", "<C-x>", vim.lsp.buf.hover, opts)
 
-        require "lsp_signature".on_attach({
-          hint = true
-        }, bufnr)
+        -- require "lsp_signature".on_attach({
+        --   hint = true
+        -- }, bufnr)
         vim.diagnostic.config({ virtual_text = false, update_in_insert = true })
       end
 
@@ -115,6 +115,10 @@ return {
           -- Call your existing on_attach if you have one
           on_attach(client, bufnr)
         end,
+      }
+      lspconfig.gopls.setup {
+        on_attach = on_attach,
+        capabilities = capabilities,
       }
 
       lspconfig.pylsp.setup {
