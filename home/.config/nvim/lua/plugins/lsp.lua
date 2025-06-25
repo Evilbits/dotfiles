@@ -51,7 +51,7 @@ return {
     dependencies = { 'williamboman/mason.nvim' },
     config = function()
       require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "pylsp", "ts_ls", "terraformls", "eslint" },
+        ensure_installed = { "lua_ls", "pylsp", "ts_ls", "terraformls", "eslint", "nextls" },
       })
     end,
   },
@@ -83,6 +83,7 @@ return {
         vim.keymap.set('n', '<leader>gD', builtin.lsp_definitions, opts)
         vim.keymap.set('n', '<leader>gi', builtin.lsp_implementations, opts)
         vim.keymap.set('n', '<leader>gt', builtin.lsp_type_definitions, opts)
+        vim.keymap.set("n", "<leader>qf", vim.lsp.buf.code_action, opts)
         vim.keymap.set("n", "<C-x>", vim.lsp.buf.hover, opts)
 
         -- require "lsp_signature".on_attach({
@@ -96,6 +97,10 @@ return {
         capabilities = capabilities,
       }
       lspconfig.ts_ls.setup {
+        on_attach = on_attach,
+        capabilities = capabilities,
+      }
+      lspconfig.nextls.setup {
         on_attach = on_attach,
         capabilities = capabilities,
       }
