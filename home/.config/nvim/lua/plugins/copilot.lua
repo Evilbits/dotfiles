@@ -15,7 +15,7 @@ local prompts = {
   Concise = "Please rewrite the following text to make it more concise.",
 }
 return {
-  { 'github/copilot.vim', enabled = false },
+  { 'github/copilot.vim', enabled = true },
   {
     "CopilotC-Nvim/CopilotChat.nvim",
     dependencies = {

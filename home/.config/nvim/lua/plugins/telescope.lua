@@ -22,8 +22,8 @@ return {
       require('telescope').setup {
         defaults = {
           file_ignore_patterns = {
-            '%.pdf'
-            -- ".git/", 'node_modules/', '__pycache__', 'static', '%.jpg', '%.pdf', 'yarn.lock'
+            -- '%.pdf'
+            ".git/", 'node_modules/', '__pycache__', 'static', '%.jpg', '%.pdf'
           },
           vimgrep_arguments = {
             "rg",
