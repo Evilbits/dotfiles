@@ -10,13 +10,13 @@ return {
       ]])
     end
   },
-  {'junegunn/fzf.vim'},
+  { 'junegunn/fzf.vim' },
   -- Jump to words/chars
   {
     'ggandor/leap.nvim',
     config = function()
-      vim.keymap.set({'n', 'x', 'o'}, 's',  '<Plug>(leap)')
-      vim.keymap.set({'n', 'x', 'o'}, 'S',  '<Plug>(leap-from-window)')
+      vim.keymap.set({ 'n', 'x', 'o' }, 's', '<Plug>(leap)')
+      vim.keymap.set({ 'n', 'x', 'o' }, 'S', '<Plug>(leap-from-window)')
     end,
   }
 }

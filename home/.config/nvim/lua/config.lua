@@ -35,8 +35,6 @@ require("lazy").setup({
 })
 
 
--- vim.api.nvim_set_keymap('n', '<C-d>', '<C-d>zz', { noremap = true })
--- vim.api.nvim_set_keymap('n', '<C-u>', '<C-u>zz', { noremap = true })
 -- Sets the cursor to the middle of the screen when searching and jumping
 vim.keymap.set('n', 'n', 'nzzzv')
 vim.keymap.set('n', 'N', 'Nzzzv')
@@ -49,14 +47,6 @@ vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua require("telescope.builtin")
 -- CopilotChat keybinds
 vim.keymap.set({ 'n' }, '<C-s>g', ':CopilotChatCommit<CR>', {})
 vim.keymap.set({ 'n', 'v' }, '<C-s>c', ':CopilotChatToggle<CR>', {})
-vim.keymap.set({ 'v' }, '<C-s>aa',
-  ":lua require('CopilotChat.integrations.telescope').pick(require('CopilotChat.actions').prompt_actions({selection = require('CopilotChat.select').visual}))<CR>",
-  {}) -- Opens up a Telescope buffer for the current selection and can execute commands on it
-vim.keymap.set({ 'v' }, '<C-s>ac', ':CopilotChatComplete<CR>', {})
-vim.keymap.set({ 'v' }, '<C-s>ao', ':CopilotChatOptimize<CR>', {})
-vim.keymap.set({ 'v' }, '<C-s>af', ':CopilotChatFix<CR>', {})
-vim.keymap.set({ 'v' }, '<C-s>at', ':CopilotChatTests<CR>', {})
-vim.keymap.set({ 'v' }, '<C-s>e', ':CopilotChatExplain<CR>', {})
 -- Other keybinds
 vim.keymap.set("n", "<leader>rr", vim.lsp.buf.rename, {})
 vim.api.nvim_set_keymap('n', '<leader>gb', ':GitMessenger<CR>', {})

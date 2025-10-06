@@ -1,4 +1,4 @@
 # App commands
-cmd - 1  : open -a "Zen"
-cmd - 2  : open -a "Slack"
-cmd - 3  : open -a "Alacritty"
+cmd - 1 : $HOME/.config/skhd/bin/focus_or_cycle "Zen"
+cmd - 2 : $HOME/.config/skhd/bin/focus_or_cycle "Slack"
+cmd - 3 : $HOME/.config/skhd/bin/focus_or_cycle "Alacritty"

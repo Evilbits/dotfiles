@@ -16,5 +16,5 @@
 [pull]
   rebase = true
 [user]
-	email = 562749+Evilbits@users.noreply.github.com
+	email = rasmus.reiler@doxy.me
 	name = Rasmus Reiler
