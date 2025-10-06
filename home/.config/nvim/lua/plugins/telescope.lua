@@ -9,20 +9,22 @@ return {
           require("telescope").load_extension("fzf")
         end,
       },
-      { 'sharkdp/fd' }
+      { 'sharkdp/fd' },
+      { 'nvim-telescope/telescope-ui-select.nvim' }
     },
     config = function()
       local builtin = require('telescope.builtin')
-      vim.keymap.set('n', '<C-f>', builtin.git_files, {})
-      vim.keymap.set('n', '<Leader>pf', builtin.find_files, {})
+      vim.keymap.set('n', '<C-f>', builtin.find_files, {})
+      vim.keymap.set('n', '<Leader>pf', builtin.git_files, {})
       vim.keymap.set('n', '<Leader>ps', builtin.live_grep, {})
       vim.keymap.set('n', '<Leader>pS', builtin.current_buffer_fuzzy_find, {})
-      vim.keymap.set('n', '<Leader>b', vim.cmd.Buffers, {})
+      -- vim.keymap.set('n', '<Leader>b', vim.cmd.Buffers, {})
+      vim.keymap.set('n', '<Leader>b', builtin.buffers, {})
+      vim.keymap.set('n', '<Leader>pd', builtin.diagnostics, {})
 
       require('telescope').setup {
         defaults = {
           file_ignore_patterns = {
-            -- '%.pdf'
             ".git/", 'node_modules/', '__pycache__', 'static', '%.jpg', '%.pdf'
           },
           vimgrep_arguments = {
@@ -42,33 +44,15 @@ return {
           selection_strategy = "reset",
           sorting_strategy = "descending",
           layout_strategy = "horizontal",
-          layout_config = {
-            horizontal = {
-              prompt_position = "bottom",
-              preview_width = 0.55,
-              results_width = 0.8,
-            },
-            vertical = {
-              mirror = false,
-            },
-            width = 0.87,
-            height = 0.80,
-            preview_cutoff = 120,
+        },
+        pickers = {
+          find_files = {
+            find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
           },
-          file_sorter = require("telescope.sorters").get_fuzzy_file,
-          generic_sorter = require("telescope.sorters").get_generic_fuzzy_sorter,
-          path_display = { "truncate" },
-          winblend = 0,
-          border = {},
-          borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
-          color_devicons = true,
-          use_less = true,
-          set_env = { ["COLORTERM"] = "truecolor" }, -- default = nil,
-          file_previewer = require("telescope.previewers").vim_buffer_cat.new,
-          grep_previewer = require("telescope.previewers").vim_buffer_vimgrep.new,
-          qflist_previewer = require("telescope.previewers").vim_buffer_qflist.new,
-          -- Developer configurations: Not meant for general override
-          buffer_previewer_maker = require("telescope.previewers").buffer_previewer_maker,
+          git_files = {
+            use_git_root = true,
+            show_untracked = true,
+          },
         },
         extensions = {
           fzf = {
@@ -81,6 +65,7 @@ return {
         }
       }
       require('telescope').load_extension('fzf')
+      require("telescope").load_extension("ui-select")
     end
   }
 }

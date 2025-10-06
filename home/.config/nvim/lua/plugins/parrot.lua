@@ -1,58 +1,58 @@
 return {
   "frankroeder/parrot.nvim",
-  enable = false,
+  enabled = false,
   dependencies = { 'ibhagwan/fzf-lua', 'nvim-lua/plenary.nvim' },
   -- optionally include "rcarriga/nvim-notify" for beautiful notifications
   config = function()
     require("parrot").setup {
       -- Providers must be explicitly added to make them available.
       providers = {
-        anthropic = {
-          api_key = os.getenv "ANTHROPIC_API_KEY",
-        },
+        -- anthropic = {
+        --   api_key = os.getenv "ANTHROPIC_API_KEY",
+        -- },
         openai = {
           api_key = os.getenv "OPENAI_API_KEY",
         }
       },
       keys = {
-        { "<C-g>c", "<cmd>PrtChatNew<cr>", mode = { "n", "i" }, desc = "New Chat" },
-        { "<C-g>c", ":<C-u>'<,'>PrtChatNew<cr>", mode = { "v" }, desc = "Visual Chat New" },
-        { "<C-g>t", "<cmd>PrtChatToggle<cr>", mode = { "n", "i" }, desc = "Toggle Popup Chat" },
-        { "<C-g>f", "<cmd>PrtChatFinder<cr>", mode = { "n", "i" }, desc = "Chat Finder" },
-        { "<C-g>r", "<cmd>PrtRewrite<cr>", mode = { "n", "i" }, desc = "Inline Rewrite" },
-        { "<C-g>r", ":<C-u>'<,'>PrtRewrite<cr>", mode = { "v" }, desc = "Visual Rewrite" },
+        { "<C-g>c", "<cmd>PrtChatNew<cr>",       mode = { "n", "i" }, desc = "New Chat" },
+        { "<C-g>c", ":<C-u>'<,'>PrtChatNew<cr>", mode = { "v" },      desc = "Visual Chat New" },
+        { "<C-g>t", "<cmd>PrtChatToggle<cr>",    mode = { "n", "i" }, desc = "Toggle Popup Chat" },
+        { "<C-g>f", "<cmd>PrtChatFinder<cr>",    mode = { "n", "i" }, desc = "Chat Finder" },
+        { "<C-g>r", "<cmd>PrtRewrite<cr>",       mode = { "n", "i" }, desc = "Inline Rewrite" },
+        { "<C-g>r", ":<C-u>'<,'>PrtRewrite<cr>", mode = { "v" },      desc = "Visual Rewrite" },
         {
           "<C-g>j",
           "<cmd>PrtRetry<cr>",
           mode = { "n" },
           desc = "Retry rewrite/append/prepend command",
         },
-        { "<C-g>a", "<cmd>PrtAppend<cr>", mode = { "n", "i" }, desc = "Append" },
-        { "<C-g>a", ":<C-u>'<,'>PrtAppend<cr>", mode = { "v" }, desc = "Visual Append" },
-        { "<C-g>o", "<cmd>PrtPrepend<cr>", mode = { "n", "i" }, desc = "Prepend" },
-        { "<C-g>o", ":<C-u>'<,'>PrtPrepend<cr>", mode = { "v" }, desc = "Visual Prepend" },
-        { "<C-g>e", ":<C-u>'<,'>PrtEnew<cr>", mode = { "v" }, desc = "Visual Enew" },
-        { "<C-g>s", "<cmd>PrtStop<cr>", mode = { "n", "i", "v", "x" }, desc = "Stop" },
+        { "<C-g>a", "<cmd>PrtAppend<cr>",        mode = { "n", "i" },           desc = "Append" },
+        { "<C-g>a", ":<C-u>'<,'>PrtAppend<cr>",  mode = { "v" },                desc = "Visual Append" },
+        { "<C-g>o", "<cmd>PrtPrepend<cr>",       mode = { "n", "i" },           desc = "Prepend" },
+        { "<C-g>o", ":<C-u>'<,'>PrtPrepend<cr>", mode = { "v" },                desc = "Visual Prepend" },
+        { "<C-g>e", ":<C-u>'<,'>PrtEnew<cr>",    mode = { "v" },                desc = "Visual Enew" },
+        { "<C-g>s", "<cmd>PrtStop<cr>",          mode = { "n", "i", "v", "x" }, desc = "Stop" },
         {
           "<C-g>i",
           ":<C-u>'<,'>PrtComplete<cr>",
           mode = { "n", "i", "v", "x" },
           desc = "Complete visual selection",
         },
-        { "<C-g>x", "<cmd>PrtContext<cr>", mode = { "n" }, desc = "Open context file" },
-        { "<C-g>n", "<cmd>PrtModel<cr>", mode = { "n" }, desc = "Select model" },
+        { "<C-g>x", "<cmd>PrtContext<cr>",  mode = { "n" }, desc = "Open context file" },
+        { "<C-g>n", "<cmd>PrtModel<cr>",    mode = { "n" }, desc = "Select model" },
         { "<C-g>p", "<cmd>PrtProvider<cr>", mode = { "n" }, desc = "Select provider" },
-        { "<C-g>q", "<cmd>PrtAsk<cr>", mode = { "n" }, desc = "Ask a question" },
+        { "<C-g>q", "<cmd>PrtAsk<cr>",      mode = { "n" }, desc = "Ask a question" },
       },
       hooks = {
         Complete = function(prt, params)
           local template = [[
           I have the following code from {{filename}}:
-    
+
           ```{{filetype}}
           {{selection}}
           ```
-    
+
           Please finish the code above carefully and logically.
           Respond just with the snippet of code that should be inserted."
           ]]
@@ -62,16 +62,16 @@ return {
         CompleteFullContext = function(prt, params)
           local template = [[
           I have the following code from {{filename}}:
-    
+
           ```{{filetype}}
           {filecontent}}
           ```
-    
+
           Please look at the following section specifically:
           ```{{filetype}}
           {{selection}}
           ```
-    
+
           Please finish the code above carefully and logically.
           Respond just with the snippet of code that should be inserted.
           ]]
@@ -81,16 +81,16 @@ return {
         CompleteMultiContext = function(prt, params)
           local template = [[
           I have the following code from {{filename}} and other realted files:
-    
+
           ```{{filetype}}
           {{multifilecontent}}
           ```
-    
+
           Please look at the following section specifically:
           ```{{filetype}}
           {{selection}}
           ```
-    
+
           Please finish the code above carefully and logically.
           Respond just with the snippet of code that should be inserted.
           ]]
@@ -102,11 +102,11 @@ return {
           Your task is to take the code snippet from {{filename}} and explain it with gradually increasing complexity.
           Break down the code's functionality, purpose, and key components.
           The goal is to help the reader understand what the code does and how it works.
-    
+
           ```{{filetype}}
           {{selection}}
           ```
-    
+
           Use the markdown format with codeblocks and inline code.
           Explanation of the code above:
           ]]
@@ -124,11 +124,11 @@ return {
           original code and how your fixes address them. The corrected code should
           be functional, efficient, and adhere to best practices in
           {{filetype}} programming.
-    
+
           ```{{filetype}}
           {{selection}}
           ```
-    
+
           Fixed code:
           ]]
           local model_obj = prt.get_model "command"
@@ -145,11 +145,11 @@ return {
           along with explanations of how these changes can enhance the code's
           performance. The optimized code should maintain the same functionality
           as the original code while demonstrating improved efficiency.
-    
+
           ```{{filetype}}
           {{selection}}
           ```
-    
+
           Optimized code:
           ]]
           local model_obj = prt.get_model "command"
@@ -159,11 +159,11 @@ return {
         UnitTests = function(prt, params)
           local template = [[
           I have the following code from {{filename}}:
-    
+
           ```{{filetype}}
           {{selection}}
           ```
-    
+
           Please respond by writing table driven unit tests for the code above.
           ]]
           local model_obj = prt.get_model "command"
@@ -176,7 +176,7 @@ return {
           Review the following code, carefully examine it, and report potential
           bugs and edge cases alongside solutions to resolve them.
           Keep your explanation short and to the point:
-    
+
           ```{{filetype}}
           {{selection}}
           ```
@@ -199,7 +199,7 @@ return {
             words, just reply with the commit message.
             Start with a short headline as summary but then list the individual
             changes in more detail.
-    
+
             Here are the changes that should be considered by this message:
             ]] .. vim.fn.system "git diff --no-color --no-ext-diff --staged"
             local model_obj = prt.get_model "command"
@@ -225,7 +225,7 @@ return {
             of how these changes can enhance the code's performance. The optimized
             code should maintain the same functionality as the original code while
             demonstrating improved efficiency.
-    
+
             Here is the code
             ```{{filetype}}
             {{filecontent}}
@@ -240,24 +240,24 @@ return {
           punctuation errors. Once you have finished reviewing the text,
           provide me with any necessary corrections or suggestions to improve the
           text. Highlight the corrected fragments (if any) using markdown backticks.
-    
+
           When you have done that subsequently provide me with a slightly better
           version of the text, but keep close to the original text.
-    
+
           Finally provide me with an ideal version of the text.
-    
+
           Whenever I provide you with text, you reply in this format directly:
-    
+
           ## Corrected text:
-    
+
           {corrected text, or say "NO_CORRECTIONS_NEEDED" instead if there are no corrections made}
-    
+
           ## Slightly better text
-    
+
           {slightly better text}
-    
+
           ## Ideal text
-    
+
           {ideal text}
           ]]
           prt.ChatNew(params, chat_prompt)

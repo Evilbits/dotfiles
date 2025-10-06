@@ -50,9 +50,9 @@ return {
     "williamboman/mason-lspconfig.nvim",
     dependencies = { 'williamboman/mason.nvim' },
     config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "pylsp", "ts_ls", "terraformls", "eslint", "nextls" },
-      })
+      -- require("mason-lspconfig").setup({
+      --   ensure_installed = { "ts_ls", "terraformls", "eslint", "lua_ls" },
+      -- })
     end,
   },
   -- lspconfig
@@ -86,9 +86,6 @@ return {
         vim.keymap.set("n", "<leader>qf", vim.lsp.buf.code_action, opts)
         vim.keymap.set("n", "<C-x>", vim.lsp.buf.hover, opts)
 
-        -- require "lsp_signature".on_attach({
-        --   hint = true
-        -- }, bufnr)
         vim.diagnostic.config({ virtual_text = false, update_in_insert = true })
       end
 
@@ -97,10 +94,6 @@ return {
         capabilities = capabilities,
       }
       lspconfig.ts_ls.setup {
-        on_attach = on_attach,
-        capabilities = capabilities,
-      }
-      lspconfig.nextls.setup {
         on_attach = on_attach,
         capabilities = capabilities,
       }
@@ -120,43 +113,6 @@ return {
           -- Call your existing on_attach if you have one
           on_attach(client, bufnr)
         end,
-      }
-      lspconfig.gopls.setup {
-        on_attach = on_attach,
-        capabilities = capabilities,
-      }
-
-      lspconfig.pylsp.setup {
-        on_attach = on_attach,
-        settings = {
-          pylsp = {
-            plugins = {
-              -- formatter options
-              black = { enabled = true },
-              -- type checker
-              pylsp_mypy = {
-                enabled = true,
-              },
-              -- Linter
-              ruff = {
-                enabled = true,
-                -- formatEnabled = true,
-                -- format = { "I" },
-                executable = "ruff",
-              },
-              pylint = {
-                enabled = false,
-                executable = "pylint",
-                -- Disable specific errors (E0401: Unable to import)
-                args = { '--disable=E0401' }
-              },
-              pyflakes = { enabled = false },
-              pycodestyle = { enabled = false },
-              -- import sorting
-              pyls_isort = { enabled = true },
-            },
-          },
-        },
       }
 
       -- Setup LSP for Nvim Lua

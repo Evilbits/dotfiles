@@ -6,5 +6,3 @@ home/.config/nvim/tmp/swap/*
 home/.config/nvim/tmp/backup/*
 home/.config/nvim/tmp/undo/*
 home/.config/nvim/plugin/packer_compiled.lua
-
-!home/.config/fzf

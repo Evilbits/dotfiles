@@ -52,5 +52,5 @@ done
 rm -rf ~/.config/alacritty # remove the config not linked by this
 
 #echo "(1) sudo chsh -s /usr/local/bin/bash $(whoami)"
-echo "(1) Install plug"
-echo "(2) Run :PlugInstall in Vim"
+#echo "(1) Install plug"
+#echo "(2) Run :PlugInstall in Vim"
