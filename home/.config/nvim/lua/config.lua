@@ -98,5 +98,5 @@ vim.cmd([[
   nmap <space> <leader>
 ]])
 
-vim.g.catppuccin_flavour = "macchiato"
-vim.cmd [[colorscheme catppuccin]]
+-- vim.g.catppuccin_flavour = "macchiato"
+-- vim.cmd [[colorscheme catppuccin]]

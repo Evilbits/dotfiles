@@ -2,3 +2,4 @@
 cmd - 1 : $HOME/.config/skhd/bin/focus_or_cycle "Zen"
 cmd - 2 : $HOME/.config/skhd/bin/focus_or_cycle "Slack"
 cmd - 3 : $HOME/.config/skhd/bin/focus_or_cycle "Alacritty"
+cmd - 4 : $HOME/.config/skhd/bin/focus_or_cycle "Cursor"

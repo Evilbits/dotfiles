@@ -11,7 +11,8 @@ return {
     branch = "main",
     opts = {
       -- debug = true, -- Enable debugging
-      model = "gpt-5",
+      -- model = "gpt-5",
+      model = 'claude-sonnet-4.5',
       -- See Configuration section for rest
       prompts = {},
       mappings = {

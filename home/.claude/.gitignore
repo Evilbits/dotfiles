@@ -1,0 +1,7 @@
+# Ignore everything Claude writes at runtime
+*
+
+# But track config files
+!.gitignore
+!CLAUDE.md
+!settings.json
