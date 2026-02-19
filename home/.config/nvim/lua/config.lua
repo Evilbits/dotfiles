@@ -47,6 +47,8 @@ vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua require("telescope.builtin")
 -- CopilotChat keybinds
 vim.keymap.set({ 'n' }, '<C-s>g', ':CopilotChatCommit<CR>', {})
 vim.keymap.set({ 'n', 'v' }, '<C-s>c', ':CopilotChatToggle<CR>', {})
+-- Terminal keybinds
+vim.keymap.set('t', '<C-s><C-e>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 -- Other keybinds
 vim.keymap.set("n", "<leader>rr", vim.lsp.buf.rename, {})
 vim.api.nvim_set_keymap('n', '<leader>gb', ':GitMessenger<CR>', {})
@@ -57,6 +59,7 @@ vim.api.nvim_set_keymap('n', '<leader>z', ':ZenMode<CR>', {})
 
 vim.opt.scrolloff = 10  -- Always have a minimum of x lines above/below cursor
 vim.opt.updatetime = 50 -- Faster update
+vim.opt.diffopt:append("context:30")
 
 -- TODO: Covert to Lua
 vim.cmd([[

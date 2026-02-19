@@ -1,1 +1,16 @@
-{}
+{
+  "enabledPlugins": {
+    "lua-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Read(~/dotfiles/**)",
+      "Read(~/.claude/**)",
+      "Read(~/.*)",
+      "Bash(git status)",
+      "Bash(git log *)",
+      "Bash(git diff *)"
+    ]
+  }
+}
