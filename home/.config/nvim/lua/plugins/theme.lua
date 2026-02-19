@@ -1,6 +1,19 @@
-return { 
-  { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
-  { "diegoulloao/neofusion.nvim", priority = 1000 , config = true }
+return {
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    priority = 1000,
+    config = function()
+      require("catppuccin").setup({
+        flavour = "macchiato",
+        integrations = {
+          treesitter = true,
+        },
+      })
+      vim.cmd.colorscheme("catppuccin")
+    end,
+  },
+  { "diegoulloao/neofusion.nvim", priority = 1000, config = true }
 }
 
 --local M = {}

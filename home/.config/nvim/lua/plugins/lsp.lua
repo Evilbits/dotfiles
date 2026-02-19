@@ -70,8 +70,6 @@ return {
       },
     },
     config = function(_, _)
-      local lspconfig = require('lspconfig')
-      --local servers = { 'pylsp', 'ts_ls', 'lua_ls', 'terraformls' }
       local capabilities = require('blink.cmp').get_lsp_capabilities()
 
       local on_attach = function(client, bufnr)
@@ -89,16 +87,23 @@ return {
         vim.diagnostic.config({ virtual_text = false, update_in_insert = true })
       end
 
-      lspconfig.terraformls.setup {
+      vim.lsp.config("terraformls", {
         on_attach = on_attach,
         capabilities = capabilities,
-      }
-      lspconfig.ts_ls.setup {
+      })
+      vim.lsp.enable("terraformls")
+
+      vim.lsp.config("ts_ls", {
         on_attach = on_attach,
         capabilities = capabilities,
-      }
-      lspconfig.eslint.setup {
+      })
+      vim.lsp.enable("ts_ls")
+
+      vim.lsp.config("eslint", {
         capabilities = capabilities,
+        cmd_env = {
+          TS_NODE_COMPILER_OPTIONS = '{"module":"commonjs","moduleResolution":"node"}',
+        },
         settings = {
           -- helps eslint find the eslintrc when it's placed in a subfolder
           workingDirectory = { mode = "auto" },
@@ -113,10 +118,11 @@ return {
           -- Call your existing on_attach if you have one
           on_attach(client, bufnr)
         end,
-      }
+      })
+      vim.lsp.enable("eslint")
 
       -- Setup LSP for Nvim Lua
-      lspconfig.lua_ls.setup {
+      vim.lsp.config("lua_ls", {
         on_attach = on_attach,
         on_init = function(client)
           if client.workspace_folders then
@@ -148,7 +154,8 @@ return {
         settings = {
           Lua = {}
         }
-      }
+      })
+      vim.lsp.enable("lua_ls")
     end
   }
 }

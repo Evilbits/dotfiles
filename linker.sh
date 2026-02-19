@@ -1,56 +1,57 @@
 #!/bin/bash
-# Links everything in home/ to ~/, does sanity checks.
-# Based on the script by Simon Eskildsen (github.com/Sirupsen)
+# Links everything in home/ to ~/
+# Files are symlinked directly; directories are created and their contents symlinked.
 
 DG="\033[90m" # Dark grey
 GR="\033[32m" # Green
 OR="\033[33m" # Brown/Orange
-NC="\033[0m" # No color
+NC="\033[0m"  # No color
 
-function symlink {
-  ln -nsf $1 $2
+DOTFILES_HOME="$(pwd)/home"
+
+symlink() {
+  ln -nsf "$1" "$2"
 }
 
-function process() {
-  if [[ -h $target && ($(readlink $target) == $path)]]; then
-    echo -e "${DG}$baseFolder is symlinked to your dotfiles.${NC}"
-  elif [[ -f $target && $(sha256sum $path | awk '{print $2}') == $(sha256sum $target | awk '{print $2}') ]]; then
-    echo -e "${GR}$baseFolder exists and was identical to your dotfile.  Overriding with symlink.${NC}"
-    symlink $path $target
-  elif [[ -a $target ]]; then
-    read -p "${OR}$baseFolder exists and differs from your dotfile. Override?  [yn]${NC}" -n 1
+process() {
+  local path="$1" target="$2" display="$3"
 
-    if [[ $REPLY =~ [yY]* ]]; then
-      symlink $path $target
-    fi
+  if [[ -h "$target" && "$(readlink "$target")" == "$path" ]]; then
+    echo -e "${DG}$display is symlinked to your dotfiles.${NC}"
+  elif [[ -e "$target" ]] && cmp -s "$path" "$target" 2>/dev/null; then
+    echo -e "${GR}$display is identical. Overriding with symlink.${NC}"
+    symlink "$path" "$target"
+  elif [[ -e "$target" || -h "$target" ]]; then
+    read -rp "$(echo -e "${OR}$display differs from your dotfile. Override? [yn] ${NC}")" -n 1
+    echo
+    [[ $REPLY =~ [yY] ]] && symlink "$path" "$target"
   else
-    echo -e "${GR}$baseFolder does not exist. Symlinking to dotfile.${NC}"
-    symlink $path $target
+    echo -e "${GR}$display does not exist. Symlinking to dotfile.${NC}"
+    symlink "$path" "$target"
   fi
 }
 
-for file in home/.[^.]*; do
-  path="$(pwd)/$file"
-  base=$(basename $file)
-  baseFolder="~/$(basename $file)"
-  target="$HOME/$(basename $file)"
+for item in "$DOTFILES_HOME"/.[^.]*; do
+  [[ -e "$item" ]] || continue
+  name=$(basename "$item")
 
-  process
+  if [[ -d "$item" ]]; then
+    # If already symlinked as a whole directory, leave it alone
+    if [[ -h "$HOME/$name" && "$(readlink "$HOME/$name")" == "$item" ]]; then
+      echo -e "${DG}~/$name is symlinked as a whole directory.${NC}"
+      continue
+    fi
+    # Create the directory in ~/ and symlink its contents one level deep
+    mkdir -p "$HOME/$name"
+    for subitem in "$item"/[^.]* "$item"/.[^.]*; do
+      [[ -e "$subitem" ]] || continue
+      subname=$(basename "$subitem")
+      process "$subitem" "$HOME/$name/$subname" "~/$name/$subname"
+    done
+  else
+    process "$item" "$HOME/$name" "~/$name"
+  fi
 done
 
-for file in home/.config/[^.]*; do
-  path="$(pwd)/$file"
-  base=$(basename $file)
-  baseFolder="~/.config/$(basename $file)"
-  target="$HOME/.config/$(basename $file)"
-
-  process
-done
-
-#mkdir -p ~/.config/nvim
-#ln -s ~/.vimrc ~/.config/nvim/init.vim
-rm -rf ~/.config/alacritty # remove the config not linked by this
-
-#echo "(1) sudo chsh -s /usr/local/bin/bash $(whoami)"
-#echo "(1) Install plug"
-#echo "(2) Run :PlugInstall in Vim"
+# Uncomment if you need to remove a stale config not managed by this script:
+# rm -rf ~/.config/alacritty

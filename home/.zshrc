@@ -127,3 +127,4 @@ esac
 # pnpm end
 
 alias nx="pnpm nx"
+export PATH="$HOME/.local/bin:$PATH"
