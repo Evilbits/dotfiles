@@ -10,6 +10,7 @@ return {
     },
     keys = {
       { "<C-s>a", "<cmd>ClaudeCodeFocus<cr>",                    desc = "Focus Claude Code" },
+      { "<C-s>a", "<C-\\><C-n><cmd>ClaudeCodeFocus<cr>", mode = "t", desc = "Return to editor" },
       { "<C-s>a", "<cmd>ClaudeCodeSend<cr>",  mode = "v",        desc = "Send selection to Claude" },
       { "<leader>aa", "<cmd>ClaudeCode<cr>",                     desc = "Toggle Claude Code" },
       { "<leader>ad", "<cmd>ClaudeCodeDiffAccept<cr>",           desc = "Accept Claude diff" },

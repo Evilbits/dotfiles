@@ -90,6 +90,8 @@ alias kubedi='kubectl describe ingress'
 
 export EDITOR=nvim
 
+stty -ixon # Disable XON/XOFF flow control so <C-s> is not swallowed by the terminal
+
 # Source custom fzf widgets
 source /Users/rasmusreiler/.config/fzf/key-bindings.zsh
 source "$HOME/.config/fzf/key-bindings.zsh"
