@@ -15,91 +15,73 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Make sure to setup `mapleader` and `maplocalleader` before
--- loading lazy.nvim so that mappings are correct.
--- This is also a good place to setup other settings (vim.opt)
-vim.g.mapleader = " "
+vim.g.mapleader      = " "
 vim.g.maplocalleader = "\\"
-vim.api.nvim_set_keymap('', '<Space>', '<Nop>', { noremap = true, silent = true })
+vim.keymap.set("", "<Space>", "<Nop>", { silent = true })
 
--- Setup lazy.nvim
 require("lazy").setup({
-  spec = {
-    { import = "plugins" },
-  },
-  -- Configure any other settings here. See the documentation for more details.
-  -- colorscheme that will be used when installing plugins.
+  spec    = { { import = "plugins" } },
   install = { colorscheme = { "habamax" } },
-  -- automatically check for plugin updates
   checker = { enabled = true },
 })
 
+-- Searching / jumping
+vim.keymap.set("n", "n", "nzzzv")
+vim.keymap.set("n", "N", "Nzzzv")
 
--- Sets the cursor to the middle of the screen when searching and jumping
-vim.keymap.set('n', 'n', 'nzzzv')
-vim.keymap.set('n', 'N', 'Nzzzv')
+-- Git
+vim.keymap.set("n", "<leader>gs", "<cmd>Telescope git_status<CR>")
+vim.keymap.set("n", "<leader>d",  "<cmd>Gitsigns diffthis<CR>")
+vim.keymap.set("n", "<leader>gb", ":GitMessenger<CR>")
+vim.keymap.set("n", "<leader>gB", ":Git blame<CR>")
+-- Treesitter
+vim.keymap.set("n", "<leader>t", "<cmd>Telescope treesitter<CR>")
+-- CopilotChat
+vim.keymap.set("n",           "<C-s>g", ":CopilotChatCommit<CR>")
+vim.keymap.set({ "n", "v" }, "<C-s>c", ":CopilotChatToggle<CR>")
+-- Terminal
+vim.keymap.set("t", "<C-s><C-e>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
+-- Misc
+vim.keymap.set("n", "<leader>rr", vim.lsp.buf.rename)
+vim.keymap.set("n", "<leader>r",  ":NERDTreeFind<CR>")
+vim.keymap.set("n", "<C-n>",      ":NERDTreeToggle<CR>")
+vim.keymap.set("n", "<leader>z",  ":ZenMode<CR>")
 
--- Git keybinds
-vim.api.nvim_set_keymap('n', '<leader>gs', '<cmd>lua require("telescope.builtin").git_status()<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>d', ':GitGutterDiffOrig<CR>', {})
--- Treesitter keybinds
-vim.api.nvim_set_keymap('n', '<leader>t', '<cmd>lua require("telescope.builtin").treesitter()<CR>', {})
--- CopilotChat keybinds
-vim.keymap.set({ 'n' }, '<C-s>g', ':CopilotChatCommit<CR>', {})
-vim.keymap.set({ 'n', 'v' }, '<C-s>c', ':CopilotChatToggle<CR>', {})
--- Terminal keybinds
-vim.keymap.set('t', '<C-s><C-e>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
--- Other keybinds
-vim.keymap.set("n", "<leader>rr", vim.lsp.buf.rename, {})
-vim.api.nvim_set_keymap('n', '<leader>gb', ':GitMessenger<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>gB', ':Git blame<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>r', ':NERDTreeFind<CR>', {})
-vim.api.nvim_set_keymap('n', '<C-n>', ':NERDTreeToggle<CR>', {})
-vim.api.nvim_set_keymap('n', '<leader>z', ':ZenMode<CR>', {})
+-- ====== Options ======
 
-vim.opt.scrolloff = 10  -- Always have a minimum of x lines above/below cursor
-vim.opt.updatetime = 50 -- Faster update
-vim.opt.diffopt:append("context:30")
+vim.opt.scrolloff  = 10  -- Always keep x lines above/below cursor
+vim.opt.updatetime = 50  -- Faster update
 
--- TODO: Covert to Lua
-vim.cmd([[
-  " ====== General config ======
-  set ttimeoutlen=100                       " Stops delay on 'O' if pressed after ESC
-  set autoread                              " Auto load file if changed
-  set encoding=utf-8                        " Default encoding
-  set ffs=unix,dos,mac                      " Set fileformat
-  set undofile                              " Maintain undo history between sessions
-  set backupdir=~/.config/nvim/tmp/backup   " Set backup directory
-  set directory=~/.config/nvim/tmp/swap     " Set swapfile directory
-  set undodir=~/.config/nvim/tmp/undo       " Set undo directory
-  set scrolljump=5                          " Change default amount of lines scrolled
-  set termguicolors                         " Rich colors
-  set cursorline                            " Highlight current line
-  set mouse=                                " Disable mouse
-  filetype on                               " Enable file type detection
-  filetype plugin indent on                 " Enable loading the plugin files for specific file types
-  set clipboard=unnamed " Copy to global clipboard
+-- Diff: ensure exactly one context: entry
+local _dopts = vim.opt.diffopt:get()
+for i = #_dopts, 1, -1 do
+  if _dopts[i]:match("^context:") then table.remove(_dopts, i) end
+end
+table.insert(_dopts, "context:30")
+vim.opt.diffopt = _dopts
 
-  " Tabs
-  set tabstop=2                             " The width of a TAB is set to 2.
-  set shiftwidth=2                          " Indents will have a width of 2.
-  set expandtab                             " Expand TABs to spaces.
-  "set relativenumber                        " Relative gutter line numbers
-  set number relativenumber
-  "set number                                " Enable gutter line numbers
-  set softtabstop=0
-  set autoindent
+-- General
+vim.opt.ttimeoutlen   = 100   -- Stops delay on 'O' after ESC
+vim.opt.autoread      = true  -- Auto-reload file if changed externally
+vim.opt.encoding      = "utf-8"
+vim.opt.fileformats   = { "unix", "dos", "mac" }
+vim.opt.undofile      = true  -- Persist undo history across sessions
+vim.opt.backupdir     = vim.fn.expand("~/.config/nvim/tmp/backup")
+vim.opt.directory     = vim.fn.expand("~/.config/nvim/tmp/swap")
+vim.opt.undodir       = vim.fn.expand("~/.config/nvim/tmp/undo")
+vim.opt.scrolljump    = 5
+vim.opt.termguicolors = true
+vim.opt.cursorline    = true
+vim.opt.mouse         = ""
+vim.opt.clipboard     = "unnamed"
 
-  " ====== Theme ======
-  if (has("termguicolors"))
-    let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
-    let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
-  endif
+-- Tabs
+vim.opt.tabstop     = 2
+vim.opt.shiftwidth  = 2
+vim.opt.expandtab   = true
+vim.opt.softtabstop = 0
+vim.opt.autoindent  = true
 
-  " ====== Key remapping ======
-  nnoremap <SPACE> <Nop>
-  nmap <space> <leader>
-]])
-
--- vim.g.catppuccin_flavour = "macchiato"
--- vim.cmd [[colorscheme catppuccin]]
+-- Line numbers
+vim.opt.number         = true
+vim.opt.relativenumber = true
