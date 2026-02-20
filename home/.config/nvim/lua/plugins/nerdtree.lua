@@ -1,6 +1,11 @@
 return {
   'scrooloose/nerdtree',
-  dependencies = {'ryanoasis/vim-devicons'},
+  enabled = false,
+  dependencies = { 'ryanoasis/vim-devicons' },
+  keys = {
+    { "<C-n>",     ":NERDTreeToggle<CR>" },
+    { "<leader>r", ":NERDTreeFind<CR>" },
+  },
   config = function()
     vim.cmd([[
       " ====== Nerdtree config ======

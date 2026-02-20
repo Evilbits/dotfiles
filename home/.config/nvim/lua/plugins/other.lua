@@ -4,7 +4,11 @@ return {
   -- Smooth scrolling
   { 'psliwka/vim-smoothie' },
   -- Adds a symbol at line indents
-  { 'yggdroot/indentline' },
+  {
+    'lukas-reineke/indent-blankline.nvim',
+    main = 'ibl',
+    opts = {},
+  },
   -- Smarter surrounding of words
   { 'tpope/vim-surround' },
   -- JS code formatter

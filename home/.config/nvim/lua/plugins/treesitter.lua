@@ -1,19 +1,28 @@
 return {
   'nvim-treesitter/nvim-treesitter',
   event = 'CursorHold',
-  run = ':TSUpdate',
-  --run = function()
-  --    local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
-  --    ts_update()
-  --end,
+  build = ':TSUpdate',
   config = function()
     require 'nvim-treesitter.configs'.setup {
-      ensure_installed = "all", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+      ensure_installed = {
+        "lua",
+        "typescript",
+        "javascript",
+        "tsx",
+        "terraform",
+        "hcl",
+        "markdown",
+        "markdown_inline",
+        "json",
+        "yaml",
+        "bash",
+        "gitcommit",
+        "gitignore",
+        "css",
+        "html",
+      },
       highlight = {
         enable = true,
-        custom_captures = {
-          ["ff"] = "Function",
-        },
       },
       incremental_selection = {
         enable = true,
@@ -25,7 +34,7 @@ return {
         },
       },
       indent = {
-        enabled = true,
+        enable = true,
       },
       -- nvim-ts-autotag
       autotag = {
