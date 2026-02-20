@@ -11,11 +11,6 @@ return {
   },
   -- Smarter surrounding of words
   { 'tpope/vim-surround' },
-  -- JS code formatter
-  {
-    'prettier/vim-prettier',
-    build = 'yarn install --frozen-lockfile --production'
-  },
   {
     "iamcco/markdown-preview.nvim",
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
