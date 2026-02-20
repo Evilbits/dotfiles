@@ -21,6 +21,8 @@ return {
       -- vim.keymap.set('n', '<Leader>b', vim.cmd.Buffers, {})
       vim.keymap.set('n', '<Leader>b', builtin.buffers, {})
       vim.keymap.set('n', '<Leader>pd', builtin.diagnostics, {})
+      vim.keymap.set('n', '<Leader>gs', builtin.git_status, {})
+      vim.keymap.set('n', '<Leader>t',  builtin.treesitter, {})
 
       require('telescope').setup {
         defaults = {

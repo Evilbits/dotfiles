@@ -3,6 +3,10 @@ return {
   {
     "CopilotC-Nvim/CopilotChat.nvim",
     enabled = false,
+    keys = {
+      { "<C-s>g", ":CopilotChatCommit<CR>", mode = "n" },
+      { "<C-s>c", ":CopilotChatToggle<CR>", mode = { "n", "v" } },
+    },
     dependencies = {
       { "github/copilot.vim" },    -- or zbirenbaum/copilot.lua
       { "nvim-lua/plenary.nvim" }, -- for curl, log wrapper
