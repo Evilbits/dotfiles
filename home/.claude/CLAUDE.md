@@ -31,6 +31,7 @@
 - Neovim config: `~/dotfiles/home/.config/nvim/`
   - General keymaps: `lua/config.lua`
   - Plugin-specific keymaps: `lua/plugins/<plugin>.lua`
+- When referencing keymaps, always look up the user's actual mappings from the config rather than assuming defaults.
 
 ## Project Rules
 - Check `.cursor/` for project-specific guidelines before starting work.
