@@ -1,7 +1,12 @@
 -- General UI setup
 return {
   -- Custom start screen
-  {'mhinz/vim-startify'},
+  {
+    'mhinz/vim-startify',
+    init = function()
+      vim.g.startify_change_to_dir = 0
+    end,
+  },
   {
     'folke/noice.nvim',
     dependencies = {
@@ -26,18 +31,8 @@ return {
         },
         -- Display popup menu right below cmdline for nicer UI when autocompleting
         views = {
-          --cmdline_popup = {
-          --  position = {
-          --    row = "50%",
-          --    col = "50%",
-          --  },
-          --},
           popupmenu = {
             relative = "editor",
-            --position = {
-            --  row = "60%",
-            --  col = "50%",
-            --},
             border = {
               style = "rounded",
               padding = { 0, 1 },

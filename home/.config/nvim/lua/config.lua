@@ -15,9 +15,8 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-vim.g.mapleader              = " "
-vim.g.maplocalleader         = "\\"
-vim.g.startify_change_to_dir = 0   -- prevent startify from changing cwd on file open
+vim.g.mapleader      = " "
+vim.g.maplocalleader = "\\"
 vim.keymap.set("", "<Space>", "<Nop>", { silent = true })
 
 require("lazy").setup({
