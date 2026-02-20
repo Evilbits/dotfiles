@@ -15,8 +15,9 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-vim.g.mapleader      = " "
-vim.g.maplocalleader = "\\"
+vim.g.mapleader              = " "
+vim.g.maplocalleader         = "\\"
+vim.g.startify_change_to_dir = 0   -- prevent startify from changing cwd on file open
 vim.keymap.set("", "<Space>", "<Nop>", { silent = true })
 
 require("lazy").setup({
@@ -43,8 +44,6 @@ vim.keymap.set({ "n", "v" }, "<C-s>c", ":CopilotChatToggle<CR>")
 vim.keymap.set("t", "<C-s><C-e>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 -- Misc
 vim.keymap.set("n", "<leader>rr", vim.lsp.buf.rename)
-vim.keymap.set("n", "<leader>r",  ":NERDTreeFind<CR>")
-vim.keymap.set("n", "<C-n>",      ":NERDTreeToggle<CR>")
 vim.keymap.set("n", "<leader>z",  ":ZenMode<CR>")
 
 -- ====== Options ======
