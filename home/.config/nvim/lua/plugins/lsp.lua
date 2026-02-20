@@ -83,6 +83,7 @@ return {
         vim.keymap.set('n', '<leader>gt', builtin.lsp_type_definitions, opts)
         vim.keymap.set("n", "<leader>qf", vim.lsp.buf.code_action, opts)
         vim.keymap.set("n", "<C-x>", vim.lsp.buf.hover, opts)
+        vim.keymap.set("n", "<leader>rr", vim.lsp.buf.rename, opts)
 
         vim.diagnostic.config({ virtual_text = false, update_in_insert = true })
       end

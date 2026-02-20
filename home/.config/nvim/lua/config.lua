@@ -30,21 +30,8 @@ require("lazy").setup({
 vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
 
--- Git
-vim.keymap.set("n", "<leader>gs", "<cmd>Telescope git_status<CR>")
-vim.keymap.set("n", "<leader>d",  "<cmd>Gitsigns diffthis<CR>")
-vim.keymap.set("n", "<leader>gb", ":GitMessenger<CR>")
-vim.keymap.set("n", "<leader>gB", ":Git blame<CR>")
--- Treesitter
-vim.keymap.set("n", "<leader>t", "<cmd>Telescope treesitter<CR>")
--- CopilotChat
-vim.keymap.set("n",           "<C-s>g", ":CopilotChatCommit<CR>")
-vim.keymap.set({ "n", "v" }, "<C-s>c", ":CopilotChatToggle<CR>")
 -- Terminal
 vim.keymap.set("t", "<C-s><C-e>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
--- Misc
-vim.keymap.set("n", "<leader>rr", vim.lsp.buf.rename)
-vim.keymap.set("n", "<leader>z",  ":ZenMode<CR>")
 
 -- ====== Options ======
 
