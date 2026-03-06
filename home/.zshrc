@@ -93,7 +93,6 @@ export EDITOR=nvim
 stty -ixon # Disable XON/XOFF flow control so <C-s> is not swallowed by the terminal
 
 # Source custom fzf widgets
-source /Users/rasmusreiler/.config/fzf/key-bindings.zsh
 source "$HOME/.config/fzf/key-bindings.zsh"
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*" --glob "!node_modules/*"'
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
@@ -116,9 +115,19 @@ alias vim="nvim"
 unsetopt correct_all  
 setopt correct
 
+# Lazy-load NVM to avoid slow startup (SentinelOne scans each subprocess)
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+_nvm_lazy_load() {
+  unset -f nvm node npm npx
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+}
+
+nvm()  { _nvm_lazy_load; nvm "$@"; }
+node() { _nvm_lazy_load; node "$@"; }
+npm()  { _nvm_lazy_load; npm "$@"; }
+npx()  { _nvm_lazy_load; npx "$@"; }
 
 # pnpm
 export PNPM_HOME="$HOME/Library/pnpm"
