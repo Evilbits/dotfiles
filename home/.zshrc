@@ -18,48 +18,6 @@ ZSH_HIGHLIGHT_STYLES[suffix-alias]='fg=11'
 ZSH_HIGHLIGHT_STYLES[precommand]='fg=11'
 ZSH_HIGHLIGHT_STYLES[arg0]='fg=11'
 
-# spaceship theme settings
-SPACESHIP_USER_SHOW='always'
-SPACESHIP_BATTERY_SHOW=false
-SPACESHIP_RUBY_SYMBOL=''
-SPACESHIP_PROMPT_ADD_NEWLINE=true
-
-SPACESHIP_PROMPT_ORDER=(
-  # time        # Time stamps section (Disabled)
-  user          # Username section
-  dir           # Current directory section
-  host          # Hostname section
-  git           # Git section (git_branch + git_status)
-  hg            # Mercurial section (hg_branch  + hg_status)
-  # package     # Package version (Disabled)
-  node          # Node.js section
-  ruby          # Ruby section
-  elixir        # Elixir section
-  # xcode       # Xcode section (Disabled)
-  swift         # Swift section
-  golang        # Go section
-  php           # PHP section
-  rust          # Rust section
-  haskell       # Haskell Stack section
-  # julia       # Julia section (Disabled)
-  # docker      # Docker section (Disabled)
-  aws           # Amazon Web Services section
-  venv          # virtualenv section
-  conda         # conda virtualenv section
-  pyenv         # Pyenv section
-  dotnet        # .NET section
-  # ember       # Ember.js section (Disabled)
-  kubecontext   # Kubectl context section
-  terraform     # Terraform workspace section
-  exec_time     # Execution time
-  line_sep      # Line break
-  battery       # Battery level and status
-  # vi_mode     # Vi-mode indicator (Disabled)
-  jobs          # Background jobs indicator
-  exit_code     # Exit code section
-  char          # Prompt character
-)
-
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
 
 alias ls='ls --color=auto'
@@ -85,12 +43,10 @@ alias kubegi='kubectl get ingress'
 alias kubelf="kubectl logs -f"
 alias kubedp='kubectl describe pod'
 alias kubedd='kubectl describe deployment'
-alias kubeds='kubectl describe servier'
+alias kubeds='kubectl describe service'
 alias kubedi='kubectl describe ingress'
 
 export EDITOR=nvim
-
-stty -ixon # Disable XON/XOFF flow control so <C-s> is not swallowed by the terminal
 
 # Source custom fzf widgets
 source "$HOME/.config/fzf/key-bindings.zsh"
@@ -115,19 +71,8 @@ alias vim="nvim"
 unsetopt correct_all  
 setopt correct
 
-# Lazy-load NVM to avoid slow startup (SentinelOne scans each subprocess)
-export NVM_DIR="$HOME/.nvm"
-
-_nvm_lazy_load() {
-  unset -f nvm node npm npx
-  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-}
-
-nvm()  { _nvm_lazy_load; nvm "$@"; }
-node() { _nvm_lazy_load; node "$@"; }
-npm()  { _nvm_lazy_load; npm "$@"; }
-npx()  { _nvm_lazy_load; npx "$@"; }
+# fnm (Fast Node Manager)
+eval "$(fnm env --use-on-cd --shell zsh)"
 
 # pnpm
 export PNPM_HOME="$HOME/Library/pnpm"
