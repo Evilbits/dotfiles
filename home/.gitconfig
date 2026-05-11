@@ -18,3 +18,7 @@
 [user]
 	email = rasmus.reiler@doxy.me
 	name = Rasmus Reiler
+[includeIf "hasconfig:remote.*.url:git@github.com:*/**"]
+	path = ~/.gitconfig-github
+[includeIf "hasconfig:remote.*.url:https://github.com/*/**"]
+	path = ~/.gitconfig-github
