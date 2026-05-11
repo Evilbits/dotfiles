@@ -5,3 +5,5 @@
 !.gitignore
 !CLAUDE.md
 !settings.json
+!hooks/
+!hooks/**

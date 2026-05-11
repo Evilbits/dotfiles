@@ -1,18 +1,45 @@
 {
-  "permissions": {
-    "allow": [
-      "Read(~/dotfiles/**)",
-      "Read(~/.claude/**)",
-      "Read(~/.*)",
-      "Bash(git status)",
-      "Bash(git log *)",
-      "Bash(git diff *)",
-      "Grep"
-    ]
-  },
-  "enabledPlugins": {
-    "lua-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
-  },
-  "model": "opus"
+    "permissions": {
+        "allow": [
+            "Read(~/dotfiles/**)",
+            "Read(~/.claude/**)",
+            "Read(~/.*)",
+            "Bash(git status)",
+            "Bash(git log *)",
+            "Bash(git diff *)",
+            "Grep",
+            "Read",
+            "Glob",
+            "Bash(NX_DAEMON=false pnpm nx test:*)",
+            "Bash(find *)",
+            "Bash(ls*)",
+            "Bash(cat*)"
+        ],
+        "ask": [
+            "Bash(git push:*)"
+        ]
+    },
+    "enabledPlugins": {
+        "lua-lsp@claude-plugins-official": true,
+        "typescript-lsp@claude-plugins-official": true,
+        "superpowers@claude-plugins-official": true
+    },
+    "effortLevel": "high",
+    "voiceEnabled": true,
+    "voice": {
+        "enabled": true,
+        "mode": "hold"
+    },
+    "hooks": {
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "\"$HOME/.claude/hooks/claude-rename-runner.sh\""
+                    }
+                ]
+            }
+        ]
+    }
 }

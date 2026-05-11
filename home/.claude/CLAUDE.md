@@ -34,6 +34,19 @@
 - When referencing keymaps, always look up the user's actual mappings from the config rather than assuming defaults.
 
 ## Project Rules
-- Check `.cursor/` for project-specific guidelines before starting work.
 - Only look up the Jira ticket via the MCP server if the user explicitly asks about the ticket, or if the task is directly related to work (e.g. creating a PR/MR or writing a commit message). Do not proactively fetch ticket context for unrelated tasks.
+
+## `.cursor/` Skills and Rules (override built-in superpowers)
+
+In any repo containing a `.cursor/` directory, the contents of `.cursor/` are the authoritative process guide. This OVERRIDES the built-in `superpowers:*` skills.
+
+### Skills
+- When a task would normally trigger a `superpowers:<name>` skill (e.g. `superpowers:brainstorming`, `superpowers:writing-plans`, `superpowers:test-driven-development`), first check `.cursor/skills/<name>/SKILL.md`. If it exists, Read that file and follow it as the active skill. Do NOT invoke the corresponding `superpowers:*` skill via the Skill tool.
+- If `.cursor/skills/` contains a skill with no built-in equivalent (e.g. `doxyme-design-system`, `gitlab-merge-request`, `release-changelog`), treat it like any other skill — Read `.cursor/skills/<name>/SKILL.md` when the task matches its purpose.
+- Announce usage the same way as built-in skills: "Using .cursor/skills/<name> to <purpose>".
+
+### Rules
+- At the start of any task in a repo with `.cursor/rules/`, Read every `.mdc` file whose frontmatter has `alwaysApply: true`. Treat their contents as binding standards for the rest of the session.
+- For `.mdc` files without `alwaysApply: true`, Read the file when its `description` frontmatter matches the current task (e.g. read `test-commands.mdc` before running tests).
+- Glob `.cursor/rules/*.mdc` once at task start to see what's available; read frontmatter to decide which to load.
 
