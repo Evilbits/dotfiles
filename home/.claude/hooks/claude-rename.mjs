@@ -24,10 +24,7 @@ import {
   appendFileSync,
   existsSync,
   mkdirSync,
-  statSync,
-  openSync,
-  readSync,
-  closeSync,
+  realpathSync,
 } from "fs";
 import { join } from "path";
 import { homedir } from "os";
@@ -102,37 +99,40 @@ async function main() {
       resolveTranscriptPath(data.transcript_path || data.transcriptPath) ||
       getSessionJsonlPath(cwd, sessionId);
 
-    // Already fully named? (marker contains "done")
-    if (isMarkerDone(markerPath)) {
-      output();
-      return;
-    }
-
     if (!existsSync(jsonlPath)) {
       output();
       return;
     }
 
-    // Check if title was written (by backfill or a previous worker)
-    const titleStatus = hasCustomTitleInJsonl(jsonlPath);
-    if (titleStatus === null) {
+    // Marker drives behavior. Claude Code's built-in auto-namer also writes
+    // custom-title records, so we don't trust the jsonl — we trust our marker.
+    const marker = readMarkerContent(markerPath);
+
+    // User explicitly /rename'd? Adopt that as the authoritative title.
+    const userRename = findLatestRename(jsonlPath);
+    if (userRename && userRename !== marker.title) {
+      writeFileSync(markerPath, userRename);
+      writeTitle(jsonlPath, sessionId, userRename);
       output();
       return;
     }
-    if (titleStatus) {
-      markDone(markerPath);
+
+    // Already named: re-append our title so it's the last custom-title record
+    // in the file (the picker reads the last one — last write wins).
+    if (marker.status === "named") {
+      writeTitle(jsonlPath, sessionId, marker.title);
+      output();
+      return;
+    }
+
+    // Worker already running, or previously failed — don't spawn again.
+    if (marker.status === "naming" || marker.status === "failed") {
       output();
       return;
     }
 
     // Not enough conversation yet? Skip.
     if (!hasMinimalConversation(jsonlPath)) {
-      output();
-      return;
-    }
-
-    // Already spawned a worker? Don't spawn another.
-    if (existsSync(markerPath)) {
       output();
       return;
     }
@@ -159,12 +159,6 @@ async function main() {
 
 async function nameSessionAI(sessionId, jsonlPath) {
   if (isMarkerDone(join(MARKER_DIR, sessionId))) return;
-  const titleStatus = hasCustomTitleInJsonl(jsonlPath);
-  if (titleStatus === null) return;
-  if (titleStatus) {
-    markDone(join(MARKER_DIR, sessionId));
-    return;
-  }
 
   const { userMessages, assistantMessages } = extractMessages(jsonlPath);
   if (userMessages.length === 0) return;
@@ -173,9 +167,10 @@ async function nameSessionAI(sessionId, jsonlPath) {
   const title = await generateTitleViaClaude(userMessages, assistantMessages, model);
   if (title) {
     writeTitle(jsonlPath, sessionId, title);
-    markDone(join(MARKER_DIR, sessionId));
+    markDone(join(MARKER_DIR, sessionId), title);
     log(`Named (${model}): ${sessionId} → "${title}"`);
   } else {
+    markFailed(join(MARKER_DIR, sessionId));
     log(`Failed to generate title for ${sessionId}`);
   }
 }
@@ -250,52 +245,58 @@ function getSessionJsonlPath(cwd, sessionId) {
 
 // ─── Idempotency ─────────────────────────────────────────────────────────────
 
-function isMarkerDone(markerPath) {
+function readMarkerContent(markerPath) {
   try {
-    return readFileSync(markerPath, "utf-8").trim() === "done";
+    const content = readFileSync(markerPath, "utf-8").trim();
+    if (!content || content === "naming") return { status: "naming" };
+    if (content === "failed") return { status: "failed" };
+    if (content === "done") return { status: "stale" }; // legacy marker, regenerate
+    return { status: "named", title: content };
   } catch {
-    return false;
+    return { status: "absent" };
   }
 }
 
-function markDone(markerPath) {
+function isMarkerDone(markerPath) {
+  return readMarkerContent(markerPath).status === "named";
+}
+
+function markDone(markerPath, title) {
   try {
     mkdirSync(MARKER_DIR, { recursive: true });
-    writeFileSync(markerPath, "done");
+    writeFileSync(markerPath, title);
   } catch {}
 }
 
-export function hasCustomTitleInJsonl(jsonlPath) {
+function markFailed(markerPath) {
   try {
-    const stats = statSync(jsonlPath);
-    let content;
-    if (stats.size < 65536) {
-      content = readFileSync(jsonlPath, "utf-8");
-    } else {
-      const fd = openSync(jsonlPath, "r");
-      const bufSize = 65536;
-      const buffer = Buffer.alloc(bufSize);
-      readSync(fd, buffer, 0, bufSize, stats.size - bufSize);
-      closeSync(fd);
-      content = buffer.toString("utf-8");
-    }
-    const lines = content.split("\n");
-    for (const line of lines) {
-      if (!line.includes('"custom-title"')) continue;
+    mkdirSync(MARKER_DIR, { recursive: true });
+    writeFileSync(markerPath, "failed");
+  } catch {}
+}
+
+// ─── Conversation Extraction ─────────────────────────────────────────────────
+
+function findLatestRename(jsonlPath) {
+  try {
+    const lines = readFileSync(jsonlPath, "utf-8").split("\n");
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const line = lines[i];
+      if (!line.includes('"local_command"') || !line.includes("/rename")) continue;
       try {
         const entry = JSON.parse(line);
-        if (entry.type === "custom-title") return true;
-      } catch {
-        return null;
-      }
+        if (entry.type !== "system" || entry.subtype !== "local_command") continue;
+        const content = entry.content || "";
+        if (!content.includes("<command-name>/rename</command-name>")) continue;
+        const m = content.match(/<command-args>([\s\S]*?)<\/command-args>/);
+        if (m && m[1].trim()) return m[1].trim();
+      } catch {}
     }
-    return false;
+    return null;
   } catch {
     return null;
   }
 }
-
-// ─── Conversation Extraction ─────────────────────────────────────────────────
 
 function hasMinimalConversation(jsonlPath) {
   try {
@@ -396,6 +397,10 @@ function output() {
 
 // ─── Entry ───────────────────────────────────────────────────────────────────
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  main();
+if (process.argv[1]) {
+  let invokedPath = process.argv[1];
+  try { invokedPath = realpathSync(process.argv[1]); } catch {}
+  if (fileURLToPath(import.meta.url) === invokedPath) {
+    main();
+  }
 }
