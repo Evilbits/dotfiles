@@ -17,24 +17,21 @@ const TITLE_PROMPT_RULES = `Rules:
 - Focus on WHAT was done, not how the conversation started
 - Never include URLs, file paths, or generic words like "help", "work", "session", "project"
 - Good: "PROD-7697: Fix entitlement filter", "FOO-42: Refactor auth middleware", "Fix stripe webhook retry"
-- Bad: "coding-session", "helping-with-code", "PROD-7697: helping with code"`;
+- Bad: "coding-session", "helping-with-code", "PROD-7697: helping with code"
+- Never offer options or ask clarifying questions. If the input is ambiguous, generate the best single title you can.`;
 
 // Dedicated temp directory for claude -p worker sessions.
 // Sessions created here are cleaned up after each call so they
 // never appear in the user's `claude --resume` list.
 const WORKER_CWD = join(tmpdir(), "claude-rename-worker");
 
-export function buildTitlePrompt(userMessages, assistantMessages, options = {}) {
+export function buildTitlePrompt(userMessages, options = {}) {
   const {
     replyInstruction = "Reply with ONLY the title, nothing else",
     includeQuotesNote = false,
   } = options;
 
-  const userContext = userMessages.slice(0, 3).join("\n\n").slice(0, 1500);
-  const assistantContext = assistantMessages
-    .slice(0, 1)
-    .join("\n")
-    .slice(0, 500);
+  const userContext = (userMessages[0] || "").slice(0, 1500);
 
   const replyLine = includeQuotesNote
     ? `${replyInstruction} — no explanation, no quotes`
@@ -45,11 +42,8 @@ export function buildTitlePrompt(userMessages, assistantMessages, options = {}) 
 ${TITLE_PROMPT_RULES}
 - ${replyLine}
 
-User messages:
+First user message:
 ${userContext}
-
-Assistant response:
-${assistantContext}
 
 Title:`;
 }
@@ -95,6 +89,16 @@ export function normalizeGeneratedTitle(rawOutput) {
     title = dropTrailingStopwords(title);
   }
 
+  const REJECT_PATTERNS = [
+    /selected model/i,
+    /^prompt is too long/i,
+    /^i\b.*(can'?t|cannot|won'?t|am unable|don'?t have|need more|need additional)/i,
+    /^(i'?m\s+)?sorry\b/i,
+    /^there (is|was|'s) (an? )?(issue|problem|error)/i,
+    /\?$/,
+  ];
+  if (REJECT_PATTERNS.some((p) => p.test(title))) return null;
+
   if (title.length >= 5 && title.length <= 70) return title;
   return null;
 }
@@ -108,48 +112,45 @@ export function normalizeGeneratedTitle(rawOutput) {
  * @param {string} model - Model name (e.g. "haiku", "sonnet")
  * @returns {Promise<string|null>} Normalized kebab-case title, or null
  */
-export function generateTitleViaCLI(prompt, model) {
+export function generateTitleViaCLI(prompt, model, onReject) {
   mkdirSync(WORKER_CWD, { recursive: true });
 
   return new Promise((resolve) => {
     let stdout = "";
+    let stderr = "";
     let settled = false;
 
-    const child = spawn("claude", ["-p", "--model", model], {
+    const child = spawn("claude", [
+      "-p",
+      "--model", model,
+      "--strict-mcp-config",
+      "--mcp-config", '{"mcpServers":{}}',
+      "--setting-sources", "user",
+    ], {
       cwd: WORKER_CWD,
       stdio: ["pipe", "pipe", "pipe"],
     });
 
-    const timer = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        child.kill();
-        cleanupWorkerSessions();
-        resolve(null);
+    const finish = (result, reason) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      cleanupWorkerSessions();
+      if (result === null && typeof onReject === "function") {
+        try { onReject({ reason, stdout, stderr, code: child.exitCode }); } catch {}
       }
+      resolve(result);
+    };
+
+    const timer = setTimeout(() => {
+      child.kill();
+      finish(null, "timeout");
     }, 30000);
 
-    child.stdout.on("data", (data) => {
-      stdout += data.toString();
-    });
-
-    child.on("close", () => {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timer);
-        cleanupWorkerSessions();
-        resolve(normalizeGeneratedTitle(stdout));
-      }
-    });
-
-    child.on("error", () => {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timer);
-        cleanupWorkerSessions();
-        resolve(null);
-      }
-    });
+    child.stdout.on("data", (d) => { stdout += d.toString(); });
+    child.stderr.on("data", (d) => { stderr += d.toString(); });
+    child.on("close", () => finish(normalizeGeneratedTitle(stdout), "close"));
+    child.on("error", () => finish(null, "error"));
 
     child.stdin.write(prompt);
     child.stdin.end();

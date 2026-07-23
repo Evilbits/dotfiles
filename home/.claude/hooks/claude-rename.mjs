@@ -160,19 +160,40 @@ async function main() {
 async function nameSessionAI(sessionId, jsonlPath) {
   if (isMarkerDone(join(MARKER_DIR, sessionId))) return;
 
-  const { userMessages, assistantMessages } = extractMessages(jsonlPath);
+  const { userMessages } = extractMessages(jsonlPath);
   if (userMessages.length === 0) return;
 
   const model = getConfigModel();
-  const title = await generateTitleViaClaude(userMessages, assistantMessages, model);
+  const title = await generateTitleViaClaude(userMessages, model);
   if (title) {
     writeTitle(jsonlPath, sessionId, title);
     markDone(join(MARKER_DIR, sessionId), title);
     log(`Named (${model}): ${sessionId} → "${title}"`);
+    return;
+  }
+
+  const fallback = extractFallbackTitle(userMessages);
+  if (fallback) {
+    writeTitle(jsonlPath, sessionId, fallback);
+    markDone(join(MARKER_DIR, sessionId), fallback);
+    log(`Named (fallback): ${sessionId} → "${fallback}"`);
   } else {
     markFailed(join(MARKER_DIR, sessionId));
     log(`Failed to generate title for ${sessionId}`);
   }
+}
+
+function extractFallbackTitle(userMessages) {
+  const first = userMessages[0] || "";
+  const ticket = first.match(/\b[A-Z]+-\d+\b/);
+  if (ticket) return ticket[0];
+  const cleaned = first
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/[^a-zA-Z0-9\s-]/g, " ")
+    .trim();
+  const words = cleaned.split(/\s+/).filter((w) => w.length > 1).slice(0, 6);
+  const title = words.join(" ").slice(0, 60).trim();
+  return title.length >= 5 ? title : null;
 }
 
 export function getConfigModel() {
@@ -185,11 +206,15 @@ export function getConfigModel() {
   }
 }
 
-function generateTitleViaClaude(userMessages, assistantMessages, model) {
-  const prompt = buildTitlePrompt(userMessages, assistantMessages, {
+function generateTitleViaClaude(userMessages, model) {
+  const prompt = buildTitlePrompt(userMessages, {
     replyInstruction: "Reply with ONLY the title, nothing else",
   });
-  return generateTitleViaCLI(prompt, model);
+  return generateTitleViaCLI(prompt, model, ({ reason, stdout, stderr, code }) => {
+    log(
+      `Worker rejected (${reason}, code=${code}) stdout=${JSON.stringify((stdout || "").slice(0, 200))} stderr=${JSON.stringify((stderr || "").slice(0, 200))}`,
+    );
+  });
 }
 
 // ─── Stdin Reader ────────────────────────────────────────────────────────────
