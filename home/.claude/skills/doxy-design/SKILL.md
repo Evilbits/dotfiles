@@ -154,9 +154,9 @@ the exact text to add:
 - Anything about how rules are found → `docs/guides/ai-tooling/cursor-rules.md`.
 
 Present the proposed additions and ask before writing any of them; they ship as
-an MR the team can see. `00-rule-interpretation.mdc` already asks for this:
-"if you detect any changes that impact what's written in these rules you must
-prompt the user to consider updating these rules."
+an MR the team can see. `docs/guides/ai-tooling/cursor-rules.md` states the rule:
+"A correction you had to make to the AI is a gap in a rule. Put the fact in the
+layer that owns it, in the repo, in an MR the team can see."
 
 ## Hand-off
 
