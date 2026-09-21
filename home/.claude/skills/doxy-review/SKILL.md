@@ -32,8 +32,8 @@ Always, and in this order:
 1. **The repo's colocated rules.** Glob `**/.cursor/rules/*.mdc` (excluding
    `node_modules/` and `.worktrees/`). For anything touching extensions, apps,
    capabilities, the bridge, the toolkit, the SDK or Hotpot data, read
-   `apps/extensions/.cursor/rules/00-sdk-guidelines.mdc` and
-   `00-rule-interpretation.mdc` in full, then any nested rule whose `globs` or
+   `apps/extensions/AGENTS.md` in full (or `00-sdk-guidelines.mdc` on branches
+   from before it merged), then any nested rule whose `globs` or
    `description` match the change. Read `libs/extensions/glossary.md`. For
    entitlements, `docs/guides/entitlements/concepts.md`. For Hotpot,
    `libs/extensions/hotpot/docs/schema-decisions.md` and the hotpot repo's

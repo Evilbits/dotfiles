@@ -38,9 +38,9 @@ Fetching the ticket is in scope here by definition, so do it without asking.
   `**/.cursor/rules/*.mdc` (excluding `node_modules/` and `.worktrees/`). For
   anything under `apps/extensions/**` or `libs/extensions/**`, or about the SDK,
   a capability, the bridge or Hotpot data, read
-  `apps/extensions/.cursor/rules/00-sdk-guidelines.mdc` and
-  `00-rule-interpretation.mdc` in full — they define the vocabulary and are
-  `alwaysApply` — then any nested rule whose `globs` or `description` match the
+  `apps/extensions/AGENTS.md` in full — it carries the boundaries, the vocabulary
+  and the decision tables (on branches from before it merged, read
+  `00-sdk-guidelines.mdc` there instead) — then any nested rule whose `globs` or `description` match the
   ticket. For entitlement work, `docs/guides/entitlements/concepts.md`. For
   Hotpot, `libs/extensions/hotpot/docs/schema-decisions.md` and the hotpot
   repo's `ARCHITECTURE.md`. Until those carry everything,

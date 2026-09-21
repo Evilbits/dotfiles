@@ -39,9 +39,9 @@ Read, in this order, before the first question and before the restatement:
 2. **The colocated rules for the domain.** Glob `**/.cursor/rules/*.mdc`
    (excluding `node_modules/` and `.worktrees/`). For anything touching
    extensions, apps, capabilities, the bridge, the toolkit or the SDK, read
-   `apps/extensions/.cursor/rules/00-sdk-guidelines.mdc` and
-   `00-rule-interpretation.mdc` in full — they define the vocabulary and are
-   `alwaysApply` — then any nested rule whose `globs` or `description` match.
+   `apps/extensions/AGENTS.md` in full — it carries the boundaries, the vocabulary
+   and the decision tables (on branches from before it merged, read
+   `00-sdk-guidelines.mdc` there instead) — then any nested rule whose `globs` or `description` match.
    Read `libs/extensions/glossary.md`.
 3. **Domain guides that the rules do not yet route to:**
    - Hotpot: `libs/extensions/hotpot/README.md`,
@@ -144,13 +144,13 @@ repo's AI-readable context, and it is fixed there rather than in a private file.
 List each correction, and for each name the repo file that should carry it and
 the exact text to add:
 
-- SDK and platform vocabulary → `apps/extensions/.cursor/rules/00-sdk-guidelines.mdc`
+- SDK and platform vocabulary → `apps/extensions/AGENTS.md`
   or `libs/extensions/glossary.md`.
-- Capability rules → `apps/extensions/.cursor/rules/02-capabilities.mdc`.
+- Capability rules → `apps/extensions/.cursor/rules/02-capability-rules.mdc`.
 - Hotpot → a colocated rule under `libs/extensions/hotpot/.cursor/rules/` and
   `libs/extensions/hotpot/docs/`; platform semantics go to the hotpot repo.
-- Entitlements → `docs/guides/entitlements/` and a root rule globbed to the
-  entitlement code paths.
+- Entitlements → proposed to `docs/guides/entitlements/`, which another team owns;
+  the Apps side keeps only the consumer view in `apps/extensions/AGENTS.md`.
 - Anything about how rules are found → `docs/guides/ai-tooling/cursor-rules.md`.
 
 Present the proposed additions and ask before writing any of them; they ship as
