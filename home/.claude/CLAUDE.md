@@ -46,7 +46,10 @@ In any repo containing a `.cursor/` directory, the contents of `.cursor/` are th
 - Announce usage the same way as built-in skills: "Using .cursor/skills/<name> to <purpose>".
 
 ### Rules
-- At the start of any task in a repo with `.cursor/rules/`, Read every `.mdc` file whose frontmatter has `alwaysApply: true`. Treat their contents as binding standards for the rest of the session.
-- For `.mdc` files without `alwaysApply: true`, Read the file when its `description` frontmatter matches the current task (e.g. read `test-commands.mdc` before running tests).
-- Glob `.cursor/rules/*.mdc` once at task start to see what's available; read frontmatter to decide which to load.
+Rules are **colocated with the projects they describe**, so they live in nested folders, not only at the root. In doxyme-core: `.cursor/rules/` (cross-cutting), `apps/extensions/.cursor/rules/` (the Apps team rules — nine files, two of them alwaysApply), `apps/api-extensions/`, `apps/api-core/`, `apps/frontend/`, `libs/ui/`, `e2e/`, `docs/`. Cursor attaches a nested folder automatically when a file under it is touched; mirror that.
+
+- At task start, glob **`**/.cursor/rules/*.mdc`** (excluding `node_modules/` and `.worktrees/`) once to see what exists, and read the frontmatter of each.
+- Read every root-folder `.mdc` with `alwaysApply: true`. For a nested folder, read its `alwaysApply: true` files when the task touches anything under that folder's parent directory, or when the task is about that project's domain (an extension, the SDK, a capability, the bridge, Hotpot data) even if no file has been opened yet. `apps/extensions/.cursor/rules/00-sdk-guidelines.mdc` defines the SDK vocabulary (Bridge, Toolkit, Capability, App, Runtime, Actions, Events, Registry) and its `00-rule-interpretation.mdc` says how the Apps rules are to be applied — load both before any design or review conversation about extensions, apps, capabilities or the SDK.
+- Read any other `.mdc` when its `globs` match a path being touched or its `description` matches the task (e.g. read `test-commands.mdc` before running tests).
+- Treat loaded rules as binding standards for the rest of the session. If a rule turns out to be missing context or wrong, say so and propose the fix to the rule file itself rather than working around it.
 
