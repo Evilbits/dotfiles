@@ -162,6 +162,12 @@ prompt the user to consider updating these rules."
 
 The brief is the end of this skill. From here: `/doxy-ticket` reads the Shape
 verdict and writes an epic with tickets, a single ticket, or a spike;
-`/doxy-implement` takes a ticket to code. Neither runs unless asked, but when
-the brief is done, say which Shape it landed on and offer `/doxy-ticket` in one
-line.
+`/doxy-implement` takes a ticket, or a NOJIRA brief, to code. When the brief
+is done, say which Shape it landed on and offer the next skill in one line.
+
+**A request to build, branch, or start is the hand-off, never permission to
+implement here.** "Let's build this", "put it on a NOJIRA branch", "go ahead"
+all mean: stop, and invoke `/doxy-implement` with the brief. That skill owns
+the branch ritual, the plan-or-execute question and the commit cycle, and
+skipping it takes a decision away from the user. This happened once, on the
+AI-context restructure, and the work had to be reviewed after the fact.

@@ -12,8 +12,10 @@ description: >-
 
 # /implement — from ticket to shipped change
 
-Input is the ticket URL plus whatever framing comes with it. **The framing
-outranks the ticket text.** "We do not need to strictly follow the ticket",
+Input is the ticket URL plus whatever framing comes with it, or, for NOJIRA
+work, a brief in the spec folder whose Shape is Ticket; then the branch is
+`NOJIRA-<topic>` and the brief plays the ticket's part in every step below.
+**The framing outranks the ticket text.** "We do not need to strictly follow the ticket",
 "implement it exactly like MR 1234", "the most important thing is…" are the
 instructions; the ticket is context. When the two conflict, say so before acting.
 
