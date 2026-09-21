@@ -1,48 +1,197 @@
 {
-    "permissions": {
-        "allow": [
-            "Read(~/dotfiles/**)",
-            "Read(~/.claude/**)",
-            "Read(~/.*)",
-            "Read(~/dev/hotpot/**)",
-            "Bash(head*)",
-            "Bash(tail*)",
-            "Bash(git status)",
-            "Bash(git log *)",
-            "Bash(git diff *)",
-            "Grep",
-            "Read",
-            "Glob",
-            "Bash(NX_DAEMON=false pnpm nx test:*)",
-            "Bash(find *)",
-            "Bash(ls*)",
-            "Bash(cat*)"
-        ],
-        "ask": [
-            "Bash(git push:*)"
+  "permissions": {
+    "allow": [
+      "Read(~/dotfiles/**)",
+      "Read(~/.claude/**)",
+      "Read(~/.*)",
+      "Read(~/dev/hotpot/**)",
+      "Bash(head*)",
+      "Bash(tail*)",
+      "Bash(git status)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Grep",
+      "Read",
+      "Glob",
+      "Bash(NX_DAEMON=false pnpm nx test:*)",
+      "Bash(find *)",
+      "Bash(ls*)",
+      "Bash(cat*)",
+      "Bash(git fetch *)",
+      "Bash(git grep *)",
+      "Bash(npx tsc *)",
+      "Bash(pbcopy)",
+      "mcp__datadog-mcp__analyze_datadog_logs",
+      "mcp__datadog-mcp__search_datadog_logs",
+      "mcp__datadog-mcp__aggregate_rum_events",
+      "mcp__datadog-mcp__search_datadog_spans",
+      "mcp__datadog-mcp__aggregate_spans",
+      "mcp__datadog-mcp__get_datadog_metric",
+      "mcp__datadog-mcp__get_change_stories",
+      "mcp__datadog-mcp__list_datadog_skills",
+      "mcp__datadog-mcp__load_datadog_skill",
+      "mcp__atlassian__getJiraIssue",
+      "mcp__atlassian__searchJiraIssuesUsingJql",
+      "mcp__atlassian__getConfluencePage",
+      "mcp__atlassian__getConfluencePageDescendants",
+      "mcp__claude_ai_Atlassian__getJiraIssue",
+      "mcp__claude_ai_Atlassian__getConfluenceCommentChildren",
+      "mcp__claude_ai_Slack__slack_read_thread",
+      "mcp__gitLab__get_merge_request",
+      "mcp__gitLab__get_merge_request_notes",
+      "mcp__gitLab__get_merge_request_pipelines",
+      "mcp__gitLab__get_pipeline_jobs",
+      "mcp__claude_ai_Gitlab__get_merge_request_pipelines",
+      "mcp__figma__get_screenshot"
+    ],
+    "ask": [
+      "Bash(git push:*)"
+    ]
+  },
+  "model": "claude-fable-5-1[1m]",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/claude-rename-runner.sh\""
+          }
         ]
-    },
-    "enabledPlugins": {
-        "lua-lsp@claude-plugins-official": true,
-        "typescript-lsp@claude-plugins-official": true,
-        "superpowers@claude-plugins-official": true
-    },
-    "effortLevel": "high",
-    "voiceEnabled": true,
-    "voice": {
-        "enabled": true,
-        "mode": "hold"
-    },
-    "hooks": {
-        "Stop": [
-            {
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "\"$HOME/.claude/hooks/claude-rename-runner.sh\""
-                    }
-                ]
-            }
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/statusbar/update.js' stop"
+          }
         ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/statusbar/update.js' prompt"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/hooks/bash-guard.mjs'"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/statusbar/update.js' pre"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/hooks/format-on-edit.mjs'"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/statusbar/update.js' post"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/statusbar/update.js' notify"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/statusbar/update.js' permreq"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/hooks/doxy-skills-banner.mjs'"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/statusbar/lifecycle.js' start"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/statusbar/lifecycle.js' end"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "/Users/rasmusreiler/.claude/hooks/statusline.sh"
+  },
+  "enabledPlugins": {
+    "lua-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "blitz@doxyme": true
+  },
+  "extraKnownMarketplaces": {
+    "doxyme": {
+      "source": {
+        "source": "git",
+        "url": "git@gitlab.com:doxyme/cooks/claude-plugins.git"
+      }
     }
+  },
+  "effortLevel": "medium",
+  "tui": "fullscreen",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "voiceEnabled": true
 }
