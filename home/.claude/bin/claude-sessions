@@ -277,7 +277,7 @@ def preview(session_id):
     print()
     print("state:     " + (("%s in tmux %s" % (l.get("status"), l.get("tmux"))) if l else "closed, resumable"))
     if st["tickets"]:
-        print("tickets:   " + ", ".join("%s (%d)" % kv for kv in Counter(st["tickets"]).most_common(6)))
+        print("tickets:   " + ", ".join(k for k, _ in Counter(st["tickets"]).most_common(6)))
     if st["mrs"]:
         print("MRs:       " + ", ".join("!" + m for m in st["mrs"][:12]))
     if st["skills"]:
