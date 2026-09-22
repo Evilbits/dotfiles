@@ -235,7 +235,7 @@ def fit(s, n):
 
 def rows(states, mtimes, live):
     out = []
-    for st in sorted(states, key=lambda s: mtimes.get(s["id"], 0), reverse=True):
+    for st in sorted(states, key=lambda s: (s["id"] in live, mtimes.get(s["id"], 0)), reverse=True):
         l = live.get(st["id"])
         marker = " "
         if l:
@@ -348,10 +348,10 @@ def pick():
     if not lines:
         sys.exit("no sessions found")
     me = os.path.abspath(__file__)
-    header = "  age  ticket     skill     title                                            MRs            branch                 project   ●busy ○idle  ctrl-y copies id"
+    header = "  age  ticket     skill     title                                            MRs            branch                 project   live first, then newest  ●busy ○idle  ctrl-y copies id"
     fzf = subprocess.run(
         [
-            "fzf", "--reverse", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
+            "fzf", "--reverse", "--no-sort", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
             "--header", header, "--header-first",
             "--preview", "%s --preview {1}" % me, "--preview-window", "right,50%,wrap",
             "--bind", "ctrl-y:execute-silent(printf %s {1} | pbcopy)",
