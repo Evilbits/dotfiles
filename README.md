@@ -1,15 +1,15 @@
 # dotfiles
 
-Everything under `home/` mirrors `~`. `linker.sh` symlinks each entry into place: files directly, directories one level deep, so a folder such as `~/.config/nvim` becomes a symlink to `home/.config/nvim` while unmanaged neighbours in `~/.config` are left alone. Run it after cloning and again whenever a new top-level entry is added; it asks before overriding anything that differs.
+My macOS setup: zsh, tmux, Neovim, and a set of Claude Code tooling for working across several sessions at once.
+
+Everything under `home/` mirrors `~`. The linker symlinks each entry into place, files directly and directories one level deep, so `~/.config/nvim` points at `home/.config/nvim` while anything else in `~/.config` is left alone. It asks before replacing a file that differs.
 
 ```sh
 git clone git@github.com:Evilbits/dotfiles.git ~/dotfiles
 cd ~/dotfiles && ./linker.sh
 ```
 
-## Setup
-
-Install the tools the configs expect, then link.
+## Setup on a new machine
 
 ```sh
 brew install zsh tmux neovim fzf fnm fd ripgrep glab terminal-notifier koekeishiya/formulae/skhd
@@ -21,73 +21,78 @@ fnm install 24 && fnm default 24
 ./linker.sh
 ```
 
-Then, inside tmux, `prefix + I` installs the tmux plugins, and the first `nvim` start installs the Neovim plugins through lazy.nvim. `skhd --start-service` enables the app hotkeys. The Claude Code section below has two more one-off steps.
+Afterwards: `prefix + I` inside tmux installs its plugins, the first `nvim` start installs the Neovim plugins, `skhd --start-service` turns on the app hotkeys, and the two Claude Code steps at the end of this file finish the job.
 
-## What is in here
+## Tooling
 
-| Area | Where | What it does |
-| --- | --- | --- |
-| zsh | `home/.zshrc` | oh-my-zsh with autosuggestions and syntax highlighting, git and kubectl aliases, fnm for Node with `--use-on-cd`, pnpm on PATH, `nx` as `pnpm nx`, `vim` as `nvim`, custom fzf widgets from `home/.config/fzf/key-bindings.zsh`. |
-| tmux | `home/.tmux.conf` | Prefix is `C-a`. Vim-style pane movement with `hjkl`, `x`/`v` split, `c` new window in the current path, `Shift+arrows` switch windows. fzf pickers on `prefix t` (tmux sessions), `prefix r` (Claude sessions, see below) and `prefix b` (git branches). Plugins: tpm, tmux-fzf, tmux-mode-indicator. `home/.config/tmux/mem-percentage.sh` feeds the status bar. |
-| Neovim | `home/.config/nvim` | lazy.nvim with one file per plugin under `lua/plugins/`: LSP, blink completion, treesitter, telescope, nvim-tree, git, Copilot, claudecode.nvim, lualine, zen mode, Catppuccin theme. General keymaps live in `lua/config.lua`, plugin keymaps in each plugin file. |
-| Terminal theme | `home/catppuccin-macchiato.toml` | Catppuccin Macchiato palette for Alacritty; the tmux status line and Claude status line use the same colours. |
-| skhd | `home/.config/skhd` | `cmd-1/2/3` focus or cycle Zen, Slack and Alacritty through `bin/focus_or_cycle`. |
-| git | `home/.config/git/ignore` | Global ignore file. |
-| Claude Code | `home/.claude` | Instructions, settings, hooks, skills and the session picker. Details below. |
-| Specs | `home/.config/claude/specs` | Design briefs and plans written with Claude. They live here so they never land in a work repo. |
+**zsh** (`home/.zshrc`). oh-my-zsh with autosuggestions and syntax highlighting. Node comes from fnm and switches version on `cd`. Aliases for git and kubectl, `vim` for `nvim`, `nx` for `pnpm nx`. Custom fzf widgets live in `home/.config/fzf`.
+
+**tmux** (`home/.tmux.conf`). Prefix is `C-a`. Panes move with `hjkl`, split with `x` and `v`, and `c` opens a window in the current path. Three fzf pickers: `prefix t` for tmux sessions, `prefix r` for Claude sessions, `prefix b` for git branches. Plugins through tpm: tmux-fzf and tmux-mode-indicator. The status bar shows memory use via `home/.config/tmux/mem-percentage.sh`.
+
+**Neovim** (`home/.config/nvim`). lazy.nvim with one file per plugin under `lua/plugins/`: LSP, blink completion, treesitter, telescope, nvim-tree, git, Copilot, claudecode.nvim, lualine, zen mode. General keymaps are in `lua/config.lua`; each plugin keeps its own.
+
+**Theme.** Catppuccin Macchiato throughout: `home/catppuccin-macchiato.toml` for Alacritty, and the same palette in tmux, Neovim and the Claude status line.
+
+**skhd** (`home/.config/skhd`). `cmd-1`, `cmd-2`, `cmd-3` focus or cycle Zen, Slack and Alacritty.
+
+**git** (`home/.config/git/ignore`). The global ignore list.
+
+**Specs** (`home/.config/claude/specs`). Design briefs and implementation plans written with Claude. They live here so they never end up in a work repository.
 
 ## Claude Code
 
-`home/.claude` is linked to `~/.claude`. Its `.gitignore` allows only the files listed here; everything else Claude writes at runtime stays untracked.
+`home/.claude` holds the global instructions, the settings with their hooks, the skills, and the session tooling. Its `.gitignore` tracks only those; everything Claude writes at runtime stays out of the repo.
 
-### Files
+### Skills
 
-- `CLAUDE.md`: global instructions, including the safety rules, the commit format and how `.cursor/` skills and rules in a repo take precedence.
-- `settings.json`: model, permissions and the hooks below. Every hook runs `node` from fnm's default alias, `~/.local/share/fnm/aliases/default/bin`, so it works even when Claude was launched from a shell without fnm on PATH.
-- `hooks/bash-guard.mjs`: PreToolUse on Bash. Denies bypassing git hooks, `npx nx` and `git add .`/`-A`; asks before force-pushes, resets, rebases, amends, branch deletes and `rm -rf`.
-- `hooks/format-on-edit.mjs`: PostToolUse on Edit and Write. Runs the nearest `oxfmt` on the edited file.
-- `hooks/doxy-skills-banner.mjs`: SessionStart. Lists the `/doxy-*` skills in the doxyme repos and, everywhere, the snoozed sessions, due first.
-- `hooks/statusline.sh`: the status line: `model · effort | repo | <ticket> · <session name> | <own snooze> | ⏰ N due | branch [primary|worktree]`. The ticket is derived from the session's own prompts, so it appears even when Claude's auto-generated title omits it.
-- `hooks/claude-rename*.mjs`, `hooks/title-prompt.mjs`: a third-party session namer, kept but not wired into settings while Claude's built-in titles are on trial.
-- `skills/doxy-design`, `doxy-ticket`, `doxy-implement`, `doxy-review`: one skill per step of the development flow, from an idea to a brief, to Jira, to code and a draft MR, to an architecture-first review. `skills/snooze` parks the current session (see below).
-- `bin/claude-sessions`: the session picker and snooze tool.
+One skill per step of the development flow, each as small as it can be:
+
+- `/doxy-design` turns an idea into a brief the team can discuss, ending with a verdict on whether it is an epic, a ticket, a spike, or nothing.
+- `/doxy-ticket` turns that brief into Jira: an epic with tickets, a single ticket, or a spike. It also reevaluates existing tickets.
+- `/doxy-implement` takes a ticket to code: branch, scope, plan, tests, atomic commits, then a draft MR and a fresh-context review of it.
+- `/doxy-review` reviews an MR or a proposal architecture first, then decides where each comment belongs.
+- `/snooze` parks the current session until later (see below).
+
+### Hooks and status line
+
+A guard on Bash denies bypassing git hooks, `npx nx` and `git add .`, and asks before anything that rewrites history or deletes. Edited files are formatted with the nearest `oxfmt`. A banner at session start lists the skills in the doxyme repos and every snoozed session, due first. The status line reads `model · effort | repo | ticket · session name | snooze | branch`, where the ticket is worked out from the session's own prompts, so it is there even when Claude's generated title leaves it out.
 
 ### Session picker: `prefix r`
 
-Lists every Claude session across repos, read from the transcripts under `~/.claude/projects` and the live registry under `~/.claude/sessions`. Columns: state, age, repo, ticket, skill, title, MRs. Order: due, live, snoozed, then closed by age; fzf keeps that order while you type. The ticket comes from the keys you typed in the session, then the title, then Claude's replies, then the branch, so searching a ticket number finds review sessions whose branch was something else.
+An fzf list of every Claude session across repos, built from the transcripts and the live registry. Each row shows state, age, repo, ticket, skill, title and MRs. The order is due, live, snoozed, then closed by age, and the order holds while you type. The ticket is taken from what you typed in the session, then from the title, then from Claude's replies, then from the branch, which is how a review session opened with only an MR URL still lists under the right key.
 
 | Key | Action |
 | --- | --- |
 | `Enter` | Jump to a running session's tmux pane, or resume a closed one in a new window in that repo's tmux session. Clears its snooze. |
-| `ctrl-s` | Snooze the highlighted session (asks for a duration or MR URL, and a reason). |
-| `ctrl-u` | Unsnooze. |
-| `ctrl-z` | Toggle a snoozed-only view. |
+| `ctrl-s` | Snooze the highlighted session. |
+| `ctrl-u` | Unsnooze it. |
+| `ctrl-z` | Show only snoozed sessions; again to go back. |
 | `ctrl-y` | Copy the session id. |
-| `End` / `Home` | Bottom and top of the list. |
+| `End`, `Home` | Bottom and top of the list. |
 
-The preview shows the title, live state, snooze details, tickets, MRs, skills, branch, the first prompt and the most recent prompts. A footer keeps every snoozed session in view with its remaining time.
+The preview pane shows the title, whether it is running and where, snooze details, tickets, MRs, skills, branch, the first prompt and the latest prompts. A footer keeps every snoozed session in view with its remaining time.
 
 ### Snoozing
 
-A snooze parks a session until a time, until something happens on a GitLab MR, or whichever comes first. From inside a session type `/snooze …`; from a shell use the tool directly with `current` for the session in this tmux pane or a session id prefix.
+A snooze parks a session until a time, until something happens on a GitLab MR, or whichever comes first. Inside a session, type `/snooze` followed by the same words; from a shell, `current` means the session in this tmux pane.
 
 ```sh
 claude-sessions --snooze current 3d awaiting review on !17005
 claude-sessions --snooze current https://gitlab.com/doxyme/cooks/hotpot/-/merge_requests/612 awaiting review
 claude-sessions --snooze current https://gitlab.com/doxyme/cooks/hotpot/-/merge_requests/612 merge next step
-claude-sessions --snooze current fri https://gitlab.com/.../merge_requests/612 whichever comes first
+claude-sessions --snooze current fri https://gitlab.com/doxyme/cooks/hotpot/-/merge_requests/612 whichever comes first
 claude-sessions --unsnooze current
 ```
 
-Durations: `30s`, `45m`, `2h`, `3d` (day-based lands at 09:00), `tomorrow`, a weekday such as `fri`, a time such as `14:30`. An MR without a mode word wakes on a comment by someone else, an approval, a failed pipeline, a conflict, merge or close; `merge` after the URL wakes only on merge or close.
+Durations are `30s`, `45m`, `2h`, `3d`, `tomorrow`, a weekday such as `fri`, or a time such as `14:30`; anything in days lands at 09:00. An MR on its own wakes on a comment by someone else, an approval, a failed pipeline, a conflict, merge or close. `merge` after the URL wakes only on merge or close.
 
-A launchd job runs `claude-sessions --wake` every minute. When a snooze fires it sends a macOS notification (clicking it opens the session), marks the session due in the picker and status line, and reopens the session in tmux if it was closed. `claude-sessions --due` prints the list the banner shows; `--wake` runs the check by hand; the log is `~/.local/state/claude-sessions/wake.log`.
+A launchd job checks every minute. When a snooze fires you get a notification that opens the session when clicked, the session moves to the top of the picker marked due, the status line in every session shows a due count, and a closed session is reopened in tmux. `claude-sessions --due` lists what is snoozed, `--wake` runs the check by hand, and the log is at `~/.local/state/claude-sessions/wake.log`.
 
 Two one-off steps on a new machine:
 
 ```sh
-claude-sessions --install-wake                                   # launchd job, every minute
-security add-generic-password -a "$USER" -s claude-sessions-gitlab -w "$GITLAB_NPM_TOKEN"   # token for MR polling, read from the login keychain
+claude-sessions --install-wake
+security add-generic-password -a "$USER" -s claude-sessions-gitlab -w "$GITLAB_NPM_TOKEN"
 ```
 
-Then allow `terminal-notifier` under System Settings → Notifications the first time a reminder fires. `claude-sessions --uninstall-wake` removes the job.
+The first installs the launchd job. The second stores the GitLab token in the login keychain, since the job runs without a shell environment. Allow `terminal-notifier` under System Settings → Notifications when the first reminder appears.
