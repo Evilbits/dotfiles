@@ -220,7 +220,7 @@ def project_of(state):
     for i, p in enumerate(parts):
         if p == "dev" and i + 1 < len(parts):
             base = parts[i + 1]
-            return base + ("+wt" if ".claude/worktrees" in cwd else "")
+            return base
     return parts[-1] if parts else "?"
 
 def skill_of(state):
