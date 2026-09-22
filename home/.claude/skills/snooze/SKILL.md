@@ -16,4 +16,4 @@ Reply with the command's one output line and nothing else. It states the ticket,
 
 `/snooze off` or a request to unsnooze runs `~/.claude/bin/claude-sessions --unsnooze current` and replies "unsnoozed".
 
-What the user gets: the session moves to the snoozed section at the bottom of the prefix-r picker with its remaining time and reason, the status line shows `⏾ <remaining> · <reason>`, and when the time is up a launchd job (every five minutes) sends a notification, marks the session due, and reopens it in tmux if it was closed. `claude-sessions --wake` runs that check immediately.
+What the user gets: the session moves to the snoozed section at the bottom of the prefix-r picker with its remaining time and reason, the status line shows `⏾ <remaining> · <reason>`, and when the time is up a launchd job (every minute) sends a notification, marks the session due, and reopens it in tmux if it was closed. `claude-sessions --wake` runs that check immediately.

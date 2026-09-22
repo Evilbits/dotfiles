@@ -20,7 +20,7 @@ Modes:
       Claude session can snooze itself from a Bash call.
   claude-sessions --statusline ID  one line for the status bar: ticket, own snooze, due count
   claude-sessions --wake       notify and reopen sessions whose snooze has expired (run by launchd)
-  claude-sessions --install-wake / --uninstall-wake   manage the launchd job (every 5 minutes)
+  claude-sessions --install-wake / --uninstall-wake   manage the launchd job (every minute)
 
 In the picker: ctrl-s snoozes the highlighted session, ctrl-u unsnoozes, enter on a
 snoozed or due session clears its snooze and opens it.
@@ -360,7 +360,7 @@ def install_wake():
 <plist version="1.0"><dict>
   <key>Label</key><string>com.rasmusreiler.claude-sessions-wake</string>
   <key>ProgramArguments</key><array><string>/usr/bin/python3</string><string>%s</string><string>--wake</string></array>
-  <key>StartInterval</key><integer>300</integer>
+  <key>StartInterval</key><integer>60</integer>
   <key>RunAtLoad</key><true/>
   <key>EnvironmentVariables</key><dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
 </dict></plist>
@@ -370,7 +370,7 @@ def install_wake():
     with open(PLIST, "w") as f:
         f.write(plist)
     r = subprocess.run(["launchctl", "bootstrap", "gui/%d" % os.getuid(), PLIST], capture_output=True, text=True)
-    print("installed wake job, every 5 minutes" if r.returncode == 0 else r.stderr)
+    print("installed wake job, every minute" if r.returncode == 0 else r.stderr)
 
 def uninstall_wake():
     subprocess.run(["launchctl", "bootout", "gui/%d" % os.getuid(), PLIST], capture_output=True)
