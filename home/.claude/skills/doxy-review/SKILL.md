@@ -51,7 +51,9 @@ A local finding inside something an architectural finding would restructure or d
 
 **Severity is cost to reverse, not importance.**
 
-- **blocking** — should not land in this shape because the decision is expensive to undo once shipped: a permanent platform contract, a published surface, a data-loss defect, or a foundation other work will be built on before anyone revisits it. Unexported internal arrangement that is cheap to rewrite is **not** blocking on its own; it becomes blocking when something is about to be built on it or it causes a defect. Say which applies.
+**Write the reversal cost before picking the label.** For every candidate finding, state in one line who would have to change what, in which repos, after this ships. The label follows from that line, never the other way round.
+
+- **blocking** — undoing it after it ships costs more than one coordinated release in repos this team owns: a contract apps outside the team will import, a data shape written into undeletable or PHI rows, a data-loss or security defect, or a decision other work builds on with no later review point. The finding carries its reversal-cost line. If that line reads "a release plus a pin bump", "edit a string table", "update a doc", "rewrite a code path nobody imports" or "record the decision somewhere durable", the finding is worth raising, whatever it would remove. Fewer lines, one concept gone or a simpler shape is the ordinary content of worth raising and is never on its own a reason for blocking.
 - **worth raising** — a real improvement the author can take or argue with, where either answer is reasonable. Most findings live here; a review where everything is blocking has not been triaged.
 - **nit** — naming, comment placement, a redundant guard, formatting, a local micro-optimisation, doc wording.
 
@@ -59,7 +61,7 @@ A local finding inside something an architectural finding would restructure or d
 
 **Suppression needs a blocking finding that decides something.** A blocking finding that reopens a question does not license dropping everything downstream of the current design, which may survive the reopening. Keep those findings and mark them **conditional on** the named open question; deleting them leaves the review with nothing to say if the answer comes back unchanged.
 
-**A blocking finding can be about the reasoning rather than the conclusion.** "The evidence this rests on is wrong or out of date and must be redone before the expensive part starts" is blocking whenever nobody will revisit it afterwards, even when the conclusion is likely to stand. Say which you mean, and if you expect the conclusion to survive, say so.
+**A blocking finding can be about the reasoning rather than the conclusion**, but only when the conclusion, if wrong, meets the reversal-cost test above. "The premise is undocumented" or "this supersedes the ticket's wording" is a request to record a decision, and that is worth raising. Say which you mean, and if you expect the conclusion to survive, say so.
 
 **Holding nits.** While any blocking architectural finding is open, hold every nit and give one closing line with the count and categories, deferred until the shape is settled. Enumerate only if asked.
 
