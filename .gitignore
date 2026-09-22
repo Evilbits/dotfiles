@@ -1,6 +1,8 @@
 # Ignore vim tmp files created after symlinking
 home/.config/*
 
+!home/.config/tmux
+
 !home/.config/nvim
 home/.config/nvim/tmp/swap/*
 home/.config/nvim/tmp/backup/*
