@@ -261,6 +261,16 @@ def find(states, session_id):
             return st
     return None
 
+HDR = "\033[1;38;5;183m"
+LBL = "\033[2m"
+RST = "\033[0m"
+
+def label(k, v):
+    print(LBL + k.ljust(11) + RST + v)
+
+def header(s):
+    print(HDR + s + RST)
+
 def preview(session_id):
     states, mtimes = index_sessions()
     st = find(states, session_id)
@@ -271,24 +281,24 @@ def preview(session_id):
     width = int(os.environ.get("FZF_PREVIEW_COLUMNS") or 80)
     import textwrap
     wrap = lambda s: "\n".join(textwrap.wrap(s, width - 2)) if s else ""
-    print(wrap(title_of(st)))
+    print("\033[1m" + wrap(title_of(st)) + RST)
     if st["ai_title"] and st["ai_title"] != title_of(st):
-        print("ai title:  " + st["ai_title"])
+        label("ai title", st["ai_title"])
     print()
-    print("state:     " + (("%s in tmux %s" % (l.get("status"), l.get("tmux"))) if l else "closed, resumable"))
+    label("state", ("%s in tmux %s" % (l.get("status"), l.get("tmux"))) if l else "closed, resumable")
     if st["tickets"]:
-        print("tickets:   " + ", ".join(k for k, _ in Counter(st["tickets"]).most_common(6)))
+        label("tickets", ", ".join(k for k, _ in Counter(st["tickets"]).most_common(6)))
     if st["mrs"]:
-        print("MRs:       " + ", ".join("!" + m for m in st["mrs"][:12]))
+        label("MRs", ", ".join("!" + m for m in st["mrs"][:12]))
     if st["skills"]:
-        print("skills:    " + ", ".join(st["skills"]))
+        label("skills", ", ".join(st["skills"]))
     if st["branch"]:
-        print("branch:    " + st["branch"])
+        label("branch", st["branch"])
     print()
-    print("first prompt")
+    header("first prompt")
     print(wrap(st["first_prompt"]))
     print()
-    print("recent prompts (newest on top)")
+    header("recent prompts (newest on top)")
     for p in reversed(st["prompts"][-6:]):
         print(wrap("- " + p))
         print()
