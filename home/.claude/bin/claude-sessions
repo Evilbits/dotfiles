@@ -19,7 +19,8 @@ Modes:
       ID may be "current": the session running in this tmux pane ($TMUX_PANE), so a
       Claude session can snooze itself from a Bash call.
   claude-sessions --statusline ID  one line for the status bar: ticket, own snooze, due count
-  claude-sessions --wake       notify and reopen sessions whose snooze has expired (run by launchd)
+  claude-sessions --wake       notify and reopen sessions whose snooze has expired (run by launchd); logs to ~/.local/state/claude-sessions/wake.log
+  claude-sessions --due        print due and upcoming snoozed sessions, one per line (used by the SessionStart banner)
   claude-sessions --install-wake / --uninstall-wake   manage the launchd job (every minute)
 
 In the picker: ctrl-s snoozes the highlighted session, ctrl-u unsnoozes, enter on a
@@ -328,9 +329,40 @@ def snooze_prompt(session_id):
         print(e)
         time.sleep(1)
 
+WAKE_LOG = os.path.join(os.path.dirname(SNOOZE), "wake.log")
+
+def log(msg):
+    try:
+        os.makedirs(os.path.dirname(WAKE_LOG), exist_ok=True)
+        with open(WAKE_LOG, "a") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S ") + msg + "\n")
+    except Exception:
+        pass
+
 def notify(title, body):
-    subprocess.run(["osascript", "-e", 'display notification "%s" with title "%s"' % (body.replace('"', "'"), title.replace('"', "'"))], capture_output=True)
-    tmux("display-message", "-d", "6000", "%s: %s" % (title, body))
+    tn = shutil.which("terminal-notifier") or "/opt/homebrew/bin/terminal-notifier"
+    if os.path.exists(tn):
+        r = subprocess.run([tn, "-title", title, "-message", body, "-sound", "default", "-group", "claude-sessions"], capture_output=True, text=True)
+        log("terminal-notifier exit %s %s" % (r.returncode, r.stderr.strip()))
+    else:
+        r = subprocess.run(["osascript", "-e", 'display notification "%s" with title "%s"' % (body.replace('"', "'"), title.replace('"', "'"))], capture_output=True, text=True)
+        log("osascript exit %s %s" % (r.returncode, r.stderr.strip()))
+    tmux("display-message", "-d", "8000", "%s: %s" % (title, body))
+
+def due_lines():
+    snoozed = load_snooze()
+    if not snoozed:
+        return []
+    states, _ = index_sessions()
+    out = []
+    for sid, e in sorted(snoozed.items(), key=lambda kv: kv[1]["until"]):
+        st = find(states, sid)
+        if not st:
+            continue
+        left = remaining(e["until"])
+        mark = "⏰ due" if left == "due" else "⏾ in " + left
+        out.append("%s  %s  %s%s" % (fit(mark, 12), fit(primary_ticket(st), 10), title_of(st), ("  · " + e["reason"]) if e.get("reason") else ""))
+    return out
 
 def wake():
     data = load_snooze()
@@ -345,9 +377,11 @@ def wake():
             continue
         st = find(states, sid)
         label = (primary_ticket(st) + " · " if st and primary_ticket(st) else "") + (title_of(st) if st else sid[:8])
+        log("due: %s" % label)
         notify("Claude session due", label + ((" — " + entry["reason"]) if entry.get("reason") else ""))
         if st and sid not in live and tmux("list-sessions").returncode == 0:
             open_session(sid)
+            log("reopened %s in tmux" % sid[:8])
         entry["due"] = True
         changed = True
     if changed:
@@ -654,6 +688,8 @@ def main(argv):
         unsnooze(argv[1])
     elif argv[0] == "--wake":
         wake()
+    elif argv[0] == "--due":
+        print("\n".join(due_lines()))
     elif argv[0] == "--install-wake":
         install_wake()
     elif argv[0] == "--uninstall-wake":

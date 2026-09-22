@@ -89,10 +89,3 @@ else
   # 256-colour 116 ≈ Catppuccin Macchiato teal (#8bd5ca), to match the editor.
   printf '%s | %s | %s\033[38;5;116m⎇ %s [primary]\033[0m' "$left" "$repo" "$name_seg" "$branch"
 fi
-
-# Second row, only while the session has neither a name nor a ticket yet: the
-# personal skill set, so a fresh session opens with the menu visible instead of
-# relying on memory to type /doxy-.
-if [ -z "$session" ]; then
-  printf '\n\033[2m/doxy-design · /doxy-ticket · /doxy-implement · /doxy-review\033[0m'
-fi
