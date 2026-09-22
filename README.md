@@ -49,4 +49,4 @@ A guard on Bash denies bypassing git hooks, `npx nx` and `git add .`, and asks b
 
 ### Session picker, snoozing and status line
 
-These moved out of the dotfiles into the `cockpit` plugin in the company marketplace (`doxyme/cooks/claude-plugins`, `plugins/cockpit`). The dotfiles only keep the two lines that wire it in: the `prefix r` binding in `home/.tmux.conf` and the `statusLine` entry in `home/.claude/settings.json`, both pointing at `~/.local/bin`, where `/cockpit:setup` links the commands.
+These live in the `cockpit` plugin in the company marketplace (`doxyme/cooks/claude-plugins`, `plugins/cockpit`), installed with `/plugin install cockpit@doxyme` and wired in by `/cockpit:setup`. A copy of the plugin sits in `plugins/cockpit` here, with a redacted screenshot, refreshed by `scripts/sync-cockpit.sh`; it is a mirror for reference, the marketplace is the source.

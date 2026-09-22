@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+"""Entry point; the code lives in ../lib/cockpit so it can be read one concern at a time."""
+import os
+import sys
+
+HERE = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "lib"))
+
+from cockpit.cli import main  # noqa: E402
+
+main(sys.argv[1:], os.path.realpath(__file__))

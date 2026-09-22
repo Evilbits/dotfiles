@@ -1,0 +1,55 @@
+#!/bin/sh
+# Claude Code statusLine command: "<model> · <effort> | <repo> | <ticket> · <name> | <snooze> | ⏰ N due | branch [primary|worktree]".
+# Reads the JSON Claude pipes on stdin; asks cockpit for the ticket and snooze state.
+input=$(cat)
+here=$(dirname "$(readlink "$0" || echo "$0")")
+sessions="$here/cockpit"
+accent=$(python3 -c 'import json,os;p=os.path.expanduser("~/.config/cockpit/config.json");print(json.load(open(p)).get("colour_accent",183) if os.path.exists(p) else 183)' 2>/dev/null || echo 183)
+branchcol=$(python3 -c 'import json,os;p=os.path.expanduser("~/.config/cockpit/config.json");print(json.load(open(p)).get("colour_branch",116) if os.path.exists(p) else 116)' 2>/dev/null || echo 116)
+
+fields=$(printf '%s' "$input" | jq -r '[.model.display_name, (.workspace.current_dir // .cwd), (.effort.level // ""), (.session_name // ""), (.session_id // "")] | @tsv')
+model=$(printf '%s' "$fields" | cut -f1)
+dir=$(printf '%s' "$fields" | cut -f2)
+effort=$(printf '%s' "$fields" | cut -f3)
+session=$(printf '%s' "$fields" | cut -f4)
+session_id=$(printf '%s' "$fields" | cut -f5)
+
+ticket=""; own_snooze=""; due_count=0
+if [ -n "$session_id" ] && [ -x "$sessions" ]; then
+  sl=$("$sessions" --statusline "$session_id" 2>/dev/null)
+  ticket=$(printf '%s' "$sl" | cut -f1)
+  own_snooze=$(printf '%s' "$sl" | cut -f2)
+  due_count=$(printf '%s' "$sl" | cut -f3)
+fi
+if [ -n "$ticket" ]; then
+  case "$session" in
+    *"$ticket"*) ;;
+    "") session="$ticket" ;;
+    *) session="$ticket · $session" ;;
+  esac
+fi
+[ "${#session}" -gt 52 ] && session="$(printf '%.51s' "$session")…"
+
+left="$model${effort:+ · $effort}"
+name_seg=""
+[ -n "$session" ] && name_seg="$(printf '\033[38;5;%sm%s\033[0m | ' "$accent" "$session")"
+[ -n "$own_snooze" ] && name_seg="$name_seg$(printf '\033[2m%s\033[0m | ' "$own_snooze")"
+[ "${due_count:-0}" -gt 0 ] 2>/dev/null && name_seg="$name_seg$(printf '\033[33m⏰ %s due\033[0m | ' "$due_count")"
+
+if ! git_info=$(git -C "$dir" rev-parse --path-format=absolute --git-dir --git-common-dir --show-toplevel --abbrev-ref HEAD 2>/dev/null); then
+  printf '%s | %s | %s' "$left" "$(basename "$dir")" "${name_seg% | }"
+  exit 0
+fi
+git_dir=$(printf '%s\n' "$git_info" | sed -n 1p)
+common_dir=$(printf '%s\n' "$git_info" | sed -n 2p)
+toplevel=$(printf '%s\n' "$git_info" | sed -n 3p)
+branch=$(printf '%s\n' "$git_info" | sed -n 4p)
+[ "$branch" = "HEAD" ] && branch="@$(git -C "$dir" rev-parse --short HEAD 2>/dev/null)"
+repo=$(basename "$(dirname "$common_dir")")
+if [ "$git_dir" != "$common_dir" ]; then
+  folder=$(basename "$toplevel")
+  [ "$folder" = "$branch" ] && label="worktree" || label="worktree: $folder"
+  printf '%s | %s | %s\033[33m⧉ %s [%s]\033[0m' "$left" "$repo" "$name_seg" "$branch" "$label"
+else
+  printf '%s | %s | %s\033[38;5;%sm⎇ %s [primary]\033[0m' "$left" "$repo" "$name_seg" "$branchcol" "$branch"
+fi

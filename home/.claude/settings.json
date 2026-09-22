@@ -159,10 +159,6 @@
       }
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "/Users/rasmusreiler/.local/bin/cockpit-statusline"
-  },
   "enabledPlugins": {
     "lua-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
