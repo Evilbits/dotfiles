@@ -738,6 +738,20 @@ def preview(session_id):
         label("ai title", st["ai_title"])
     print()
     label("state", ("%s in tmux %s" % (l.get("status"), l.get("tmux"))) if l else "closed, resumable")
+    e = load_snooze().get(st["id"])
+    if e:
+        print()
+        header("⏰ due" if is_due(e) else "⏾ snoozed")
+        if is_due(e) and e.get("event"):
+            label("fired", e["event"])
+        if e.get("until") is not None:
+            label("until", "%s (in %s)" % (fmt_until(e["until"]), remaining(e["until"])))
+        if e.get("mr"):
+            label("waiting on", "!%d %s" % (e["mr"]["iid"], e.get("mr_title", "")))
+            label("", e["mr"]["url"])
+            label("wakes on", "merge or close" if e.get("mr_mode") == "merge" else "a comment by someone else, an approval, a failed pipeline, a conflict, merge or close")
+        if e.get("reason"):
+            label("reason", e["reason"])
     if st["tickets"]:
         label("tickets", ", ".join(k for k, _ in Counter(st["tickets"]).most_common(6)))
     if st["mrs"]:
