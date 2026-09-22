@@ -22,11 +22,17 @@ effort=$(printf '%s' "$fields" | cut -f3)
 session=$(printf '%s' "$fields" | cut -f4)
 session_id=$(printf '%s' "$fields" | cut -f5)
 
-# The Jira ticket this session is about, derived from the prompts by the
-# session picker's index (read-only, cached). Claude's own titles never carry
-# it, so it is prefixed here unless the name already contains it.
-ticket=""
-[ -n "$session_id" ] && ticket=$("$HOME/.claude/bin/claude-sessions" --ticket "$session_id" 2>/dev/null)
+# One call into the session picker's index (read-only, cached): the Jira ticket
+# this session is about, this session's own snooze, and how many snoozed
+# sessions are due. Claude's own titles never carry the ticket, so it is
+# prefixed unless the name already contains it.
+ticket=""; own_snooze=""; due_count=0
+if [ -n "$session_id" ]; then
+  sl=$("$HOME/.claude/bin/claude-sessions" --statusline "$session_id" 2>/dev/null)
+  ticket=$(printf '%s' "$sl" | cut -f1)
+  own_snooze=$(printf '%s' "$sl" | cut -f2)
+  due_count=$(printf '%s' "$sl" | cut -f3)
+fi
 if [ -n "$ticket" ]; then
   case "$session" in
     *"$ticket"*) ;;
@@ -45,6 +51,9 @@ left="$model${effort:+ · $effort}"
 # the segment entirely rather than showing an empty one.
 name_seg=""
 [ -n "$session" ] && name_seg="$(printf '\033[38;5;183m%s\033[0m | ' "$session")"
+# This session's own snooze in dim, and a yellow count when other sessions are due.
+[ -n "$own_snooze" ] && name_seg="$name_seg$(printf '\033[2m%s\033[0m | ' "$own_snooze")"
+[ "${due_count:-0}" -gt 0 ] && name_seg="$name_seg$(printf '\033[33m⏰ %s due\033[0m | ' "$due_count")"
 
 if ! git_info=$(git -C "$dir" rev-parse --path-format=absolute --git-dir --git-common-dir --show-toplevel --abbrev-ref HEAD 2>/dev/null); then
   if [ -n "$session" ]; then

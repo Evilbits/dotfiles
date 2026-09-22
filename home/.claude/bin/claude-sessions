@@ -14,8 +14,11 @@ Modes:
   claude-sessions --open ID    jump or resume
   claude-sessions --reindex    drop the cache and rebuild
   claude-sessions --ticket ID  print the primary ticket for one session (used by the status line)
-  claude-sessions --snooze ID DURATION [REASON]   hide a session until later (2h, 3d, tomorrow, fri, 14:30)
+  claude-sessions --snooze ID DURATION [REASON]   park a session until later (2h, 3d, tomorrow, fri, 14:30)
   claude-sessions --unsnooze ID
+      ID may be "current": the session running in this tmux pane ($TMUX_PANE), so a
+      Claude session can snooze itself from a Bash call.
+  claude-sessions --statusline ID  one line for the status bar: ticket, own snooze, due count
   claude-sessions --wake       notify and reopen sessions whose snooze has expired (run by launchd)
   claude-sessions --install-wake / --uninstall-wake   manage the launchd job (every 5 minutes)
 
@@ -234,9 +237,11 @@ def parse_until(spec, now=None):
     import datetime as dt
     now = now or dt.datetime.now()
     s = spec.strip().lower()
-    m = re.fullmatch(r"(\d+)\s*([mhd])", s)
+    m = re.fullmatch(r"(\d+)\s*([smhd])", s)
     if m:
         n, unit = int(m.group(1)), m.group(2)
+        if unit == "s":
+            return (now + dt.timedelta(seconds=n)).timestamp()
         if unit == "d":
             return (now.replace(hour=9, minute=0, second=0, microsecond=0) + dt.timedelta(days=n)).timestamp()
         return (now + dt.timedelta(minutes=n if unit == "m" else n * 60)).timestamp()
@@ -263,17 +268,45 @@ def fmt_until(ts):
         return at.strftime("%a %H:%M")
     return at.strftime("%d %b %H:%M")
 
+def remaining(ts):
+    s = int(ts - time.time())
+    if s <= 0:
+        return "due"
+    d, rem = divmod(s, 86400)
+    h, rem = divmod(rem, 3600)
+    m = rem // 60
+    if d:
+        return "%dd %dh" % (d, h)
+    if h:
+        return "%dh %dm" % (h, m)
+    return "%dm" % max(m, 1)
+
+def resolve(session_id, states):
+    """'current' -> the session whose tmux pane is the caller's; otherwise a (prefix of an) id."""
+    if session_id == "current":
+        pane = os.environ.get("TMUX_PANE", "")
+        for sid, entry in live_sessions().items():
+            if pane and (entry.get("tmux") or "").endswith("." + pane):
+                return find(states, sid)
+        return None
+    return find(states, session_id)
+
 def snooze(session_id, spec, reason):
     states, _ = index_sessions()
-    st = find(states, session_id)
+    st = resolve(session_id, states)
     if not st:
         sys.exit("unknown session " + session_id)
     data = load_snooze()
     data[st["id"]] = {"until": parse_until(spec), "reason": reason.strip(), "due": False}
     save_snooze(data)
-    print("snoozed %s until %s%s" % (primary_ticket(st) or st["id"][:8], fmt_until(data[st["id"]]["until"]), (" · " + reason) if reason.strip() else ""))
+    print("snoozed %s until %s (in %s)%s" % (primary_ticket(st) or st["id"][:8], fmt_until(data[st["id"]]["until"]), remaining(data[st["id"]]["until"]), (" · " + reason) if reason.strip() else ""))
 
 def unsnooze(session_id):
+    if session_id == "current":
+        st = resolve("current", index_sessions()[0])
+        if not st:
+            sys.exit("no live session in this tmux pane")
+        session_id = st["id"]
     data = load_snooze()
     for k in list(data):
         if k == session_id or k.startswith(session_id):
@@ -288,7 +321,7 @@ def snooze_prompt(session_id):
         return
     print("snooze  %s  %s" % (primary_ticket(st), title_of(st)))
     try:
-        spec = input("until (2h, 3d, tomorrow, fri, 14:30) [1d]: ").strip() or "1d"
+        spec = input("until (30s, 2h, 3d, tomorrow, fri, 14:30) [1d]: ").strip() or "1d"
         reason = input("reason (e.g. awaiting review on !17005): ").strip()
         snooze(st["id"], spec, reason)
     except (EOFError, KeyboardInterrupt, ValueError) as e:
@@ -417,7 +450,7 @@ def rows(states, mtimes, live):
     snoozed = load_snooze()
     def group(s):
         e = snoozed.get(s["id"])
-        if e and e.get("due"):
+        if e and (e.get("due") or e["until"] <= time.time()):
             return 0
         if e:
             return 3
@@ -430,7 +463,7 @@ def rows(states, mtimes, live):
         l = live.get(st["id"])
         e = snoozed.get(st["id"])
         marker = " "
-        if e and e.get("due"):
+        if e and (e.get("due") or e["until"] <= time.time()):
             marker = "⏰"
         elif e:
             marker = "z"
@@ -438,7 +471,7 @@ def rows(states, mtimes, live):
             marker = "●" if l.get("status") == "busy" else "○"
         title = title_of(st)
         if e:
-            title += "  ⏾ %s%s" % (fmt_until(e["until"]), (" · " + e["reason"]) if e.get("reason") else "")
+            title += "  ⏾ in %s%s" % (remaining(e["until"]), (" · " + e["reason"]) if e.get("reason") else "")
         mrs = " ".join("!" + m for m in st["mrs"][:2])
         line = "\t".join([
             st["id"],
@@ -452,6 +485,30 @@ def rows(states, mtimes, live):
         ])
         out.append(line)
     return out
+
+def footer(states):
+    snoozed = load_snooze()
+    if not snoozed:
+        return ""
+    lines = []
+    for sid, e in sorted(snoozed.items(), key=lambda kv: kv[1]["until"]):
+        st = find(states, sid)
+        if not st:
+            continue
+        mark = "⏰ due" if e.get("due") or e["until"] <= time.time() else "in " + remaining(e["until"])
+        lines.append("%s  %s  %s%s" % (fit(primary_ticket(st), 10), fit(mark, 9), fit(title_of(st), 44), ("  · " + e["reason"]) if e.get("reason") else ""))
+    return "\n".join(lines)
+
+def statusline(session_id):
+    """ticket \t own-snooze-text \t due-count, for the status bar."""
+    ticket = ticket_for(session_id)
+    snoozed = load_snooze()
+    own = snoozed.get(session_id)
+    own_text = ""
+    if own:
+        own_text = ("⏰ due" if own.get("due") or own["until"] <= time.time() else "⏾ " + remaining(own["until"])) + ((" · " + own["reason"]) if own.get("reason") else "")
+    due = sum(1 for e in snoozed.values() if e.get("due") or e["until"] <= time.time())
+    print("%s\t%s\t%d" % (ticket, own_text, due))
 
 def find(states, session_id):
     for st in states:
@@ -515,7 +572,7 @@ def tmux_session_for(cwd):
 
 def open_session(session_id):
     states, _ = index_sessions()
-    st = find(states, session_id)
+    st = resolve(session_id, states)
     if not st:
         sys.exit("unknown session " + session_id)
     unsnooze(st["id"])
@@ -554,6 +611,7 @@ def pick():
             "--header", header, "--header-first",
             "--preview", "%s --preview {1}" % me, "--preview-window", "right,50%,wrap",
             "--bind", "ctrl-y:execute-silent(printf %s {1} | pbcopy)",
+            *(["--footer", footer(states), "--footer-border", "top", "--footer-label", " snoozed "] if footer(states) else []),
             "--bind", "ctrl-r:reload(%s --list)" % me,
             "--bind", "ctrl-s:execute(%s --snooze-prompt {1})+reload(%s --list)" % (me, me),
             "--bind", "ctrl-u:execute-silent(%s --unsnooze {1})+reload(%s --list)" % (me, me),
@@ -581,6 +639,8 @@ def main(argv):
         open_session(argv[1])
     elif argv[0] == "--ticket" and len(argv) > 1:
         print(ticket_for(argv[1]))
+    elif argv[0] == "--statusline" and len(argv) > 1:
+        statusline(argv[1])
     elif argv[0] == "--snooze" and len(argv) > 2:
         snooze(argv[1], argv[2], " ".join(argv[3:]))
     elif argv[0] == "--snooze-prompt" and len(argv) > 1:
