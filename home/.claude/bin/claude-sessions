@@ -455,11 +455,11 @@ def rows(states, mtimes, live, only_snoozed=False):
         if e and (e.get("due") or e["until"] <= time.time()):
             return 0
         if e:
-            return 3
-        return 1 if s["id"] in live else 2
+            return 2
+        return 1 if s["id"] in live else 3
     def key(s):
         g = group(s)
-        return (g, snoozed[s["id"]]["until"] if g == 3 else -mtimes.get(s["id"], 0))
+        return (g, snoozed[s["id"]]["until"] if g == 2 else -mtimes.get(s["id"], 0))
     out = []
     for st in sorted(states, key=key):
         l = live.get(st["id"])
@@ -607,7 +607,7 @@ def pick():
     if not lines:
         sys.exit("no sessions found")
     me = os.path.abspath(__file__)
-    header = "   age  project      ticket     skill     title                                                            MRs             ⏰due ●busy ○idle z snoozed   ctrl-z snoozed only  End bottom  ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
+    header = "   age  project      ticket     skill     title                                                            MRs             ⏰due ●busy ○idle z snoozed   order: due, live, snoozed, closed   ctrl-z snoozed only  ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
     fzf = subprocess.run(
         [
             "fzf", "--reverse", "--no-sort", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
