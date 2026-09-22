@@ -230,10 +230,17 @@ def gitlab_token():
     tok = os.environ.get("GITLAB_NPM_TOKEN") or os.environ.get("GITLAB_TOKEN")
     if tok:
         return tok
+    # launchd has no shell environment, so the wake job reads the token from the login
+    # keychain: security add-generic-password -a "$USER" -s claude-sessions-gitlab -w "$GITLAB_NPM_TOKEN"
+    r = subprocess.run(["security", "find-generic-password", "-s", "claude-sessions-gitlab", "-w"], capture_output=True, text=True)
+    if r.returncode == 0 and r.stdout.strip():
+        return r.stdout.strip()
     try:
         for line in open(os.path.join(HOME, ".npmrc")):
             if "gitlab.com" in line and "_authToken=" in line:
-                return line.split("_authToken=", 1)[1].strip()
+                val = line.split("_authToken=", 1)[1].strip()
+                if val and not val.startswith("${"):
+                    return val
     except Exception:
         pass
     return ""
