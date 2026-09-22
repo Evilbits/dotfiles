@@ -9,7 +9,7 @@ session. Nothing Claude owns is written; the index lives in ~/.cache.
 
 Modes:
   claude-sessions              fzf picker (default)
-  claude-sessions --list       print rows (debug)
+  claude-sessions --list [--snoozed]   print rows (debug)
   claude-sessions --preview ID preview pane for one session
   claude-sessions --open ID    jump or resume
   claude-sessions --reindex    drop the cache and rebuild
@@ -446,8 +446,10 @@ def fit(s, n):
     s = s or ""
     return (s[: n - 1] + "…") if len(s) > n else s.ljust(n)
 
-def rows(states, mtimes, live):
+def rows(states, mtimes, live, only_snoozed=False):
     snoozed = load_snooze()
+    if only_snoozed:
+        states = [s for s in states if s["id"] in snoozed]
     def group(s):
         e = snoozed.get(s["id"])
         if e and (e.get("due") or e["until"] <= time.time()):
@@ -605,7 +607,7 @@ def pick():
     if not lines:
         sys.exit("no sessions found")
     me = os.path.abspath(__file__)
-    header = "   age  project      ticket     skill     title                                                            MRs             ⏰due ●busy ○idle z snoozed   ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
+    header = "   age  project      ticket     skill     title                                                            MRs             ⏰due ●busy ○idle z snoozed   ctrl-z snoozed only  End bottom  ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
     fzf = subprocess.run(
         [
             "fzf", "--reverse", "--no-sort", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
@@ -614,6 +616,8 @@ def pick():
             "--bind", "ctrl-y:execute-silent(printf %s {1} | pbcopy)",
             *(["--footer", footer(states), "--footer-border", "top", "--footer-label", " snoozed "] if footer(states) else []),
             "--bind", "ctrl-r:reload(%s --list)" % me,
+            "--bind", "end:last,home:first",
+            "--bind", "ctrl-z:transform:[ \"$FZF_PROMPT\" = 'snoozed> ' ] && echo 'change-prompt(> )+reload(%s --list)' || echo 'change-prompt(snoozed> )+reload(%s --list --snoozed)'" % (me, me),
             "--bind", "ctrl-s:execute(%s --snooze-prompt {1})+reload(%s --list)" % (me, me),
             "--bind", "ctrl-u:execute-silent(%s --unsnooze {1})+reload(%s --list)" % (me, me),
         ],
@@ -633,7 +637,7 @@ def main(argv):
         return pick()
     if argv[0] == "--list":
         states, mtimes = index_sessions()
-        print("\n".join(rows(states, mtimes, live_sessions())))
+        print("\n".join(rows(states, mtimes, live_sessions(), only_snoozed="--snoozed" in argv)))
     elif argv[0] == "--preview" and len(argv) > 1:
         preview(argv[1])
     elif argv[0] == "--open" and len(argv) > 1:
