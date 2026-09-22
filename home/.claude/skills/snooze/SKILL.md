@@ -12,7 +12,7 @@ description: >-
 
 Run, in one Bash call, `~/.claude/bin/claude-sessions --snooze current <what the user gave>`, passing the duration, MR URL, mode word and reason exactly as written; the command sorts them out. `current` resolves to this session through the tmux pane, so no id is needed.
 
-What can follow `--snooze current`, in any order: a duration (`30s`, `45m`, `2h`, `3d` lands at 09:00, `tomorrow`, a weekday such as `fri`, a time such as `14:30`); a GitLab MR URL, optionally followed by `review` (default: wake on a comment by someone else, an approval, a failed pipeline, a conflict, merge or close) or `merge` (wake only when it merges or closes); and free text as the reason. A duration and an MR together wake on whichever comes first.
+What can follow `--snooze current`, in any order: a duration (`30s`, `45m`, `2h`, `3d` lands at 09:00, `tomorrow`, a weekday such as `fri`, a time such as `14:30`); a GitLab MR URL, optionally followed by `merge` to wake only when it merges or closes; without it the watch wakes on a comment by someone else, an approval, a failed pipeline, a conflict, merge or close; and free text as the reason. A duration and an MR together wake on whichever comes first.
 
 Reply with the command's one output line and nothing else.
 

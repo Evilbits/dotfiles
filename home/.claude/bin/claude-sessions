@@ -418,8 +418,8 @@ def snooze(session_id, spec, reason):
         if ref is None and mr_ref(tok):
             ref = mr_ref(tok)
             continue
-        if ref and tok.lower() in ("review", "merge", "merged") and mode == "review" and not words:
-            mode = "merge" if tok.lower().startswith("merge") else "review"
+        if ref and tok.lower() in ("merge", "merged") and not words:
+            mode = "merge"
             continue
         if until is None:
             try:
