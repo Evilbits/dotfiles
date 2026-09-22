@@ -245,12 +245,11 @@ def rows(states, mtimes, live):
             st["id"],
             marker,
             fit(age(mtimes.get(st["id"], 0)), 4),
+            fit(project_of(st), 12),
             fit(primary_ticket(st), 10),
             fit(skill_of(st), 9),
             fit(title_of(st), 48),
             fit(mrs, 14),
-            fit(st["branch"], 22),
-            project_of(st),
         ])
         out.append(line)
     return out
@@ -348,7 +347,7 @@ def pick():
     if not lines:
         sys.exit("no sessions found")
     me = os.path.abspath(__file__)
-    header = "  age  ticket     skill     title                                            MRs            branch                 project   live first, then newest  ●busy ○idle  ctrl-y copies id"
+    header = "  age  project      ticket     skill     title                                            MRs             live first, then newest  ●busy ○idle  ctrl-y copies id"
     fzf = subprocess.run(
         [
             "fzf", "--reverse", "--no-sort", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
