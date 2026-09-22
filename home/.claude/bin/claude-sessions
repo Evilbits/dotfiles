@@ -276,14 +276,14 @@ def preview(session_id):
         print("ai title:  " + st["ai_title"])
     print()
     print("state:     " + (("%s in tmux %s" % (l.get("status"), l.get("tmux"))) if l else "closed, resumable"))
-    print("tickets:   " + ", ".join("%s (%d)" % kv for kv in Counter(st["tickets"]).most_common(6)))
-    print("MRs:       " + ", ".join("!" + m for m in st["mrs"][:12]))
-    print("skills:    " + ", ".join(st["skills"]))
-    print("branch:    " + st["branch"])
-    print("cwd:       " + st["cwd"])
-    print("started:   " + st["first_ts"][:16].replace("T", " "))
-    print("last:      " + st["last_ts"][:16].replace("T", " ") + "   prompts: %d" % st["turns"])
-    print("id:        " + st["id"])
+    if st["tickets"]:
+        print("tickets:   " + ", ".join("%s (%d)" % kv for kv in Counter(st["tickets"]).most_common(6)))
+    if st["mrs"]:
+        print("MRs:       " + ", ".join("!" + m for m in st["mrs"][:12]))
+    if st["skills"]:
+        print("skills:    " + ", ".join(st["skills"]))
+    if st["branch"]:
+        print("branch:    " + st["branch"])
     print()
     print("first prompt")
     print(wrap(st["first_prompt"]))
