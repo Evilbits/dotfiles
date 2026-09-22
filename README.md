@@ -41,23 +41,21 @@ Afterwards: `prefix + I` inside tmux installs its plugins, the first `nvim` star
 
 ## Claude Code
 
-`home/.claude` holds the global instructions, the settings with their hooks, the skills, and the session tooling. Its `.gitignore` tracks only those; everything Claude writes at runtime stays out of the repo.
+`home/.claude` holds the global instructions, the settings with their hooks, and the session tooling. Its `.gitignore` tracks only those; everything Claude writes at runtime stays out of the repo. The skills live in the company skills directory.
 
-### Skills
+### Hooks
 
-One skill per step of the development flow, each as small as it can be:
+A guard on Bash denies bypassing git hooks, `npx nx` and `git add .`, and asks before anything that rewrites history or deletes. Edited files are formatted with the nearest `oxfmt`. A banner at session start lists every snoozed session, due first.
 
-- `/doxy-design` turns an idea into a brief the team can discuss, ending with a verdict on whether it is an epic, a ticket, a spike, or nothing.
-- `/doxy-ticket` turns that brief into Jira: an epic with tickets, a single ticket, or a spike. It also reevaluates existing tickets.
-- `/doxy-implement` takes a ticket to code: branch, scope, plan, tests, atomic commits, then a draft MR and a fresh-context review of it.
-- `/doxy-review` reviews an MR or a proposal architecture first, then decides where each comment belongs.
-- `/snooze` parks the current session until later (see below).
+### Status line
 
-### Hooks and status line
+![Claude status line](docs/claude-statusline.png)
 
-A guard on Bash denies bypassing git hooks, `npx nx` and `git add .`, and asks before anything that rewrites history or deletes. Edited files are formatted with the nearest `oxfmt`. A banner at session start lists the skills in the doxyme repos and every snoozed session, due first. The status line reads `model · effort | repo | ticket · session name | snooze | branch`, where the ticket is worked out from the session's own prompts, so it is there even when Claude's generated title leaves it out.
+`model · effort | repo | ticket · session name | snooze | branch`. The ticket is worked out from the session's own prompts, so it is there even when Claude's generated title leaves it out. A snoozed session shows its remaining time or the MR it is waiting on, and every session shows a count when snoozes are due.
 
 ### Session picker: `prefix r`
+
+![Claude session picker](docs/claude-sessions-picker.png)
 
 An fzf list of every Claude session across repos, built from the transcripts and the live registry. Each row shows state, age, repo, ticket, skill, title and MRs. The order is due, live, snoozed, then closed by age, and the order holds while you type. The ticket is taken from what you typed in the session, then from the title, then from Claude's replies, then from the branch, which is how a review session opened with only an MR URL still lists under the right key.
 
