@@ -84,3 +84,6 @@ esac
 
 alias nx="pnpm nx"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.bun/bin:$PATH"
+
+export PNPM_CONFIG_NPMRC_AUTH_FILE=.npmrc
