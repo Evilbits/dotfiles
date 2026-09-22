@@ -46,6 +46,7 @@ PROJECTS = os.path.join(HOME, ".claude", "projects")
 REGISTRY = os.path.join(HOME, ".claude", "sessions")
 CACHE = os.path.join(HOME, ".cache", "claude-sessions", "index.json")
 SNOOZE = os.path.join(HOME, ".local", "state", "claude-sessions", "snooze.json")
+OPENED = os.path.join(HOME, ".local", "state", "claude-sessions", "opened.json")
 PLIST = os.path.join(HOME, "Library", "LaunchAgents", "com.rasmusreiler.claude-sessions-wake.plist")
 CLAUDE_BIN = shutil.which("claude") or os.path.join(HOME, ".local", "bin", "claude")
 
@@ -302,6 +303,20 @@ def gitlab_me():
 
 # ── snooze ───────────────────────────────────────────────────────────────────
 
+def load_json(path):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_json(path, data):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(data, f, indent=1)
+    os.replace(tmp, path)
+
 def load_snooze():
     try:
         with open(SNOOZE) as f:
@@ -473,10 +488,13 @@ def log(msg):
     except Exception:
         pass
 
-def notify(title, body):
+def notify(title, body, session_id=None):
     tn = shutil.which("terminal-notifier") or "/opt/homebrew/bin/terminal-notifier"
     if os.path.exists(tn):
-        r = subprocess.run([tn, "-title", title, "-message", body, "-sound", "default", "-group", "claude-sessions"], capture_output=True, text=True)
+        args = [tn, "-title", title, "-message", body, "-sound", "default", "-group", "claude-sessions"]
+        if session_id:
+            args += ["-execute", "%s --open %s" % (os.path.abspath(__file__), session_id)]
+        r = subprocess.run(args, capture_output=True, text=True)
         log("terminal-notifier exit %s %s" % (r.returncode, r.stderr.strip()))
     else:
         r = subprocess.run(["osascript", "-e", 'display notification "%s" with title "%s"' % (body.replace('"', "'"), title.replace('"', "'"))], capture_output=True, text=True)
@@ -522,7 +540,7 @@ def wake():
         label = (primary_ticket(st) + " · " if st and primary_ticket(st) else "") + (title_of(st) if st else sid[:8])
         detail = ("!%d %s" % (entry["mr"]["iid"], entry["event"])) if entry.get("mr") and events else ""
         log("due: %s %s" % (label, detail))
-        notify("Claude session due", label + ((" — " + detail) if detail else "") + ((" — " + entry["reason"]) if entry.get("reason") else ""))
+        notify("Claude session due", label + ((" — " + detail) if detail else "") + ((" — " + entry["reason"]) if entry.get("reason") else ""), sid)
         if st and sid not in live and tmux("list-sessions").returncode == 0:
             open_session(sid)
             log("reopened %s in tmux" % sid[:8])
@@ -755,22 +773,33 @@ def open_session(session_id):
     if not st:
         sys.exit("unknown session " + session_id)
     unsnooze(st["id"])
+    def jump(target):
+        sess = target.split(":")[0]
+        tmux("switch-client", "-t", sess)
+        tmux("select-window", "-t", target.split(".")[0])
+        tmux("select-pane", "-t", target.split(".")[-1])
     l = live_sessions().get(st["id"])
     if l and l.get("tmux"):
-        target = l["tmux"]                      # e.g. doxyme-core:@7.%8
-        sess = target.split(":")[0]
-        window = target.split(".")[0]
-        pane = target.split(".")[-1]
-        tmux("switch-client", "-t", sess)
-        tmux("select-window", "-t", window)
-        tmux("select-pane", "-t", pane)
+        jump(l["tmux"])                          # e.g. doxyme-core:@7.%8
+        return
+    # A window this tool opened for the session may still be starting up and not yet in the
+    # registry; jump to it if the pane still exists instead of launching a second resume,
+    # which Claude would answer with a copy of the session.
+    opened = load_json(OPENED)
+    prev = opened.get(st["id"])
+    if prev and tmux("display-message", "-p", "-t", prev["target"], "#{pane_id}").returncode == 0:
+        jump(prev["target"])
         return
     cwd = st["cwd"] if os.path.isdir(st["cwd"]) else HOME
     sess = tmux_session_for(cwd)
     name = primary_ticket(st) or st["id"][:8]
     cmd = "%s --resume %s" % (CLAUDE_BIN, st["id"])
     if sess:
-        tmux("new-window", "-t", sess + ":", "-n", name, "-c", cwd, cmd)
+        r = tmux("new-window", "-t", sess + ":", "-n", name, "-c", cwd, "-P", "-F", "#{session_name}:#{window_id}.#{pane_id}", cmd)
+        target = r.stdout.strip()
+        if target:
+            opened[st["id"]] = {"target": target, "at": time.time()}
+            save_json(OPENED, opened)
         tmux("switch-client", "-t", sess)
     else:
         os.chdir(cwd)
