@@ -55,7 +55,7 @@ A guard on Bash denies bypassing git hooks, `npx nx` and `git add .`, and asks b
 
 ### Session picker: `prefix r`
 
-![Claude session picker](docs/claude-sessions-picker.png)
+![Claude session picker](docs/claude-sessions-picker-redacted.png)
 
 An fzf list of every Claude session across repos, built from the transcripts and the live registry. Each row shows state, age, repo, ticket, skill, title and MRs. The order is due, live, snoozed, then closed by age, and the order holds while you type. The ticket is taken from what you typed in the session, then from the title, then from Claude's replies, then from the branch, which is how a review session opened with only an MR URL still lists under the right key.
 
