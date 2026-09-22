@@ -288,8 +288,8 @@ def preview(session_id):
     print("first prompt")
     print(wrap(st["first_prompt"]))
     print()
-    print("recent prompts")
-    for p in st["prompts"][-6:]:
+    print("recent prompts (newest on top)")
+    for p in reversed(st["prompts"][-6:]):
         print(wrap("- " + p))
         print()
 
