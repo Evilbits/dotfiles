@@ -1,0 +1,375 @@
+#!/usr/bin/env python3
+"""
+claude-sessions: fzf picker over every Claude Code session on this machine.
+
+Rows come from the session transcripts under ~/.claude/projects (read-only) and
+the live registry under ~/.claude/sessions. Enter jumps to a running session's
+tmux pane, or resumes a closed one in a new tmux window in that project's
+session. Nothing Claude owns is written; the index lives in ~/.cache.
+
+Modes:
+  claude-sessions              fzf picker (default)
+  claude-sessions --list       print rows (debug)
+  claude-sessions --preview ID preview pane for one session
+  claude-sessions --open ID    jump or resume
+  claude-sessions --reindex    drop the cache and rebuild
+"""
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+from collections import Counter
+
+HOME = os.path.expanduser("~")
+PROJECTS = os.path.join(HOME, ".claude", "projects")
+REGISTRY = os.path.join(HOME, ".claude", "sessions")
+CACHE = os.path.join(HOME, ".cache", "claude-sessions", "index.json")
+CLAUDE_BIN = shutil.which("claude") or os.path.join(HOME, ".local", "bin", "claude")
+
+TICKET_RE = re.compile(r"\b(?:PROD|SEC|LAB|CS|PE|RESCOM|PR)-\d{2,6}\b")
+MR_RE = re.compile(r"merge_requests/(\d{3,6})")
+SKILL_RE = re.compile(r"<command-name>/?(doxy-[a-z]+)</command-name>")
+ARGS_RE = re.compile(r"<command-args>([\s\S]*?)</command-args>")
+REMINDER_RE = re.compile(r"<system-reminder>[\s\S]*?</system-reminder>")
+TICKET_DENY = {"PROD-1234"}
+JUNK_TITLE_RE = re.compile(r"^(please |i need|alternatively|base directory|review this pasted|want you to|then i)", re.I)
+SKIP_DIRS = ("claude-rename-worker",)
+PROMPT_KEEP = 8
+PROMPT_CHARS = 400
+
+# ── indexing ─────────────────────────────────────────────────────────────────
+
+def load_cache():
+    try:
+        with open(CACHE) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_cache(cache):
+    os.makedirs(os.path.dirname(CACHE), exist_ok=True)
+    tmp = CACHE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(cache, f)
+    os.replace(tmp, CACHE)
+
+def new_state(session_id, project_dir):
+    return {
+        "id": session_id,
+        "project_dir": project_dir,
+        "cwd": "",
+        "branch": "",
+        "custom_title": "",
+        "ai_title": "",
+        "first_prompt": "",
+        "prompts": [],
+        "tickets": {},
+        "tickets_assistant": {},
+        "mrs": [],
+        "skills": [],
+        "first_ts": "",
+        "last_ts": "",
+        "turns": 0,
+    }
+
+def prompt_text(content):
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return " ".join(c.get("text", "") for c in content if isinstance(c, dict) and c.get("type") == "text")
+    return ""
+
+def absorb_line(state, line):
+    if '"type":"user"' in line and '"isMeta":true' not in line and '"isSidechain":true' not in line:
+        try:
+            rec = json.loads(line)
+        except Exception:
+            return
+        if rec.get("type") != "user":
+            return
+        state["cwd"] = rec.get("cwd") or state["cwd"]
+        state["branch"] = rec.get("gitBranch") or state["branch"]
+        ts = rec.get("timestamp") or ""
+        if ts:
+            state["first_ts"] = state["first_ts"] or ts
+            state["last_ts"] = ts
+        text = prompt_text((rec.get("message") or {}).get("content"))
+        if not text:
+            return
+        text = REMINDER_RE.sub("", text).strip()
+        for m in SKILL_RE.findall(text):
+            if m not in state["skills"]:
+                state["skills"].append(m)
+        args = ARGS_RE.search(text)
+        if args:
+            text = args.group(1).strip()
+        if not text or text.startswith("<"):
+            return
+        state["turns"] += 1
+        for t in TICKET_RE.findall(text):
+            if t not in TICKET_DENY:
+                state["tickets"][t] = state["tickets"].get(t, 0) + 1
+        for m in MR_RE.findall(text):
+            if m not in state["mrs"]:
+                state["mrs"].append(m)
+        short = re.sub(r"\s+", " ", text)[:PROMPT_CHARS]
+        state["first_prompt"] = state["first_prompt"] or short
+        state["prompts"].append(short)
+        del state["prompts"][:-PROMPT_KEEP]
+        return
+    if '"type":"assistant"' in line:
+        for t in TICKET_RE.findall(line):
+            if t not in TICKET_DENY:
+                state["tickets_assistant"][t] = state["tickets_assistant"].get(t, 0) + 1
+        return
+    if '"type":"custom-title"' in line:
+        try:
+            state["custom_title"] = json.loads(line).get("customTitle") or state["custom_title"]
+        except Exception:
+            pass
+        return
+    if '"type":"ai-title"' in line:
+        try:
+            state["ai_title"] = json.loads(line).get("aiTitle") or state["ai_title"]
+        except Exception:
+            pass
+
+def index_sessions(force=False):
+    cache = {} if force else load_cache()
+    seen = set()
+    for project_dir in sorted(os.listdir(PROJECTS)):
+        if any(s in project_dir for s in SKIP_DIRS):
+            continue
+        full = os.path.join(PROJECTS, project_dir)
+        if not os.path.isdir(full):
+            continue
+        for name in os.listdir(full):
+            if not name.endswith(".jsonl"):
+                continue
+            path = os.path.join(full, name)
+            session_id = name[:-6]
+            seen.add(path)
+            st = os.stat(path)
+            entry = cache.get(path)
+            if entry and entry["size"] == st.st_size and entry["mtime"] == st.st_mtime:
+                continue
+            if entry and entry["size"] < st.st_size:
+                state, offset = entry["state"], entry["size"]
+            else:
+                state, offset = new_state(session_id, project_dir), 0
+            with open(path, "rb") as f:
+                f.seek(offset)
+                for raw in f:
+                    try:
+                        absorb_line(state, raw.decode("utf-8", "replace"))
+                    except Exception:
+                        pass
+            cache[path] = {"size": st.st_size, "mtime": st.st_mtime, "state": state}
+    for path in list(cache):
+        if path not in seen:
+            del cache[path]
+    save_cache(cache)
+    return [e["state"] for e in cache.values()], {e["state"]["id"]: e["mtime"] for e in cache.values()}
+
+# ── live registry ────────────────────────────────────────────────────────────
+
+def live_sessions():
+    live = {}
+    if not os.path.isdir(REGISTRY):
+        return live
+    for name in os.listdir(REGISTRY):
+        if not name.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(REGISTRY, name)) as f:
+                d = json.load(f)
+            os.kill(int(d["pid"]), 0)
+        except Exception:
+            continue
+        live[d.get("sessionId", "")] = d
+    return live
+
+# ── presentation ─────────────────────────────────────────────────────────────
+
+def age(mtime):
+    s = int(time.time() - mtime)
+    for unit, size in (("w", 604800), ("d", 86400), ("h", 3600), ("m", 60)):
+        if s >= size:
+            return "%d%s" % (s // size, unit)
+    return "now"
+
+def primary_ticket(state):
+    for source in (state["tickets"], {k: 1 for k in TICKET_RE.findall(state["ai_title"] + " " + state["custom_title"])}, state.get("tickets_assistant", {})):
+        if source:
+            return Counter(source).most_common(1)[0][0]
+    m = TICKET_RE.search(state["branch"] or "")
+    return m.group(0) if m else ""
+
+def title_of(state):
+    custom = state["custom_title"]
+    if custom and JUNK_TITLE_RE.search(custom):
+        custom = ""
+    return custom or state["ai_title"] or state["first_prompt"][:70] or "(untitled)"
+
+def project_of(state):
+    cwd = state["cwd"] or state["project_dir"].replace("-Users-rasmusreiler-", "").replace("-", "/")
+    parts = [p for p in cwd.split("/") if p]
+    for i, p in enumerate(parts):
+        if p == "dev" and i + 1 < len(parts):
+            base = parts[i + 1]
+            return base + ("+wt" if ".claude/worktrees" in cwd else "")
+    return parts[-1] if parts else "?"
+
+def skill_of(state):
+    for s in state["skills"]:
+        if s.startswith("doxy-"):
+            return s[5:]
+    return state["skills"][0] if state["skills"] else ""
+
+def fit(s, n):
+    s = s or ""
+    return (s[: n - 1] + "…") if len(s) > n else s.ljust(n)
+
+def rows(states, mtimes, live):
+    out = []
+    for st in sorted(states, key=lambda s: mtimes.get(s["id"], 0), reverse=True):
+        l = live.get(st["id"])
+        marker = " "
+        if l:
+            marker = "●" if l.get("status") == "busy" else "○"
+        mrs = " ".join("!" + m for m in st["mrs"][:2])
+        line = "\t".join([
+            st["id"],
+            marker,
+            fit(age(mtimes.get(st["id"], 0)), 4),
+            fit(primary_ticket(st), 10),
+            fit(skill_of(st), 9),
+            fit(title_of(st), 48),
+            fit(mrs, 14),
+            fit(st["branch"], 22),
+            project_of(st),
+        ])
+        out.append(line)
+    return out
+
+def find(states, session_id):
+    for st in states:
+        if st["id"] == session_id or st["id"].startswith(session_id):
+            return st
+    return None
+
+def preview(session_id):
+    states, mtimes = index_sessions()
+    st = find(states, session_id)
+    if not st:
+        print("unknown session", session_id)
+        return
+    l = live_sessions().get(st["id"])
+    width = int(os.environ.get("FZF_PREVIEW_COLUMNS") or 80)
+    import textwrap
+    wrap = lambda s: "\n".join(textwrap.wrap(s, width - 2)) if s else ""
+    print(wrap(title_of(st)))
+    if st["ai_title"] and st["ai_title"] != title_of(st):
+        print("ai title:  " + st["ai_title"])
+    print()
+    print("state:     " + (("%s in tmux %s" % (l.get("status"), l.get("tmux"))) if l else "closed, resumable"))
+    print("tickets:   " + ", ".join("%s (%d)" % kv for kv in Counter(st["tickets"]).most_common(6)))
+    print("MRs:       " + ", ".join("!" + m for m in st["mrs"][:12]))
+    print("skills:    " + ", ".join(st["skills"]))
+    print("branch:    " + st["branch"])
+    print("cwd:       " + st["cwd"])
+    print("started:   " + st["first_ts"][:16].replace("T", " "))
+    print("last:      " + st["last_ts"][:16].replace("T", " ") + "   prompts: %d" % st["turns"])
+    print("id:        " + st["id"])
+    print()
+    print("first prompt")
+    print(wrap(st["first_prompt"]))
+    print()
+    print("recent prompts")
+    for p in st["prompts"][-6:]:
+        print(wrap("- " + p))
+        print()
+
+# ── actions ──────────────────────────────────────────────────────────────────
+
+def tmux(*args):
+    return subprocess.run(["tmux", *args], capture_output=True, text=True)
+
+def tmux_session_for(cwd):
+    names = [n for n in tmux("list-sessions", "-F", "#S").stdout.split("\n") if n]
+    for part in reversed([p for p in (cwd or "").split("/") if p]):
+        if part in names:
+            return part
+    return os.environ.get("TMUX_PANE") and tmux("display-message", "-p", "#S").stdout.strip() or (names[0] if names else None)
+
+def open_session(session_id):
+    states, _ = index_sessions()
+    st = find(states, session_id)
+    if not st:
+        sys.exit("unknown session " + session_id)
+    l = live_sessions().get(st["id"])
+    if l and l.get("tmux"):
+        target = l["tmux"]                      # e.g. doxyme-core:@7.%8
+        sess = target.split(":")[0]
+        window = target.split(".")[0]
+        pane = target.split(".")[-1]
+        tmux("switch-client", "-t", sess)
+        tmux("select-window", "-t", window)
+        tmux("select-pane", "-t", pane)
+        return
+    cwd = st["cwd"] if os.path.isdir(st["cwd"]) else HOME
+    sess = tmux_session_for(cwd)
+    name = primary_ticket(st) or st["id"][:8]
+    cmd = "%s --resume %s" % (CLAUDE_BIN, st["id"])
+    if sess:
+        tmux("new-window", "-t", sess + ":", "-n", name, "-c", cwd, cmd)
+        tmux("switch-client", "-t", sess)
+    else:
+        os.chdir(cwd)
+        os.execvp(CLAUDE_BIN, [CLAUDE_BIN, "--resume", st["id"]])
+
+def pick():
+    states, mtimes = index_sessions()
+    live = live_sessions()
+    lines = rows(states, mtimes, live)
+    if not lines:
+        sys.exit("no sessions found")
+    me = os.path.abspath(__file__)
+    header = "  age  ticket     skill     title                                            MRs            branch                 project   ●busy ○idle  ctrl-y copies id"
+    fzf = subprocess.run(
+        [
+            "fzf", "--reverse", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
+            "--header", header, "--header-first",
+            "--preview", "%s --preview {1}" % me, "--preview-window", "right,50%,wrap",
+            "--bind", "ctrl-y:execute-silent(printf %s {1} | pbcopy)",
+            "--bind", "ctrl-r:reload(%s --list)" % me,
+        ],
+        input="\n".join(lines), capture_output=True, text=True,
+    )
+    choice = fzf.stdout.strip()
+    if fzf.returncode != 0 or not choice:
+        return
+    open_session(choice.split("\t")[0])
+
+def main(argv):
+    os.environ["PATH"] = "/opt/homebrew/bin:/usr/local/bin:" + os.environ.get("PATH", "")
+    if "--reindex" in argv:
+        index_sessions(force=True)
+        argv = [a for a in argv if a != "--reindex"]
+    if not argv:
+        return pick()
+    if argv[0] == "--list":
+        states, mtimes = index_sessions()
+        print("\n".join(rows(states, mtimes, live_sessions())))
+    elif argv[0] == "--preview" and len(argv) > 1:
+        preview(argv[1])
+    elif argv[0] == "--open" and len(argv) > 1:
+        open_session(argv[1])
+    else:
+        print(__doc__)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
