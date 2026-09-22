@@ -279,7 +279,7 @@ def remaining(ts):
         return "%dd %dh" % (d, h)
     if h:
         return "%dh %dm" % (h, m)
-    return "%dm" % max(m, 1)
+    return "%dm" % m if m else "<1m"
 
 def resolve(session_id, states):
     """'current' -> the session whose tmux pane is the caller's; otherwise a (prefix of an) id."""
@@ -471,7 +471,8 @@ def rows(states, mtimes, live):
             marker = "●" if l.get("status") == "busy" else "○"
         title = title_of(st)
         if e:
-            title += "  ⏾ in %s%s" % (remaining(e["until"]), (" · " + e["reason"]) if e.get("reason") else "")
+            left = remaining(e["until"])
+            title += "  %s%s" % ("⏰ due" if left == "due" else "⏾ in " + left, (" · " + e["reason"]) if e.get("reason") else "")
         mrs = " ".join("!" + m for m in st["mrs"][:2])
         line = "\t".join([
             st["id"],
