@@ -215,13 +215,22 @@ def title_of(state):
     return custom or state["ai_title"] or state["first_prompt"][:70] or "(untitled)"
 
 def project_of(state):
-    cwd = state["cwd"] or state["project_dir"].replace("-Users-rasmusreiler-", "").replace("-", "/")
+    cwd = state["cwd"]
+    if not cwd:
+        d = state["project_dir"]
+        prefix = "-Users-rasmusreiler-"
+        d = d[len(prefix):] if d.startswith(prefix) else d
+        d = d[4:] if d.startswith("dev-") else d
+        return d.split("--")[0]
     parts = [p for p in cwd.split("/") if p]
-    for i, p in enumerate(parts):
-        if p == "dev" and i + 1 < len(parts):
-            base = parts[i + 1]
-            return base
-    return parts[-1] if parts else "?"
+    try:
+        i = parts.index("rasmusreiler")
+    except ValueError:
+        return parts[-1] if parts else "?"
+    rest = parts[i + 1:]
+    if rest and rest[0] == "dev" and len(rest) > 1:
+        return rest[1]
+    return rest[0] if rest else "?"
 
 def skill_of(state):
     for s in state["skills"]:
