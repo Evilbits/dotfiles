@@ -14,6 +14,13 @@ Modes:
   claude-sessions --open ID    jump or resume
   claude-sessions --reindex    drop the cache and rebuild
   claude-sessions --ticket ID  print the primary ticket for one session (used by the status line)
+  claude-sessions --snooze ID DURATION [REASON]   hide a session until later (2h, 3d, tomorrow, fri, 14:30)
+  claude-sessions --unsnooze ID
+  claude-sessions --wake       notify and reopen sessions whose snooze has expired (run by launchd)
+  claude-sessions --install-wake / --uninstall-wake   manage the launchd job (every 5 minutes)
+
+In the picker: ctrl-s snoozes the highlighted session, ctrl-u unsnoozes, enter on a
+snoozed or due session clears its snooze and opens it.
 """
 import json
 import os
@@ -28,6 +35,8 @@ HOME = os.path.expanduser("~")
 PROJECTS = os.path.join(HOME, ".claude", "projects")
 REGISTRY = os.path.join(HOME, ".claude", "sessions")
 CACHE = os.path.join(HOME, ".cache", "claude-sessions", "index.json")
+SNOOZE = os.path.join(HOME, ".local", "state", "claude-sessions", "snooze.json")
+PLIST = os.path.join(HOME, "Library", "LaunchAgents", "com.rasmusreiler.claude-sessions-wake.plist")
 CLAUDE_BIN = shutil.which("claude") or os.path.join(HOME, ".local", "bin", "claude")
 
 TICKET_RE = re.compile(r"\b(?:PROD|SEC|LAB|CS|PE|RESCOM|PR)-\d{2,6}\b")
@@ -202,6 +211,140 @@ def ticket_for(session_id):
         save_cache(cache)
     return primary_ticket(cache[path]["state"])
 
+# ── snooze ───────────────────────────────────────────────────────────────────
+
+def load_snooze():
+    try:
+        with open(SNOOZE) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_snooze(data):
+    os.makedirs(os.path.dirname(SNOOZE), exist_ok=True)
+    tmp = SNOOZE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(data, f, indent=1)
+    os.replace(tmp, SNOOZE)
+
+WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+
+def parse_until(spec, now=None):
+    """2h, 45m, 3d, tomorrow, fri, 14:30 -> epoch seconds. Day-based specs land at 09:00."""
+    import datetime as dt
+    now = now or dt.datetime.now()
+    s = spec.strip().lower()
+    m = re.fullmatch(r"(\d+)\s*([mhd])", s)
+    if m:
+        n, unit = int(m.group(1)), m.group(2)
+        if unit == "d":
+            return (now.replace(hour=9, minute=0, second=0, microsecond=0) + dt.timedelta(days=n)).timestamp()
+        return (now + dt.timedelta(minutes=n if unit == "m" else n * 60)).timestamp()
+    if s in ("tomorrow", "tmr"):
+        return (now.replace(hour=9, minute=0, second=0, microsecond=0) + dt.timedelta(days=1)).timestamp()
+    if s[:3] in WEEKDAYS:
+        days = (WEEKDAYS.index(s[:3]) - now.weekday()) % 7 or 7
+        return (now.replace(hour=9, minute=0, second=0, microsecond=0) + dt.timedelta(days=days)).timestamp()
+    m = re.fullmatch(r"(\d{1,2}):(\d{2})", s)
+    if m:
+        at = now.replace(hour=int(m.group(1)), minute=int(m.group(2)), second=0, microsecond=0)
+        if at <= now:
+            at += dt.timedelta(days=1)
+        return at.timestamp()
+    raise ValueError("cannot parse duration %r" % spec)
+
+def fmt_until(ts):
+    import datetime as dt
+    at = dt.datetime.fromtimestamp(ts)
+    today = dt.datetime.now().date()
+    if at.date() == today:
+        return at.strftime("%H:%M")
+    if (at.date() - today).days < 7:
+        return at.strftime("%a %H:%M")
+    return at.strftime("%d %b %H:%M")
+
+def snooze(session_id, spec, reason):
+    states, _ = index_sessions()
+    st = find(states, session_id)
+    if not st:
+        sys.exit("unknown session " + session_id)
+    data = load_snooze()
+    data[st["id"]] = {"until": parse_until(spec), "reason": reason.strip(), "due": False}
+    save_snooze(data)
+    print("snoozed %s until %s%s" % (primary_ticket(st) or st["id"][:8], fmt_until(data[st["id"]]["until"]), (" · " + reason) if reason.strip() else ""))
+
+def unsnooze(session_id):
+    data = load_snooze()
+    for k in list(data):
+        if k == session_id or k.startswith(session_id):
+            del data[k]
+    save_snooze(data)
+
+def snooze_prompt(session_id):
+    """Interactive prompt used from inside fzf (ctrl-s)."""
+    states, _ = index_sessions()
+    st = find(states, session_id)
+    if not st:
+        return
+    print("snooze  %s  %s" % (primary_ticket(st), title_of(st)))
+    try:
+        spec = input("until (2h, 3d, tomorrow, fri, 14:30) [1d]: ").strip() or "1d"
+        reason = input("reason (e.g. awaiting review on !17005): ").strip()
+        snooze(st["id"], spec, reason)
+    except (EOFError, KeyboardInterrupt, ValueError) as e:
+        print(e)
+        time.sleep(1)
+
+def notify(title, body):
+    subprocess.run(["osascript", "-e", 'display notification "%s" with title "%s"' % (body.replace('"', "'"), title.replace('"', "'"))], capture_output=True)
+    tmux("display-message", "-d", "6000", "%s: %s" % (title, body))
+
+def wake():
+    data = load_snooze()
+    if not data:
+        return
+    now = time.time()
+    states, _ = index_sessions()
+    live = live_sessions()
+    changed = False
+    for sid, entry in data.items():
+        if entry.get("due") or entry["until"] > now:
+            continue
+        st = find(states, sid)
+        label = (primary_ticket(st) + " · " if st and primary_ticket(st) else "") + (title_of(st) if st else sid[:8])
+        notify("Claude session due", label + ((" — " + entry["reason"]) if entry.get("reason") else ""))
+        if st and sid not in live and tmux("list-sessions").returncode == 0:
+            open_session(sid)
+        entry["due"] = True
+        changed = True
+    if changed:
+        save_snooze(data)
+
+def install_wake():
+    me = os.path.abspath(__file__)
+    plist = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.rasmusreiler.claude-sessions-wake</string>
+  <key>ProgramArguments</key><array><string>/usr/bin/python3</string><string>%s</string><string>--wake</string></array>
+  <key>StartInterval</key><integer>300</integer>
+  <key>RunAtLoad</key><true/>
+  <key>EnvironmentVariables</key><dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+</dict></plist>
+""" % me
+    os.makedirs(os.path.dirname(PLIST), exist_ok=True)
+    subprocess.run(["launchctl", "bootout", "gui/%d" % os.getuid(), PLIST], capture_output=True)
+    with open(PLIST, "w") as f:
+        f.write(plist)
+    r = subprocess.run(["launchctl", "bootstrap", "gui/%d" % os.getuid(), PLIST], capture_output=True, text=True)
+    print("installed wake job, every 5 minutes" if r.returncode == 0 else r.stderr)
+
+def uninstall_wake():
+    subprocess.run(["launchctl", "bootout", "gui/%d" % os.getuid(), PLIST], capture_output=True)
+    if os.path.exists(PLIST):
+        os.remove(PLIST)
+    print("wake job removed")
+
 # ── live registry ────────────────────────────────────────────────────────────
 
 def live_sessions():
@@ -271,12 +414,31 @@ def fit(s, n):
     return (s[: n - 1] + "…") if len(s) > n else s.ljust(n)
 
 def rows(states, mtimes, live):
+    snoozed = load_snooze()
+    def group(s):
+        e = snoozed.get(s["id"])
+        if e and e.get("due"):
+            return 0
+        if e:
+            return 3
+        return 1 if s["id"] in live else 2
+    def key(s):
+        g = group(s)
+        return (g, snoozed[s["id"]]["until"] if g == 3 else -mtimes.get(s["id"], 0))
     out = []
-    for st in sorted(states, key=lambda s: (s["id"] in live, mtimes.get(s["id"], 0)), reverse=True):
+    for st in sorted(states, key=key):
         l = live.get(st["id"])
+        e = snoozed.get(st["id"])
         marker = " "
-        if l:
+        if e and e.get("due"):
+            marker = "⏰"
+        elif e:
+            marker = "z"
+        elif l:
             marker = "●" if l.get("status") == "busy" else "○"
+        title = title_of(st)
+        if e:
+            title += "  ⏾ %s%s" % (fmt_until(e["until"]), (" · " + e["reason"]) if e.get("reason") else "")
         mrs = " ".join("!" + m for m in st["mrs"][:2])
         line = "\t".join([
             st["id"],
@@ -285,7 +447,7 @@ def rows(states, mtimes, live):
             fit(project_of(st), 12),
             fit(primary_ticket(st), 10),
             fit(skill_of(st), 9),
-            fit(title_of(st), 48),
+            fit(title, 64),
             fit(mrs, 14),
         ])
         out.append(line)
@@ -356,6 +518,7 @@ def open_session(session_id):
     st = find(states, session_id)
     if not st:
         sys.exit("unknown session " + session_id)
+    unsnooze(st["id"])
     l = live_sessions().get(st["id"])
     if l and l.get("tmux"):
         target = l["tmux"]                      # e.g. doxyme-core:@7.%8
@@ -384,7 +547,7 @@ def pick():
     if not lines:
         sys.exit("no sessions found")
     me = os.path.abspath(__file__)
-    header = "  age  project      ticket     skill     title                                            MRs             live first, then newest  ●busy ○idle  ctrl-y copies id"
+    header = "   age  project      ticket     skill     title                                                            MRs             ⏰due ●busy ○idle z snoozed   ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
     fzf = subprocess.run(
         [
             "fzf", "--reverse", "--no-sort", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
@@ -392,6 +555,8 @@ def pick():
             "--preview", "%s --preview {1}" % me, "--preview-window", "right,50%,wrap",
             "--bind", "ctrl-y:execute-silent(printf %s {1} | pbcopy)",
             "--bind", "ctrl-r:reload(%s --list)" % me,
+            "--bind", "ctrl-s:execute(%s --snooze-prompt {1})+reload(%s --list)" % (me, me),
+            "--bind", "ctrl-u:execute-silent(%s --unsnooze {1})+reload(%s --list)" % (me, me),
         ],
         input="\n".join(lines), capture_output=True, text=True,
     )
@@ -416,6 +581,18 @@ def main(argv):
         open_session(argv[1])
     elif argv[0] == "--ticket" and len(argv) > 1:
         print(ticket_for(argv[1]))
+    elif argv[0] == "--snooze" and len(argv) > 2:
+        snooze(argv[1], argv[2], " ".join(argv[3:]))
+    elif argv[0] == "--snooze-prompt" and len(argv) > 1:
+        snooze_prompt(argv[1])
+    elif argv[0] == "--unsnooze" and len(argv) > 1:
+        unsnooze(argv[1])
+    elif argv[0] == "--wake":
+        wake()
+    elif argv[0] == "--install-wake":
+        install_wake()
+    elif argv[0] == "--uninstall-wake":
+        uninstall_wake()
     else:
         print(__doc__)
 
