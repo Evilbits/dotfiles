@@ -14,7 +14,11 @@ Modes:
   claude-sessions --open ID    jump or resume
   claude-sessions --reindex    drop the cache and rebuild
   claude-sessions --ticket ID  print the primary ticket for one session (used by the status line)
-  claude-sessions --snooze ID DURATION [REASON]   park a session until later (2h, 3d, tomorrow, fri, 14:30)
+  claude-sessions --snooze ID [DURATION] [MR-URL] [REASON]
+      park a session until a time (30s, 2h, 3d, tomorrow, fri, 14:30), until something happens on a
+      GitLab MR, or whichever comes first. At least one of DURATION or MR-URL. The word after the URL
+      picks what counts: "review" (default) wakes on a comment by someone else, an approval, a failed
+      pipeline, a conflict, merge or close; "merge" wakes only when the MR is merged or closed.
   claude-sessions --unsnooze ID
       ID may be "current": the session running in this tmux pane ($TMUX_PANE), so a
       Claude session can snooze itself from a Bash call.
@@ -27,6 +31,8 @@ In the picker: ctrl-s snoozes the highlighted session, ctrl-u unsnoozes, enter o
 snoozed or due session clears its snooze and opens it.
 """
 import json
+import urllib.request
+import urllib.parse
 import os
 import re
 import shutil
@@ -215,6 +221,85 @@ def ticket_for(session_id):
         save_cache(cache)
     return primary_ticket(cache[path]["state"])
 
+# ── GitLab MR watch ──────────────────────────────────────────────────────────
+
+MR_URL_RE = re.compile(r"https?://(gitlab\.com)/(.+?)/-/merge_requests/(\d+)")
+
+def gitlab_token():
+    tok = os.environ.get("GITLAB_NPM_TOKEN") or os.environ.get("GITLAB_TOKEN")
+    if tok:
+        return tok
+    try:
+        for line in open(os.path.join(HOME, ".npmrc")):
+            if "gitlab.com" in line and "_authToken=" in line:
+                return line.split("_authToken=", 1)[1].strip()
+    except Exception:
+        pass
+    return ""
+
+def gl_get(host, path):
+    req = urllib.request.Request("https://%s/api/v4/%s" % (host, path), headers={"PRIVATE-TOKEN": gitlab_token()})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        return json.load(r)
+
+def mr_ref(url):
+    m = MR_URL_RE.match(url.strip())
+    if not m:
+        return None
+    host, project, iid = m.groups()
+    return {"host": host, "project": urllib.parse.quote(project, safe=""), "path": project, "iid": int(iid), "url": url.strip()}
+
+def mr_snapshot(ref, me):
+    base = "projects/%s/merge_requests/%d" % (ref["project"], ref["iid"])
+    mr = gl_get(ref["host"], base)
+    notes = gl_get(ref["host"], base + "/notes?sort=desc&order_by=updated_at&per_page=50")
+    approvals = gl_get(ref["host"], base + "/approvals")
+    others = [n for n in notes if not n.get("system") and n["author"]["username"] != me]
+    return {
+        "state": mr.get("state"),
+        "conflicts": bool(mr.get("has_conflicts")),
+        "pipeline": (mr.get("head_pipeline") or {}).get("status"),
+        "approvers": sorted(a["user"]["username"] for a in approvals.get("approved_by", [])),
+        "max_note": max([n["id"] for n in notes] or [0]),
+        "others": [(n["id"], n["author"]["username"]) for n in others],
+        "title": mr.get("title", ""),
+    }
+
+def mr_events(entry, snap):
+    """What changed since the snapshot stored on the entry; each item is a short phrase."""
+    base = entry.get("mr_base") or {}
+    ev = []
+    if entry.get("mr_mode") == "merge":
+        if snap["state"] in ("merged", "closed") and base.get("state") == "opened":
+            ev.append(snap["state"])
+        return ev
+    new = [u for (nid, u) in snap["others"] if nid > base.get("max_note", 0)]
+    if new:
+        who = ", ".join(sorted(set(new)))
+        ev.append("%d new comment%s (%s)" % (len(new), "" if len(new) == 1 else "s", who))
+    for a in snap["approvers"]:
+        if a not in base.get("approvers", []):
+            ev.append("approved by " + a)
+    if snap["pipeline"] == "failed" and base.get("pipeline") != "failed":
+        ev.append("pipeline failed")
+    if snap["conflicts"] and not base.get("conflicts"):
+        ev.append("has conflicts")
+    if snap["state"] in ("merged", "closed") and base.get("state") == "opened":
+        ev.append(snap["state"])
+    return ev
+
+def gitlab_me():
+    data = load_snooze()
+    me = data.get("_me")
+    if not me:
+        try:
+            me = gl_get("gitlab.com", "user")["username"]
+            data["_me"] = me
+            save_snooze(data)
+        except Exception:
+            me = ""
+    return me
+
 # ── snooze ───────────────────────────────────────────────────────────────────
 
 def load_snooze():
@@ -269,6 +354,21 @@ def fmt_until(ts):
         return at.strftime("%a %H:%M")
     return at.strftime("%d %b %H:%M")
 
+def is_due(e):
+    return bool(e.get("due")) or (e.get("until") is not None and e["until"] <= time.time())
+
+def snooze_text(e):
+    """'⏰ !612: 2 new comments (x)' when due, else '⏾ !612 · in 2d 3h' style pending text."""
+    mr = e.get("mr")
+    tag = ("!%d%s" % (mr["iid"], " merge" if e.get("mr_mode") == "merge" else "")) if mr else ""
+    if is_due(e):
+        what = e.get("event") or ("" if mr else "time")
+        return ("⏰ " + (tag + (": " if tag and what else "") + what)).rstrip(": ")
+    bits = [tag] if tag else []
+    if e.get("until") is not None:
+        bits.append("in " + remaining(e["until"]))
+    return "⏾ " + " · ".join(bits)
+
 def remaining(ts):
     s = int(ts - time.time())
     if s <= 0:
@@ -293,14 +393,48 @@ def resolve(session_id, states):
     return find(states, session_id)
 
 def snooze(session_id, spec, reason):
+    """spec and reason are split again here so a duration, an MR URL or both may appear in any order."""
     states, _ = index_sessions()
     st = resolve(session_id, states)
     if not st:
         sys.exit("unknown session " + session_id)
+    until, ref, mode, words = None, None, "review", []
+    for tok in (spec + " " + reason).split():
+        if ref is None and mr_ref(tok):
+            ref = mr_ref(tok)
+            continue
+        if ref and tok.lower() in ("review", "merge", "merged") and mode == "review" and not words:
+            mode = "merge" if tok.lower().startswith("merge") else "review"
+            continue
+        if until is None:
+            try:
+                until = parse_until(tok)
+                continue
+            except ValueError:
+                pass
+        words.append(tok)
+    if until is None and ref is None:
+        sys.exit("need a duration (2h, 3d, tomorrow, fri, 14:30) or an MR URL")
+    entry = {"until": until, "reason": " ".join(words), "due": False}
+    if ref:
+        me = gitlab_me()
+        try:
+            snap = mr_snapshot(ref, me)
+        except Exception as e:
+            sys.exit("cannot read %s: %s" % (ref["url"], e))
+        entry["mr"] = ref
+        entry["mr_mode"] = mode
+        entry["mr_base"] = {k: snap[k] for k in ("state", "conflicts", "pipeline", "approvers", "max_note")}
+        entry["mr_title"] = snap["title"]
     data = load_snooze()
-    data[st["id"]] = {"until": parse_until(spec), "reason": reason.strip(), "due": False}
+    data[st["id"]] = entry
     save_snooze(data)
-    print("snoozed %s until %s (in %s)%s" % (primary_ticket(st) or st["id"][:8], fmt_until(data[st["id"]]["until"]), remaining(data[st["id"]]["until"]), (" · " + reason) if reason.strip() else ""))
+    parts = []
+    if ref:
+        parts.append(("until !%d merges" if mode == "merge" else "until review activity on !%d") % ref["iid"])
+    if until:
+        parts.append("until %s (in %s)" % (fmt_until(until), remaining(until)))
+    print("snoozed %s %s%s" % (primary_ticket(st) or st["id"][:8], " or ".join(parts), (" · " + entry["reason"]) if entry["reason"] else ""))
 
 def unsnooze(session_id):
     if session_id == "current":
@@ -322,7 +456,7 @@ def snooze_prompt(session_id):
         return
     print("snooze  %s  %s" % (primary_ticket(st), title_of(st)))
     try:
-        spec = input("until (30s, 2h, 3d, tomorrow, fri, 14:30) [1d]: ").strip() or "1d"
+        spec = input("until (30s, 2h, 3d, tomorrow, fri, 14:30) and/or an MR URL [1d]: ").strip() or "1d"
         reason = input("reason (e.g. awaiting review on !17005): ").strip()
         snooze(st["id"], spec, reason)
     except (EOFError, KeyboardInterrupt, ValueError) as e:
@@ -355,13 +489,11 @@ def due_lines():
         return []
     states, _ = index_sessions()
     out = []
-    for sid, e in sorted(snoozed.items(), key=lambda kv: kv[1]["until"]):
+    for sid, e in sorted(((k, v) for k, v in snoozed.items() if not k.startswith("_")), key=lambda kv: kv[1].get("until") or float("inf")):
         st = find(states, sid)
         if not st:
             continue
-        left = remaining(e["until"])
-        mark = "⏰ due" if left == "due" else "⏾ in " + left
-        out.append("%s  %s  %s%s" % (fit(mark, 12), fit(primary_ticket(st), 10), title_of(st), ("  · " + e["reason"]) if e.get("reason") else ""))
+        out.append("%s  %s  %s%s" % (fit(snooze_text(e), 30), fit(primary_ticket(st), 10), title_of(st), ("  · " + e["reason"]) if e.get("reason") else ""))
     return out
 
 def wake():
@@ -372,13 +504,25 @@ def wake():
     states, _ = index_sessions()
     live = live_sessions()
     changed = False
+    me = gitlab_me()
     for sid, entry in data.items():
-        if entry.get("due") or entry["until"] > now:
+        if sid.startswith("_") or entry.get("due"):
             continue
+        events = []
+        if entry.get("mr"):
+            try:
+                events = mr_events(entry, mr_snapshot(entry["mr"], me))
+            except Exception as e:
+                log("mr check failed for !%s: %s" % (entry["mr"]["iid"], e))
+        timed_out = entry.get("until") is not None and entry["until"] <= now
+        if not events and not timed_out:
+            continue
+        entry["event"] = "; ".join(events) if events else "time"
         st = find(states, sid)
         label = (primary_ticket(st) + " · " if st and primary_ticket(st) else "") + (title_of(st) if st else sid[:8])
-        log("due: %s" % label)
-        notify("Claude session due", label + ((" — " + entry["reason"]) if entry.get("reason") else ""))
+        detail = ("!%d %s" % (entry["mr"]["iid"], entry["event"])) if entry.get("mr") and events else ""
+        log("due: %s %s" % (label, detail))
+        notify("Claude session due", label + ((" — " + detail) if detail else "") + ((" — " + entry["reason"]) if entry.get("reason") else ""))
         if st and sid not in live and tmux("list-sessions").returncode == 0:
             open_session(sid)
             log("reopened %s in tmux" % sid[:8])
@@ -486,20 +630,20 @@ def rows(states, mtimes, live, only_snoozed=False):
         states = [s for s in states if s["id"] in snoozed]
     def group(s):
         e = snoozed.get(s["id"])
-        if e and (e.get("due") or e["until"] <= time.time()):
+        if e and is_due(e):
             return 0
         if e:
             return 2
         return 1 if s["id"] in live else 3
     def key(s):
         g = group(s)
-        return (g, snoozed[s["id"]]["until"] if g == 2 else -mtimes.get(s["id"], 0))
+        return (g, (snoozed[s["id"]].get("until") or float("inf")) if g == 2 else -mtimes.get(s["id"], 0))
     out = []
     for st in sorted(states, key=key):
         l = live.get(st["id"])
         e = snoozed.get(st["id"])
         marker = " "
-        if e and (e.get("due") or e["until"] <= time.time()):
+        if e and is_due(e):
             marker = "⏰"
         elif e:
             marker = "z"
@@ -507,8 +651,7 @@ def rows(states, mtimes, live, only_snoozed=False):
             marker = "●" if l.get("status") == "busy" else "○"
         title = title_of(st)
         if e:
-            left = remaining(e["until"])
-            title += "  %s%s" % ("⏰ due" if left == "due" else "⏾ in " + left, (" · " + e["reason"]) if e.get("reason") else "")
+            title += "  %s%s" % (snooze_text(e), (" · " + e["reason"]) if e.get("reason") else "")
         mrs = " ".join("!" + m for m in st["mrs"][:2])
         line = "\t".join([
             st["id"],
@@ -528,12 +671,11 @@ def footer(states):
     if not snoozed:
         return ""
     lines = []
-    for sid, e in sorted(snoozed.items(), key=lambda kv: kv[1]["until"]):
+    for sid, e in sorted(((k, v) for k, v in snoozed.items() if not k.startswith("_")), key=lambda kv: kv[1].get("until") or float("inf")):
         st = find(states, sid)
         if not st:
             continue
-        mark = "⏰ due" if e.get("due") or e["until"] <= time.time() else "in " + remaining(e["until"])
-        lines.append("%s  %s  %s%s" % (fit(primary_ticket(st), 10), fit(mark, 9), fit(title_of(st), 44), ("  · " + e["reason"]) if e.get("reason") else ""))
+        lines.append("%s  %s  %s%s" % (fit(primary_ticket(st), 10), fit(snooze_text(e), 26), fit(title_of(st), 40), ("  · " + e["reason"]) if e.get("reason") else ""))
     return "\n".join(lines)
 
 def statusline(session_id):
@@ -543,8 +685,8 @@ def statusline(session_id):
     own = snoozed.get(session_id)
     own_text = ""
     if own:
-        own_text = ("⏰ due" if own.get("due") or own["until"] <= time.time() else "⏾ " + remaining(own["until"])) + ((" · " + own["reason"]) if own.get("reason") else "")
-    due = sum(1 for e in snoozed.values() if e.get("due") or e["until"] <= time.time())
+        own_text = snooze_text(own) + ((" · " + own["reason"]) if own.get("reason") else "")
+    due = sum(1 for k, e in snoozed.items() if not k.startswith("_") and is_due(e))
     print("%s\t%s\t%d" % (ticket, own_text, due))
 
 def find(states, session_id):
