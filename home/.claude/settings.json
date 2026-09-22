@@ -55,14 +55,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/claude-rename-runner.sh\""
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "PATH=\"/opt/homebrew/bin:/usr/local/bin${PATH:+:$PATH}\" node '/Users/rasmusreiler/.claude/statusbar/update.js' stop"
           }
         ]
