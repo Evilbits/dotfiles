@@ -66,9 +66,12 @@ In this session, sequentially, without subagents unless asked.
 
 ## 6 — Hand off
 
-When the plan is complete and verified:
+Runs without asking once step 5 is complete and verified. The user has made this the standing next step.
 
-- Offer a merge description, the usual next request. Write it only if asked, keep the repo MR template verbatim, and lead with the benefit and the why.
-- For the MR itself, follow `.cursor/skills/gitlab-merge-request/SKILL.md`.
-- **Never mark the MR ready.** That is the user's call alone, as is starting the next phase or the next MR.
-- Do not offer to run a local stack; mention `blitz` only if verification needs the app running or the user asks.
+1. **Push** the branch with `git push -u origin <branch>`. Never a force-push here.
+2. **Open a draft MR** as `.cursor/skills/gitlab-merge-request/SKILL.md` describes: GitLab MCP `create_merge_request`, target `master`, title `Draft: <type>(<scope>): <TICKET-ID> - <summary>`; the `Draft:` prefix is what makes it a draft. Write the description into the repo template (`.gitlab/merge_request_templates/Default.md`) keeping every section: "Description of change" leads with what was built and why in plain language and links the ticket; "Type of change" and "Quality checklist" ticked only where true; "How to test" as bullets a reviewer can follow, including flags or setup; "Links" and "Screenshots" left as in the template unless there is something to put there. Nothing the code does not do. Surface the MR URL as a link.
+3. **Review in a fresh context.** Spawn one general-purpose subagent whose only inputs are the MR URL, the description as written, the Jira ticket text, and the instruction to read `~/.claude/skills/doxy-review/SKILL.md` and run its implementer mode over `master..<branch>`. It gets nothing from this session: no plan, no design doc, no conversation. The point is a reader who knows only what a reviewer would know. It returns the findings list.
+4. **Apply the review.** Verify each finding against the code before accepting it, as `superpowers:receiving-code-review` asks. Blocking and worth-raising findings that hold become further atomic commits, pushed to the same branch. Findings that do not hold get a one-line answer. A finding that reopens a design decision goes to the user; it is never implemented on the reviewer's say-so. One review round; a second only if the user asks.
+5. **Report**: the MR link, what the review found, what changed, what was declined and why. **Never mark the MR ready.** That and the next phase are the user's call alone.
+
+Do not offer to run a local stack; mention `blitz` only if verification needs the app running or the user asks.

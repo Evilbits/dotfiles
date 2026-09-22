@@ -77,6 +77,10 @@ A proposal to do something differently is incomplete until it accounts for both 
 
 Say plainly when the net is near neutral and the gain is readability or one concept disappearing. That is a common and legitimate answer; overstating it costs more than it wins. Each mechanics file says what to count.
 
+## Implementer mode
+
+Used when `/doxy-implement`'s hand-off runs this skill in a subagent. Inputs are the MR URL, its description and the Jira ticket, and nothing from the authoring session. Run the code mechanics over `master..<branch>` with the description and ticket as the change's stated goal. Skip the placement plan and draft no comments; the reader is the implementer, not GitLab. Return each finding with its ID, severity, `file:line`, claim, cause and the concrete change proposed, then the checks that passed, then held nits in one line. Mark any finding that would reopen a design decision, so the implementer routes it to the user instead of acting on it.
+
 ## Discussion
 
 Expect challenge, and hold or fold on the merits: "Do not agree with me just because I ask the question - I want an honest architecture discussion where we ultimately aim to land at the lowest required complexity to have a working solution." If a challenge is right, say what changes and why. If it is wrong, say so and show the evidence.

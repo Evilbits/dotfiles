@@ -3,7 +3,7 @@
 ## Safety
 - Before running any command, briefly describe what it does.
 - Before any destructive operation (deleting files, force pushes, dropping data, etc. — this list is not exhaustive), warn in bold and require explicit confirmation.
-- Never push to a remote without explicit confirmation.
+- Never push to a remote without explicit confirmation, with one standing exception: the hand-off step of `/doxy-implement` pushes the ticket branch and opens a draft MR without asking. Force-pushes still ask, always.
 
 ## Implementation Workflow
 - When discussing architectural or implementation topics, present a plan split into distinct steps. Each step should encapsulate one logical area of change (e.g. a layer, service, or concern — multiple can be grouped if they fall under the same umbrella).
