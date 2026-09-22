@@ -1,78 +1,46 @@
 # Review doctrine
 
-Standing principles, each anchored to what the reviewer has said in review, so the skill argues from the real position and not a paraphrase.
+Standing principles, each taken from what the reviewer has said in review. Two are kept verbatim because the wording is the standard; the rest are stated as rules.
 
 ## What the review optimises for
 
-**Human-readable complexity outranks performance.**
+**Human-readable complexity outranks performance.** A red thread of data flow a human can read is worth a slower or less direct implementation. Simplifying to cut complexity is right even at a performance cost.
 
-> "I care more about that there's a red thread of data flow through the application and that a human can read and understand it well. That means sometimes perhaps doing things in a slightly different way, perhaps even less performant, if it means it'll lead to gains in readability and complexity."
+**The target is the lowest complexity that meets the requirement, and reimplementation is on the table** when a library has become difficult to understand and work with.
 
-> "Can we simplify it to reduce complexity a lot EVEN if we lose some performance?"
+**Volume is a symptom; arrangement is usually the cause.** When an MR needs far more code than its goal suggests, the way it is arranged is the suspect. The cause found more than once: an abstraction organised around a concept (store, schema) that handles both reading and writing inside itself, so it balloons.
 
-The target is the lowest complexity that meets the requirement, and reimplementation is on the table: "I want us to simplify the complexity as much as possible as we are already getting to a point where the libraries are difficult to understand and work with. Even if that means reimplementing."
+**Complexity belongs in the library, never in the app.** More complexity in the library is accepted when it gives app consumers an easier interface.
 
-**Volume is a symptom; arrangement is usually the cause.**
+**An abstraction must justify its existence.** Count what it buys. The reference case: `bindAt`, an abstract method, three implementations and a constructor parameter on four classes, all to deliver one `storedPath` label to one call. An implementation with no benefit is dropped as complexity for no reason.
 
-> "I still feel like there's something wrong about this MR. Specifically some of our abstractions have exploded in size and complexity. In general I have a feeling that what we are trying to achieve in this MR should be possible to do with much much less code (outside of the tests). If we need this much code then perhaps the way it's arranged is what is wrong."
-
-The cause found more than once: an abstraction organised around a concept that handles several directions of flow inside itself.
-
-> "maybe it's because we have decided to have abstraction around concepts, such as the store, schema, etc, but within them they handle both reading and writing which is handled a bit differently. This means those abstractions balloon in size."
-
-**Complexity belongs in the library, never in the app.**
-
-> "we have prioritised putting more complexity into the library if it leads to an easier interface for app consumers to use externally."
-
-**An abstraction must justify its existence.** Count what it buys:
-
-> "Do we actually need `bindAt`? As far as I can tell `storedPath` is read in one place. Everything else, the abstract method, the three implementations and the constructor parameter on four classes, is there to get that one label to that one call."
-
-Also: "I don't really get this implementation. If there isn't really a benefit to it then let's drop it. It's extra complexity for no reason." The readability bar is the reader's, not the author's: "Your implementation of Draft is impossible to understand. I don't get the purpose and neither will any reader."
+**The readability bar is the reader's, not the author's.** Code the author understands but no reader will is a finding.
 
 ## The failure modes this skill prevents
 
-**Reviewing at the wrong altitude.**
+**Reviewing at the wrong altitude.** Simplifications targeted at small individual changes miss what the reviewer wants: methodology and architecture first.
 
-> "Your simplifications are good but they are still very targeted towards small individual changes."
-
-> "For this MR I am more interested in the methodology and architecture."
-
-**Burying one to three real points under small ones.**
+**Burying one to three real points under small ones.** Verbatim, because it defines the altitude rule and is easy to misread as a cap:
 
 > "Sometimes you've reviewed an MR and come back with 10 changes where maybe only 2 or 3 were actually important. It's confusing when you list 10 items and 7 of them are tiny details that I'm not gonna bother adding to my review as they will be impacted by larger architectural changes anyway."
-
-The clarification, since it is easy to read as a limit on findings:
 
 > "It shouldn't be a hard cap. My point was not that 3 is the max but rather that you sometimes have 1-3 really good points and then 7 nit pick comments. In those cases I don't care about the small details as they will mean nothing compared to larger rewrites/decisions anyway. They can come later when the big picture has been finished and settled on."
 
 The filter is dependency and timing, not count. Every substantive finding is reported; small details wait until the larger decisions settle.
 
-**Agreeing to be agreeable.**
-
-> "Do not agree with me just because I ask the question - I want an honest architecture discussion where we ultimately aim to land at the lowest required complexity to have a working solution."
-
-On pushback about size or complexity, measure and question your own proposal first; never reframe the number instead of answering it.
+**Agreeing to be agreeable.** A question is not a request for agreement. The aim is an honest architecture discussion that lands at the lowest complexity for a working solution. On pushback about size or complexity, measure and question your own proposal first; never reframe the number instead of answering it.
 
 ## Scope discipline
 
-Out-of-scope improvements are filed, never smuggled into the MR under review:
+**Out-of-scope improvements are filed, never smuggled into the MR under review.** Write the current implementation with the improvement in mind, and create a low-priority ticket in the epic carrying its benefit and reasoning.
 
-> "That sounds like a good improvement but one that is outside the scope of what we are doing now. Let's write our current implementation with this in mind as a potential future addition. Create a ticket for it with low priority in this epic with information around the benefits of it and reasoning behind adding it."
+**Known limitations can be accepted with a stated horizon**, for example because no app will use Hotpot for a long time yet. A finding that an accepted limitation exists is worth raising only if the horizon has changed.
 
-Known limitations can be accepted with a stated horizon: "This is OK and is something we can accept for now. We should fix the issue at a later date but it will still be a long time before any apps start using Hotpot so we have time." A finding that an accepted limitation exists is worth raising only if the horizon has changed.
-
-Deferring to a later MR in the same series is a legitimate resolution; check whether the next MR already cleans something up before raising it.
+**Deferring to a later MR in the same series is a legitimate resolution.** Check whether the next MR already cleans something up before raising it.
 
 ## Costing a rewrite proposal, both directions
 
-Numbers make a restructuring proposal reviewable:
-
-> "I want to understand the actual lines of code difference between the two implementations and I want a very specific example that I can share in the comment."
-
-> "Both in terms of complexity reduction (abstractions we remove and total LOC with or without your change) and are there any edge cases/bugs we might not cover with this implementation or do we actually cover more?"
-
-The accounting runs both ways: what the change removes and what it adds. Never only the savings.
+**Numbers make a restructuring proposal reviewable.** The reviewer wants the actual lines-of-code difference between the two implementations, a specific example that can be shared in a comment, the abstractions removed, and whether the alternative covers fewer or more edge cases and bugs. The accounting runs both ways: what the change removes and what it adds. Never only the savings.
 
 ### The shape that worked
 
@@ -90,13 +58,9 @@ What that comment did not state, and this skill must add, is the other side of t
 
 ## Correctness findings
 
-Defects are reported and kept separate from the architecture discussion:
+**Defects are reported and kept separate from the architecture discussion**, introduced as a bug rather than a style preference.
 
-> "Separately, and I want to keep this distinct because it's a bug rather than a style preference: I don't think we handle removals."
-
-The standard: a concrete failure path with the inputs and the wrong outcome, and whether it is deterministic:
-
-> "If person B removes field X from a row and it syncs to person A, A's next write to any other field in that same row packs the row from A's store, X included, and puts X right back into the Hotpot. That's deterministic, not a race."
+**The standard is a concrete failure path**: the inputs, the wrong outcome, and whether it is deterministic. The reference case: B removes field X from a row and it syncs to A; A's next write to any other field in that row packs the row from A's store, X included, and puts X back into Hotpot. Deterministic, not a race.
 
 ## Comments and documentation
 
