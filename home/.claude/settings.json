@@ -163,13 +163,20 @@
     "lua-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
-    "blitz@doxyme": true
+    "blitz@doxyme": true,
+    "cockpit@local": true
   },
   "extraKnownMarketplaces": {
     "doxyme": {
       "source": {
         "source": "git",
         "url": "git@gitlab.com:doxyme/cooks/claude-plugins.git"
+      }
+    },
+    "local": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/rasmusreiler/dev/cockpit-marketplace"
       }
     }
   },
