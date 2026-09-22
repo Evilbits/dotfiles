@@ -161,7 +161,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "/Users/rasmusreiler/.claude/hooks/statusline.sh"
+    "command": "/Users/rasmusreiler/.local/bin/cockpit-statusline"
   },
   "enabledPlugins": {
     "lua-lsp@claude-plugins-official": true,
