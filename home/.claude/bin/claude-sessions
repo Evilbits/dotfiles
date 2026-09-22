@@ -538,7 +538,9 @@ def wake():
             try:
                 events = mr_events(entry, mr_snapshot(entry["mr"], me))
             except Exception as e:
-                log("mr check failed for !%s: %s" % (entry["mr"]["iid"], e))
+                import hashlib
+                tok = gitlab_token()
+                log("mr check failed for !%s: %s (token %s len %d, PATH=%s)" % (entry["mr"]["iid"], e, hashlib.sha1(tok.encode()).hexdigest()[:8] if tok else "none", len(tok), os.environ.get("PATH", "")[:60]))
         timed_out = entry.get("until") is not None and entry["until"] <= now
         if not events and not timed_out:
             continue
