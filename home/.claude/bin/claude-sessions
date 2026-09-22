@@ -105,7 +105,8 @@ def absorb_line(state, line):
                 state["skills"].append(m)
         args = ARGS_RE.search(text)
         if args:
-            text = args.group(1).strip()
+            cmd = re.search(r"<command-name>(/?[a-z][a-z-]*)</command-name>", text)
+            text = ((cmd.group(1).lstrip("/") and "/" + cmd.group(1).lstrip("/") + " ") if cmd else "") + args.group(1).strip()
         if not text or text.startswith("<"):
             return
         state["turns"] += 1
