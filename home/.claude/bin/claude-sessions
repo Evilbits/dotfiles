@@ -13,6 +13,7 @@ Modes:
   claude-sessions --preview ID preview pane for one session
   claude-sessions --open ID    jump or resume
   claude-sessions --reindex    drop the cache and rebuild
+  claude-sessions --ticket ID  print the primary ticket for one session (used by the status line)
 """
 import json
 import os
@@ -174,6 +175,32 @@ def index_sessions(force=False):
             del cache[path]
     save_cache(cache)
     return [e["state"] for e in cache.values()], {e["state"]["id"]: e["mtime"] for e in cache.values()}
+
+def ticket_for(session_id):
+    """Cheap path for the status line: refresh only this session's entry."""
+    import glob
+    cache = load_cache()
+    paths = glob.glob(os.path.join(PROJECTS, "*", session_id + ".jsonl"))
+    if not paths:
+        return ""
+    path = paths[0]
+    st_ = os.stat(path)
+    entry = cache.get(path)
+    if not entry or entry["size"] != st_.st_size or entry["mtime"] != st_.st_mtime:
+        if entry and entry["size"] < st_.st_size:
+            state, offset = entry["state"], entry["size"]
+        else:
+            state, offset = new_state(session_id, os.path.basename(os.path.dirname(path))), 0
+        with open(path, "rb") as f:
+            f.seek(offset)
+            for raw in f:
+                try:
+                    absorb_line(state, raw.decode("utf-8", "replace"))
+                except Exception:
+                    pass
+        cache[path] = {"size": st_.st_size, "mtime": st_.st_mtime, "state": state}
+        save_cache(cache)
+    return primary_ticket(cache[path]["state"])
 
 # ── live registry ────────────────────────────────────────────────────────────
 
@@ -387,6 +414,8 @@ def main(argv):
         preview(argv[1])
     elif argv[0] == "--open" and len(argv) > 1:
         open_session(argv[1])
+    elif argv[0] == "--ticket" and len(argv) > 1:
+        print(ticket_for(argv[1]))
     else:
         print(__doc__)
 

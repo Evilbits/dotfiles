@@ -15,14 +15,28 @@ input=$(cat)
 
 # .cwd is the fallback in case workspace.current_dir is absent; effort is absent
 # on older versions, in which case it is simply omitted from the output.
-fields=$(printf '%s' "$input" | jq -r '[.model.display_name, (.workspace.current_dir // .cwd), (.effort.level // ""), (.session_name // "")] | @tsv')
+fields=$(printf '%s' "$input" | jq -r '[.model.display_name, (.workspace.current_dir // .cwd), (.effort.level // ""), (.session_name // ""), (.session_id // "")] | @tsv')
 model=$(printf '%s' "$fields" | cut -f1)
 dir=$(printf '%s' "$fields" | cut -f2)
 effort=$(printf '%s' "$fields" | cut -f3)
 session=$(printf '%s' "$fields" | cut -f4)
+session_id=$(printf '%s' "$fields" | cut -f5)
+
+# The Jira ticket this session is about, derived from the prompts by the
+# session picker's index (read-only, cached). Claude's own titles never carry
+# it, so it is prefixed here unless the name already contains it.
+ticket=""
+[ -n "$session_id" ] && ticket=$("$HOME/.claude/bin/claude-sessions" --ticket "$session_id" 2>/dev/null)
+if [ -n "$ticket" ]; then
+  case "$session" in
+    *"$ticket"*) ;;
+    "") session="$ticket" ;;
+    *) session="$ticket · $session" ;;
+  esac
+fi
 
 # Keep a long session name from crowding out the branch.
-[ "${#session}" -gt 40 ] && session="$(printf '%.39s' "$session")…"
+[ "${#session}" -gt 52 ] && session="$(printf '%.51s' "$session")…"
 
 # "Opus 5 (1M context) · medium"
 left="$model${effort:+ · $effort}"
@@ -67,9 +81,9 @@ else
   printf '%s | %s | %s\033[38;5;116m⎇ %s [primary]\033[0m' "$left" "$repo" "$name_seg" "$branch"
 fi
 
-# Second row, only while the session is still unnamed (the rename hook names it
-# after the first exchange): the personal skill set, so a fresh session opens
-# with the menu visible instead of relying on memory to type /doxy-.
+# Second row, only while the session has neither a name nor a ticket yet: the
+# personal skill set, so a fresh session opens with the menu visible instead of
+# relying on memory to type /doxy-.
 if [ -z "$session" ]; then
   printf '\n\033[2m/doxy-design · /doxy-ticket · /doxy-implement · /doxy-review\033[0m'
 fi
