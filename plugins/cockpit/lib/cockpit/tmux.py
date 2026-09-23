@@ -174,13 +174,15 @@ WINDOWS = os.path.join(STATE_DIR, "windows.json")
 MARKS = ("⏰ ", "⏾ ")
 
 def mark_windows(states, snoozed, live):
-    """Show snooze state in tmux window names: '⏾ Read-protected stash fields' while snoozed, '⏰ …'
-    when due, and the window's own name back once neither applies. Only windows hosting a session that
-    is or was marked are touched; the original name and its automatic-rename setting are kept in
-    the state folder so the restore is exact."""
+    """Keep tmux window names in step with the sessions they host. With tmux_window_names on, every
+    window running a session is named after the session's subject, '⏾ …' while snoozed and '⏰ …'
+    when due. With it off, only snoozed windows are renamed, and they get their own name back once
+    the snooze clears; the original name and its automatic-rename setting are kept in the state
+    folder so that restore is exact."""
     from . import snooze as snooze_mod
-    from .index import find, primary_ticket
-    if not cfg()["tmux_window_marks"] or not available():
+    from .index import find
+    name_all = cfg()["tmux_window_names"]
+    if not (cfg()["tmux_window_marks"] or name_all) or not available():
         return
     remembered = load_json(WINDOWS)
     names = user_names()
@@ -191,24 +193,28 @@ def mark_windows(states, snoozed, live):
         if ":" not in target:
             continue
         window = target.split(".")[0]
-        e = snoozed.get(sid)
-        if not e:
+        e = snoozed.get(sid) if cfg()["tmux_window_marks"] else None
+        if not e and not name_all:
             continue
         st = find(states, sid)
         label = window_name(st, names.get(sid, "")) if st else sid[:8]
-        wanted[window] = (MARKS[0] if snooze_mod.is_due(e) else MARKS[1]) + label
+        mark = (MARKS[0] if snooze_mod.is_due(e) else MARKS[1]) if e else ""
+        wanted[window] = mark + label
     for window, name in wanted.items():
         r = tmux("display-message", "-p", "-t", window, "#{window_name}\t#{automatic-rename}")
         if r.returncode != 0:
             continue
         current, auto = (r.stdout.rstrip("\n").split("\t") + [""])[:2]
-        if window not in remembered and not current.startswith(MARKS):
+        if not name_all and window not in remembered and not current.startswith(MARKS):
             remembered[window] = {"name": current, "automatic": auto == "1"}
             changed = True
         if current != name:
             tmux("rename-window", "-t", window, name)
     for window in list(remembered):
-        if window in wanted:
+        if window in wanted or name_all:
+            if name_all:
+                del remembered[window]
+                changed = True
             continue
         r = tmux("display-message", "-p", "-t", window, "#{window_name}")
         if r.returncode == 0 and r.stdout.strip().startswith(MARKS):

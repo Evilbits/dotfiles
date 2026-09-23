@@ -13,6 +13,7 @@ STATE_DIR = os.path.join(HOME, ".local", "state", "cockpit")
 CACHE = os.path.join(CACHE_DIR, "index.json")
 SNOOZE = os.path.join(STATE_DIR, "snooze.json")
 OPENED = os.path.join(STATE_DIR, "opened.json")
+TICKETS = os.path.join(STATE_DIR, "tickets.json")  # per-session ticket overrides: id -> key, "" for none
 WAKE_LOG = os.path.join(STATE_DIR, "wake.log")
 CONFIG = os.path.join(HOME, ".config", "cockpit", "config.json")
 LAUNCHD_LABEL = "com.doxyme.cockpit.wake"
@@ -49,6 +50,9 @@ DEFAULTS = {
     "reopen_on_wake": True,
     # Prefix the tmux window of a snoozed session with ⏾ and of a due one with ⏰; restored afterwards.
     "tmux_window_marks": True,
+    # Name every tmux window that hosts a running session after the session's subject, so the window
+    # list reads as work; off, only snoozed windows are touched and get their own name back.
+    "tmux_window_names": True,
     # Colours (256-colour indexes) used by the picker preview and status line.
     "colour_accent": 183,
     "colour_branch": 116,

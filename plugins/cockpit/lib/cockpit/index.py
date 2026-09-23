@@ -6,7 +6,7 @@ import os
 import re
 from collections import Counter
 
-from .config import CACHE, PROJECTS, canonical, cfg, load_json, save_json, ticket_re
+from .config import CACHE, PROJECTS, TICKETS, canonical, cfg, load_json, save_json, ticket_re
 
 MR_RE = re.compile(r"merge_requests/(\d{3,6})")
 MR_URL_RE = re.compile(r"https://gitlab\.com/[A-Za-z0-9_.\-/]+?/-/merge_requests/\d+")
@@ -196,7 +196,29 @@ def find(states, session_id):
             return st
     return None
 
+def set_ticket(session_id, key):
+    """Pin a session's ticket, or with "" say it has none; either overrides what the prompts say.
+    Every pin in the file is moved to its canonical id first, so a new pin replaces one made before
+    the conversation continued under another id instead of sitting beside it."""
+    data = pinned_tickets()
+    data[canonical(session_id)] = key
+    save_json(TICKETS, data)
+
+def pinned_tickets():
+    """Pins keyed by canonical session id. A pin made before the conversation continued under a new
+    id (a compaction, a background job) is stored under the old one and must still be found; when
+    both ids carry a pin the later entry in the file wins, since that is the later /ticket."""
+    pins = {}
+    for sid, key in load_json(TICKETS).items():
+        pins[canonical(sid)] = key
+    return pins
+
 def primary_ticket(state):
+    """The ticket a session is filed under: a pinned one first, then the key typed most in prompts,
+    then a key in the title, then in Claude's replies, then in the branch name."""
+    pinned = pinned_tickets().get(state["id"])
+    if pinned is not None:
+        return pinned
     tre = ticket_re()
     titles = {k: 1 for k in tre.findall(state["ai_title"] + " " + state["custom_title"])}
     for source in (state["tickets"], titles, state.get("tickets_assistant", {})):

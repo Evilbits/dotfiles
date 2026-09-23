@@ -8,8 +8,8 @@ import sys
 import time
 
 from . import gitlab, snooze, ui, wake
-from .config import CLAUDE_BIN, HOME, KEYCHAIN_SERVICE, canonical, cfg, load_json, save_json
-from .index import find, index_sessions, one_session, primary_ticket, title_of
+from .config import CLAUDE_BIN, HOME, KEYCHAIN_SERVICE, canonical, cfg, load_json, save_json, ticket_re
+from .index import find, index_sessions, one_session, primary_ticket, title_of, set_ticket
 from .registry import current_session_id, live_sessions
 from .tmux import open_session, origin_pane
 
@@ -20,6 +20,7 @@ USAGE = """cockpit: a picker, snoozer and status line for Claude Code sessions.
                                        park a session until a time, until something happens on a
                                        GitLab MR, or whichever comes first. ID may be "current".
   cockpit --unsnooze ID
+  cockpit --ticket ID KEY|none  pin the ticket a session is filed under, or say it has none
   cockpit --due                snoozed sessions, due first
   cockpit --wake               run the minute check now
   cockpit --install [picker] [snooze] [statusline]
@@ -76,6 +77,18 @@ def do_unsnooze(session_id):
         session_id = current_session_id() or sys.exit("no Claude session in this tmux pane")
     snooze.remove(session_id)
     print("unsnoozed")
+    refresh_marks()
+
+def do_ticket(session_id, key):
+    states, _ = index_sessions()
+    st = _resolve(session_id, states)
+    if not st:
+        sys.exit("unknown session %s (from a Claude session, 'current' needs tmux)" % session_id)
+    key = "" if key.lower() in ("none", "off", "-") else key
+    if key and not ticket_re().fullmatch(key):
+        sys.exit("%s does not look like a ticket key" % key)
+    set_ticket(st["id"], key)
+    print(("filed under " + key) if key else "no ticket for this session")
     refresh_marks()
 
 def do_snooze_prompt(session_id):
@@ -304,6 +317,8 @@ def main(argv, me):
         do_snooze_prompt(rest[0])
     elif cmd == "--unsnooze" and rest:
         do_unsnooze(rest[0])
+    elif cmd == "--ticket" and len(rest) >= 2:
+        do_ticket(rest[0], rest[1])
     elif cmd == "--due":
         states, _ = index_sessions()
         print("\n".join(ui.snoozed_lines(states, banner=True)))
@@ -324,8 +339,11 @@ def main(argv, me):
             msg = snooze.woke_text(entry)
             snooze.remove(sid)
             wake.log("unsnoozed %s on prompt: %s" % (sid[:8], msg))
-            refresh_marks()
             print(json.dumps({"systemMessage": msg, "hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "This session was snoozed and the user's prompt just cleared it: " + msg}}))
+        # Every prompt refreshes the window names, so a window opened by hand is named after its
+        # session on the first prompt rather than on the next minute job, and a cleared snooze loses
+        # its mark at once.
+        refresh_marks()
     elif cmd == "--wake":
         wake.wake(me)
     elif cmd == "--install":
