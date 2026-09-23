@@ -18,8 +18,8 @@ Note what the author says is deliberate. A deliberate choice can still be wrong,
 
 Before reading for bugs. Answer each question even when the answer is "fine". Where a question finds something a blocking finding would later suppress, record it inside the answer and mark it held.
 
-1. **Layer placement.** Does every piece live in the layer that owns it? Run the ownership tests in `domain-architecture.md`.
-2. **Capability genericity.** If a capability is added or extended, run the five-part test. **Most capabilities pass it**; the worked example in the reference fails every test and is the outlier. Record the verdict on each test, and if they pass, say so and move on.
+1. **Layer placement.** Does every piece live in the layer that owns it? Run the ownership tests in `apps/extensions/AGENTS.md`: Where data lives, Where code lives, Capability or app feature.
+2. **Capability genericity.** If a capability is added or extended, run the five tests in `apps/extensions/.cursor/rules/02-capability-rules.mdc`. **Most capabilities pass them**; `interpreter` and `transcription` are the named exceptions and not precedent. Record the verdict on each test, and if they pass, say so and move on.
 3. **App-facing surface.** Is the public surface the thinnest that supports the use case? Two things fail: an export a consumer must never call, and an export no consumer uses today, type-only exports included, since a published type is permanent once an app imports it. Challenge hardest the types that describe the library's internal storage or wire model; hiding those is the library's purpose.
 4. **Vocabulary.** Does every consumer-facing name match the consumer's existing mental model? A new term the consumer must learn needs to earn itself.
 5. **One decision point.** Is each rule decided in one place? A rule enforced in three places drifts.

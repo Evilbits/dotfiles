@@ -46,7 +46,7 @@ Absence is the characteristic defect of a design document and is invisible unles
 The code-review questions, asked of the design:
 
 1. **Layer placement.** Does each responsibility land in the layer that owns it? Does the proposal put into the platform something that belongs in one app, or into an app something the platform owes every app?
-2. **Capability genericity.** If it proposes a capability, run the five-part test in `domain-architecture.md`. Ask whether a second app would ever use it.
+2. **Capability genericity.** If it proposes a capability, run the five tests in `apps/extensions/.cursor/rules/02-capability-rules.mdc`. Ask whether a second app would ever use it.
 3. **App-facing surface.** What does an app author see, and is it the thinnest thing that works? Complexity belongs in the library.
 4. **Vocabulary.** Does the design introduce terms an app author must learn for ideas they already have words for?
 5. **One decision point.** Does a single rule end up enforced in several components?

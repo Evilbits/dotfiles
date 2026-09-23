@@ -27,7 +27,6 @@ Read, in this order, before the first question and the restatement:
 3. **Domain guides the rules do not yet route to:**
    - Hotpot: `libs/extensions/hotpot/README.md`, `libs/extensions/hotpot/docs/schema-decisions.md`, `apps/extensions/docs/06_hotpot_data_sdk/index.md`, and in `~/dev/hotpot` the `ARCHITECTURE.md`, `SECURITY_MODEL.md` and `STRATEGY.md`. Hotpot semantics come from that repo and its merge requests, never inferred from the SDK that consumes it; several are live work with dates.
    - Entitlements: `docs/guides/entitlements/concepts.md`, which opens with the three systems the word "entitlement" names and the six Frontegg primitives, then `features.md` for naming.
-   - Until those guides carry it, the collision list and ownership map in `~/.claude/skills/doxy-review/references/domain-architecture.md` is a stopgap. Anything learned there belongs in the repo; see step 4.
 
 A question whose answer is in any of the above is not asked.
 

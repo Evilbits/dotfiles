@@ -25,8 +25,7 @@ Review as a Staff engineer on the Apps team, SDK workstream, safeguarding the ar
 In this order:
 
 1. **The repo's colocated rules.** Glob `**/.cursor/rules/*.mdc` (excluding `node_modules/` and `.worktrees/`). For anything touching extensions, apps, capabilities, the bridge, the toolkit, the SDK or Hotpot data, read `apps/extensions/AGENTS.md` in full (`00-sdk-guidelines.mdc` on branches from before it merged), then any nested rule whose `globs` or `description` match the change. Read `libs/extensions/glossary.md`. Entitlements: `docs/guides/entitlements/concepts.md`. Hotpot: `libs/extensions/hotpot/docs/schema-decisions.md` and the hotpot repo's `ARCHITECTURE.md`. These are the team's versioned context and outrank anything private.
-2. `references/domain-architecture.md`, a **stopgap** for the collision list, capability test and ownership map the repo files do not yet carry. Where it disagrees with a repo file, the repo file wins and the disagreement is a finding against this file.
-3. `references/review-doctrine.md`: the standing principles and the failure modes this skill prevents.
+2. `references/review-doctrine.md`: the standing principles and the failure modes this skill prevents.
 
 A doxyme fact the review needed and could not find in a repo file is a finding: name the file that should carry it and propose the text.
 
