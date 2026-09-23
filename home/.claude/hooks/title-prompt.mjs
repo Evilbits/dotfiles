@@ -94,6 +94,8 @@ export function normalizeGeneratedTitle(rawOutput) {
     /^prompt is too long/i,
     /^i\b.*(can'?t|cannot|won'?t|am unable|don'?t have|need more|need additional)/i,
     /^(i'?m\s+)?sorry\b/i,
+    /^(i'?m|i am|i will|i'?ll|ready|sure|okay|ok)\b/i,
+    /\bready to (use|help|review|start)\b/i,
     /^there (is|was|'s) (an? )?(issue|problem|error)/i,
     /\?$/,
   ];

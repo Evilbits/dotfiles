@@ -165,6 +165,15 @@ async function nameSessionAI(sessionId, jsonlPath) {
 
   const model = getConfigModel();
   const title = await generateTitleViaClaude(userMessages, model);
+  // The user may have /rename'd while the worker ran; their name wins, and it must stay the last
+  // custom-title record, so never append a generated one over it.
+  const userRename = findLatestRename(jsonlPath);
+  if (userRename) {
+    markDone(join(MARKER_DIR, sessionId), userRename);
+    writeTitle(jsonlPath, sessionId, userRename);
+    log(`Kept user rename: ${sessionId} → "${userRename}"`);
+    return;
+  }
   if (title) {
     writeTitle(jsonlPath, sessionId, title);
     markDone(join(MARKER_DIR, sessionId), title);
@@ -375,21 +384,30 @@ function extractMessages(jsonlPath) {
 }
 
 function extractText(content) {
-  if (typeof content === "string") return content;
-  if (Array.isArray(content)) {
-    return content
+  let text = "";
+  if (typeof content === "string") text = content;
+  else if (Array.isArray(content)) {
+    text = content
       .filter((c) => c.type === "text")
       .map((c) => c.text)
       .join(" ");
   }
-  return "";
+  // A skill invocation arrives as "<command-name>/x</command-name><command-args>…</command-args>";
+  // the command and its arguments (an MR link, a ticket) are what the session is about.
+  const cmd = text.match(/<command-name>([^<]+)<\/command-name>/);
+  if (cmd) {
+    const args = text.match(/<command-args>([\s\S]*?)<\/command-args>/);
+    return (cmd[1].trim() + " " + (args ? args[1].trim() : "")).trim();
+  }
+  return text;
 }
 
 function isSystemMessage(text) {
   return (
-    text.startsWith("<command-message>") ||
     text.startsWith("<local-command-caveat>") ||
     text.startsWith("<system-reminder>") ||
+    // The body of a skill, injected as a user message when a skill is invoked.
+    text.startsWith("Base directory for this skill") ||
     /^<[a-z-]+>/.test(text.trim())
   );
 }
