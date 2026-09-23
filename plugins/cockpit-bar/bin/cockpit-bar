@@ -1,0 +1,160 @@
+#!/usr/bin/python3
+"""cockpit-bar: the data and action side of the Cockpit Bar menu bar app.
+
+  cockpit-bar --json           every row the menu shows, as JSON (the app runs this every few seconds)
+  cockpit-bar --open ID        open a session in tmux (the row click), then bring the terminal to the front
+  cockpit-bar --snooze ID …    snooze a session; the rest is the /snooze request (2h, tomorrow, an MR URL, merge)
+  cockpit-bar --unsnooze ID
+  cockpit-bar --picker         open the cockpit picker in a tmux split
+
+Reads everything through the cockpit plugin's library, found via ~/.local/bin/cockpit. What a session is
+doing right now comes from the app's own hook files under ~/.local/state/cockpit/bar/state.d; this script
+only tells the app which of those files belong to which row.
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+
+HOME = os.path.expanduser("~")
+STATE_D = os.path.join(HOME, ".local", "state", "cockpit", "bar", "state.d")
+RECENT = 8  # closed, unsnoozed sessions shown at the bottom
+
+def cockpit_bin():
+    return os.path.join(HOME, ".local", "bin", "cockpit")
+
+def cockpit_lib():
+    link = cockpit_bin()
+    if not os.path.exists(link):
+        sys.exit("cockpit is not installed (no ~/.local/bin/cockpit); run /cockpit:setup first")
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(link))), "lib")
+
+def collect():
+    sys.path.insert(0, cockpit_lib())
+    from cockpit import snooze, mrs, ui
+    from cockpit.config import REGISTRY, canonical, load_json
+    from cockpit.index import index_sessions, primary_ticket, title_of, project_of
+    from cockpit.config import cfg
+    jira_host = cfg().get("jira_host") or "doxyme.atlassian.net"
+    from cockpit.registry import live_sessions
+    states, mtimes = index_sessions()
+    live = live_sessions()
+    snoozed = snooze.load()
+    mr_cache = load_json(mrs.MRS)
+    # A /rename lands in Claude's registry entry at once (name with nameSource "user"), while the
+    # transcript's title record can lag behind or be shadowed; for a running session the registry wins.
+    renamed = {}
+    if os.path.isdir(REGISTRY):
+        for name in os.listdir(REGISTRY):
+            try:
+                with open(os.path.join(REGISTRY, name)) as f:
+                    d = json.load(f)
+                os.kill(int(d["pid"]), 0)
+            except Exception:
+                continue
+            if d.get("nameSource") == "user" and d.get("name"):
+                sid = canonical(d.get("sessionId", ""))
+                if d.get("nameSince", 0) >= renamed.get(sid, (0, ""))[0]:
+                    renamed[sid] = (d.get("nameSince", 0), d["name"])
+    # The app's hook files are named after the raw session id; several of them (a background job, a
+    # fork after compaction) can belong to one row.
+    state_ids = {}
+    if os.path.isdir(STATE_D):
+        for name in os.listdir(STATE_D):
+            if name.endswith(".json"):
+                raw = name[:-5]
+                state_ids.setdefault(canonical(raw), []).append(raw)
+
+    def order(s):
+        e = snoozed.get(s["id"])
+        if e and snooze.is_due(e):
+            return (0, 0)
+        if e:
+            # A snoozed session sits in the snoozed section whether or not it is still open.
+            return (2, e.get("until") or float("inf"))
+        if s["id"] in live:
+            return (1, -mtimes.get(s["id"], 0))
+        return (3, -mtimes.get(s["id"], 0))
+    rows = sorted(states, key=order)
+    shown = [s for s in rows if order(s)[0] < 3] + [s for s in rows if order(s)[0] == 3][:RECENT]
+    out = []
+    for s in shown:
+        e = snoozed.get(s["id"])
+        l = live.get(s["id"])
+        ticket = primary_ticket(s)
+        found = []
+        for u in list(reversed(s.get("mr_urls", [])))[:6]:
+            m = mrs.lookup_url(u)
+            project = re.match(r"https://[^/]+/(.+?)/-/merge_requests/", u)
+            project = project.group(1) if project else ""
+            # A link the wake looked up and found nothing behind (an example URL, a deleted MR) is left out.
+            known = mr_cache.get(project + "!" + u.rsplit("/", 1)[-1], {})
+            if not m and known.get("checked"):
+                continue
+            found.append({"url": u, "project": project, "repo": project.rsplit("/", 1)[-1], "iid": m["iid"] if m else int(u.rsplit("/", 1)[-1]),
+                          "title": m["title"] if m else "", "state": m["state"] if m else ""})
+        verb, subject = describe(s, ticket, found, renamed.get(s["id"], (0, ""))[1])
+        m = re.search(r"https://[a-z0-9.-]+atlassian\.net", s.get("first_prompt") or "")
+        ticket_url = ("%s/browse/%s" % (m.group(0) if m else "https://" + jira_host, ticket)) if ticket else ""
+        out.append({
+            "id": s["id"], "group": order(s)[0], "ticket": ticket, "ticket_url": ticket_url, "verb": verb, "title": subject,
+            "repo": project_of(s), "branch": s.get("branch") or "",
+            "live": ({"tmux": l.get("tmux") or "", "kind": l.get("kind") or ""} if l else None),
+            "snoozed": bool(e), "due": bool(e and snooze.is_due(e)),
+            "snooze_text": (snooze.text(e, absolute=True) + ((" · " + e["reason"]) if e.get("reason") else "")) if e else "",
+            "snooze_short": snooze.text(e) if e else "",
+            "wakes": snooze.triggers(e) if e and e.get("mr") else "",
+            "started": ui._when(s["first_ts"]) if s.get("first_ts") else "", "last": ui._when(s["last_ts"]) if s.get("last_ts") else "",
+            "mrs": found, "state_ids": state_ids.get(s["id"], []),
+        })
+    return {"rows": out, "due": sum(1 for r in out if r["due"])}
+
+VERBS = {"doxy-review": "Review", "doxy-implement": "Implement", "doxy-design": "Design", "doxy-ticket": "Ticket", "doxy-epic": "Epic"}
+KEY_RE = re.compile(r"^\s*(?:[A-Z][A-Z0-9]{1,9}-\d{1,6}|NOJIRA)\s*[:·\-]?\s*")
+CONVENTIONAL_RE = re.compile(r"^[a-z]+(?:\([^)]*\))?!?:\s*")  # feat(scope): … / fix: …
+
+def describe(s, ticket, found, renamed):
+    """(verb, subject): what kind of work the session is and what it is about, without identifiers.
+    The verb is the doxy skill it started with. The subject is a rename if there is one, else for a
+    review the MR's title, else the session title with a leading ticket key removed."""
+    verb = next((VERBS[k] for k in s.get("skills", []) if k in VERBS), "")
+    subject = renamed
+    if not subject and verb == "Review":
+        first = [u for u in s.get("mr_urls", []) if u in {f["url"] for f in found}]
+        mr = next((f for f in found if first and f["url"] == first[0]), None)
+        if mr and mr["title"]:
+            subject = mr["title"]
+    if not subject:
+        from cockpit.index import title_of
+        subject = title_of(s)
+    subject = KEY_RE.sub("", CONVENTIONAL_RE.sub("", subject)).strip()
+    subject = subject[:1].upper() + subject[1:]
+    if verb and subject.lower().startswith(("doxy-" + verb.lower(), verb.lower() + " ")):
+        subject = subject.split(" ", 1)[1] if " " in subject else subject
+    return verb, subject or ticket or "session"
+
+def terminal_to_front():
+    for app in ("Alacritty", "iTerm2", "WezTerm", "kitty", "Ghostty", "Terminal"):
+        if subprocess.run(["pgrep", "-x", app], capture_output=True).returncode == 0:
+            subprocess.run(["osascript", "-e", 'tell application "%s" to activate' % ("iTerm" if app == "iTerm2" else app)], capture_output=True)
+            return
+
+def main(argv):
+    cmd, rest = (argv[0], argv[1:]) if argv else ("--json", [])
+    if cmd == "--json":
+        return json.dump(collect(), sys.stdout)
+    if cmd == "--open" and rest:
+        subprocess.run([cockpit_bin(), "--open", rest[0]], capture_output=True)
+        return terminal_to_front()
+    if cmd == "--snooze" and len(rest) >= 2:
+        return subprocess.run([cockpit_bin(), "--snooze", rest[0], *rest[1:]], capture_output=True)
+    if cmd == "--unsnooze" and rest:
+        return subprocess.run([cockpit_bin(), "--unsnooze", rest[0]], capture_output=True)
+    if cmd == "--picker":
+        subprocess.run(["tmux", "split-window", "-v", cockpit_bin()], capture_output=True)
+        return terminal_to_front()
+    print(__doc__)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

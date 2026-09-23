@@ -49,4 +49,18 @@ A guard on Bash denies bypassing git hooks, `npx nx` and `git add .`, and asks b
 
 ### Session picker, snoozing and status line
 
-These live in the `cockpit` plugin in the company marketplace (`doxyme/cooks/claude-plugins`, `plugins/cockpit`), installed with `/plugin install cockpit@doxyme` and wired in by `/cockpit:setup`. A copy of the plugin sits in `plugins/cockpit` here, with a redacted screenshot, refreshed by `scripts/sync-cockpit.sh`; it is a mirror for reference, the marketplace is the source.
+These live in the `cockpit` plugin in the company marketplace (`doxyme/cooks/claude-plugins`, `plugins/cockpit`), installed with `/plugin install cockpit@doxyme` and wired in by `/cockpit:setup`. A copy of the plugin sits in `plugins/cockpit` here, with a redacted screenshot, refreshed by `scripts/sync-cockpit.sh`. This repo is a marketplace of its own (`.claude-plugin/marketplace.json`), so the copy installs without the company one: `/plugin marketplace add https://github.com/Evilbits/dotfiles` then `/plugin install cockpit@rasmus`.
+
+### Menu bar app
+
+`plugins/cockpit-bar` is a macOS menu bar app over cockpit, forked from [claude-status-bar](https://github.com/m1ckc3s/claude-status-bar). The menu bar shows a spinning splat while any Claude session works, with what it is doing ("Running command", "Editing", a thinking word) and an amber dot when one waits for permission. The dropdown lists sessions as `ticket · title` in four sections: due snoozes, running sessions with their activity and timer, snoozed sessions with what they wait for, and the recent closed ones. A click jumps to the session's tmux pane or resumes it; the flyout on each row has its repository and branch, start and last prompt times, its snooze, its merge requests grouped by repository with title and state, and the snooze actions.
+
+It builds from source, so it needs the Xcode Command Line Tools (`xcode-select --install`), Node and the cockpit plugin:
+
+```
+/plugin marketplace add https://github.com/Evilbits/dotfiles
+/plugin install cockpit-bar@rasmus
+/cockpit-bar:setup
+```
+
+Setup compiles the app into `~/Applications/Cockpit Bar.app`, installs a LaunchAgent so it starts at login, and launches it. Run `/cockpit-bar:setup` again after a plugin update. The plugin README has the details.

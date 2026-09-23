@@ -1,0 +1,7 @@
+{
+  "name": "cockpit-bar",
+  "description": "A macOS menu bar app over cockpit, forked from claude-status-bar: the spinning splat and what each session is doing, plus due, running and snoozed sessions with their MRs, a click that jumps to the tmux pane, and snooze actions",
+  "version": "0.1.0",
+  "author": { "name": "Rasmus Reiler" },
+  "repository": "https://github.com/Evilbits/dotfiles"
+}
