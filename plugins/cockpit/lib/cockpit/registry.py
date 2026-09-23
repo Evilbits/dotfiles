@@ -40,6 +40,29 @@ def live_sessions():
             live[sid] = dict(live[sid], status="busy")
     return live
 
+def user_names():
+    """Names given with /rename to running sessions, keyed by canonical session id. Claude writes the
+    name into the process's registry entry at once, while the transcript's title record can lag
+    behind the hook that re-asserts an older title."""
+    names = {}
+    if not os.path.isdir(REGISTRY):
+        return names
+    for name in os.listdir(REGISTRY):
+        if not name.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(REGISTRY, name)) as f:
+                d = json.load(f)
+            os.kill(int(d["pid"]), 0)
+        except Exception:
+            continue
+        if d.get("nameSource") != "user" or not d.get("name"):
+            continue
+        sid = canonical(d.get("sessionId", ""))
+        if d.get("nameSince", 0) >= names.get(sid, (0, ""))[0]:
+            names[sid] = (d.get("nameSince", 0), d["name"])
+    return {sid: v[1] for sid, v in names.items()}
+
 def current_session_id():
     """The session this command runs inside: Claude exports CLAUDE_CODE_SESSION_ID to its Bash;
     from a plain shell inside tmux, the session whose pane matches $TMUX_PANE."""

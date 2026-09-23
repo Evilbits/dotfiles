@@ -1,6 +1,6 @@
 #!/bin/sh
-# Claude Code statusLine command: "<model> · <effort> | <repo> | <ticket> · <name> | <snooze> | ⏰ N due | branch [primary|worktree]".
-# Reads the JSON Claude pipes on stdin; asks cockpit for the ticket and snooze state.
+# Claude Code statusLine command: "<model> · <effort> | <repo> | <ticket> · <subject> | <snooze> | ⏰ N due | branch [primary|worktree] | !MR".
+# Reads the JSON Claude pipes on stdin; asks cockpit for the ticket, the subject and the snooze state.
 input=$(cat)
 here=$(dirname "$(readlink "$0" || echo "$0")")
 sessions="$here/cockpit"
@@ -18,7 +18,7 @@ git_info=$(git -C "$dir" rev-parse --path-format=absolute --git-dir --git-common
 branch=$(printf '%s\n' "$git_info" | sed -n 4p)
 [ "$branch" = "HEAD" ] && branch="@$(git -C "$dir" rev-parse --short HEAD 2>/dev/null)"
 
-ticket=""; own_snooze=""; due_count=0; mr_label=""; mr_url=""
+ticket=""; own_snooze=""; due_count=0; mr_label=""; mr_url=""; subject=""; ticket_url=""
 if [ -n "$session_id" ] && [ -x "$sessions" ]; then
   sl=$("$sessions" --statusline "$session_id" --dir "$dir" --branch "$branch" 2>/dev/null)
   ticket=$(printf '%s' "$sl" | cut -f1)
@@ -28,19 +28,32 @@ if [ -n "$session_id" ] && [ -x "$sessions" ]; then
   branchcol=$(printf '%s' "$sl" | cut -f5); branchcol=${branchcol:-116}
   mr_label=$(printf '%s' "$sl" | cut -f6)
   mr_url=$(printf '%s' "$sl" | cut -f7)
+  subject=$(printf '%s' "$sl" | cut -f8)
+  ticket_url=$(printf '%s' "$sl" | cut -f9)
 fi
-if [ -n "$ticket" ]; then
-  case "$session" in
-    *"$ticket"*) ;;
-    "") session="$ticket" ;;
-    *) session="$ticket · $session" ;;
-  esac
-fi
+# cockpit's subject is the work without identifiers; Claude's own session name stands in when cockpit
+# has not indexed the session yet.
+[ -n "$subject" ] && session="$subject"
 [ "${#session}" -gt 52 ] && session="$(printf '%.51s' "$session")…"
 
 left="$model${effort:+ · $effort}"
 name_seg=""
-[ -n "$session" ] && name_seg="$(printf '\033[38;5;%sm%s\033[0m | ' "$accent" "$session")"
+# The ticket leads the segment, underlined and clickable (OSC 8) when cockpit knows its Jira host.
+ticket_seg=""
+if [ -n "$ticket" ]; then
+  if [ -n "$ticket_url" ]; then
+    ticket_seg="$(printf '\033]8;;%s\033\\\033[4;38;5;%sm%s\033[0m\033]8;;\033\\' "$ticket_url" "$accent" "$ticket")"
+  else
+    ticket_seg="$(printf '\033[38;5;%sm%s\033[0m' "$accent" "$ticket")"
+  fi
+fi
+if [ -n "$ticket_seg" ] && [ -n "$session" ]; then
+  name_seg="$ticket_seg$(printf ' · \033[38;5;%sm%s\033[0m | ' "$accent" "$session")"
+elif [ -n "$ticket_seg" ]; then
+  name_seg="$ticket_seg | "
+elif [ -n "$session" ]; then
+  name_seg="$(printf '\033[38;5;%sm%s\033[0m | ' "$accent" "$session")"
+fi
 [ -n "$own_snooze" ] && name_seg="$name_seg$(printf '\033[2m%s\033[0m | ' "$own_snooze")"
 [ "${due_count:-0}" -gt 0 ] 2>/dev/null && name_seg="$name_seg$(printf '\033[33m⏰ %s due\033[0m | ' "$due_count")"
 # The session's MR, shown after the branch as an underlined link (OSC 8) in the link colour.

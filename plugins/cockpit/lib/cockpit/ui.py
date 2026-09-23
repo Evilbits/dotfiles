@@ -8,7 +8,8 @@ from collections import Counter
 
 from . import snooze
 from .config import cfg
-from .index import find, primary_ticket, project_of, title_of
+from .index import find, primary_ticket, project_of, subject_of, ticket_url, title_of, verb_of
+from .registry import user_names
 
 def _age(mtime):
     s = int(time.time() - mtime)
@@ -45,15 +46,17 @@ def rows(states, mtimes, live, only_snoozed=False):
     def key(s):
         g = group(s)
         return (g, (snoozed[s["id"]].get("until") or float("inf")) if g == 2 else -mtimes.get(s["id"], 0))
+    names = user_names()
     out = []
     for st in sorted(states, key=key):
         l = live.get(st["id"])
         e = snoozed.get(st["id"])
         marker = "⏰" if e and snooze.is_due(e) else "z" if e else ("●" if l and l.get("status") == "busy" else "○") if l else " "
+        # The ticket is the last column: hidden by --with-nth, still matched when typed into the filter.
         out.append("\t".join([
             st["id"], marker, fit(_age(mtimes.get(st["id"], 0)), 4), fit(project_of(st), 12),
-            fit(primary_ticket(st), 10), fit(title_of(st), 60),
-            " ".join("!" + m for m in st["mrs"][:2]),
+            fit(verb_of(st), 9), fit(subject_of(st, names.get(st["id"], "")), 60),
+            " ".join("!" + m for m in st["mrs"][:2]), primary_ticket(st),
         ]))
     return out
 
@@ -80,9 +83,11 @@ def snoozed_lines(states, banner=False):
     return out
 
 def statusline_fields(state, session_id, repo_dir="", branch=""):
-    """ticket, own snooze, due count, accent colour, branch colour, MR label, MR url."""
+    """ticket, own snooze, due count, accent colour, branch colour, MR label, MR url, subject, ticket url."""
     from . import mrs
     ticket = primary_ticket(state) if state else ""
+    subject = subject_of(state, user_names().get(state["id"], "")) if state else ""
+    link = ticket_url(state) if state else ""
     snoozed = snooze.load()
     own = snoozed.get(session_id)
     own_text = (snooze.text(own, absolute=True) + ((" · " + own["reason"]) if own.get("reason") else "")) if own else ""
@@ -98,7 +103,7 @@ def statusline_fields(state, session_id, repo_dir="", branch=""):
         mr_label = mr_label[:29] + "…"
     if mr and mr.get("state") != "opened":
         mr_label += " · " + mr["state"]
-    return "%s\t%s\t%d\t%s\t%s\t%s\t%s" % (ticket, own_text, due, cfg()["colour_accent"], cfg()["colour_branch"], mr_label, mr["url"] if mr else "")
+    return "%s\t%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s" % (ticket, own_text, due, cfg()["colour_accent"], cfg()["colour_branch"], mr_label, mr["url"] if mr else "", subject, link)
 
 def preview(st, live):
     accent = "\033[1;38;5;%dm" % cfg()["colour_accent"]
@@ -107,7 +112,10 @@ def preview(st, live):
     wrap = lambda s: "\n".join(textwrap.wrap(s, width - 2)) if s else ""
     label = lambda k, v: print(dim + k.ljust(12) + rst + v)
     header = lambda s: print(accent + s + rst)
-    print(bold + wrap(title_of(st)) + rst)
+    verb, subject = verb_of(st), subject_of(st, user_names().get(st["id"], ""))
+    print(bold + wrap(((verb + " · ") if verb else "") + subject) + rst)
+    if title_of(st) not in (subject, ((verb + " ") if verb else "") + subject):
+        label("title", title_of(st))
     if st["ai_title"] and st["ai_title"] != title_of(st):
         label("ai title", st["ai_title"])
     print()
@@ -151,11 +159,11 @@ def preview(st, live):
         print(wrap("- " + p))
         print()
 
-HEADER = "   age  project      ticket     title                                                        MRs          ⏰due ●busy ○idle z snoozed   ctrl-z snoozed only  ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
+HEADER = "   age  project      kind      subject                                                      MRs          ⏰due ●busy ○idle z snoozed   ctrl-z snoozed only  ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
 
 def pick(lines, footer, me):
     args = [
-        "fzf", "--reverse", "--no-sort", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
+        "fzf", "--reverse", "--no-sort", "--delimiter", "\t", "--with-nth", "2..7", "--tabstop", "1",
         "--header", HEADER, "--header-first",
         "--preview", "'%s' --preview {1}" % me, "--preview-window", "right,50%,wrap",
         "--bind", "ctrl-y:execute-silent(printf %s {1} | pbcopy)",

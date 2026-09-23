@@ -27,6 +27,13 @@ DEFAULTS = {
     "ticket_deny": [],
     # Slash-command skills worth a column; empty means any command the session invoked.
     "skill_prefix": "",
+    # The kind of work a session is, from the skill it started with: shown before its subject in the
+    # picker and the menu bar. Skills not listed here give no verb.
+    "skill_verbs": {"doxy-review": "Review", "doxy-implement": "Implement", "doxy-design": "Design",
+                    "doxy-ticket": "Ticket", "doxy-epic": "Epic"},
+    # Host for ticket links in the status line; empty means the host of the first Jira link a
+    # session was given, and no link when it never saw one.
+    "jira_host": "",
     # Comment authors ignored by MR review watches (regex on the username).
     "bot_pattern": r"bot",
     # Where MR review activity is polled; only gitlab.com-style APIs are supported.

@@ -12,6 +12,11 @@ MR_RE = re.compile(r"merge_requests/(\d{3,6})")
 MR_URL_RE = re.compile(r"https://gitlab\.com/[A-Za-z0-9_.\-/]+?/-/merge_requests/\d+")
 COMMAND_RE = re.compile(r"<command-name>/?([a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*)?)</command-name>")
 ARGS_RE = re.compile(r"<command-args>([\s\S]*?)</command-args>")
+JIRA_URL_RE = re.compile(r"https://([a-z0-9.-]+)/browse/[A-Z][A-Z0-9]{1,9}-\d{1,6}")
+# What a title carries besides the work itself: a conventional-commit type ("feat(scope): "), a
+# ticket key or NOJIRA with its separator, either of which the picker shows in its own column.
+CONVENTIONAL_RE = re.compile(r"^[a-z]+(?:\([^)]*\))?!?:\s*")
+KEY_PREFIX_RE = re.compile(r"^\s*(?:[A-Z][A-Z0-9]{1,9}-\d{1,6}|NOJIRA)\s*[:·\-]?\s*")
 REMINDER_RE = re.compile(r"<system-reminder>[\s\S]*?</system-reminder>")
 # Text the user pasted in from elsewhere; its ticket keys are someone else's, not the session's.
 PASTE_RE = re.compile(r"<pasted_content\b[^>]*>[\s\S]*?</pasted_content\b[^>]*>")  # the closing tag repeats the id
@@ -25,7 +30,7 @@ def new_state(session_id, project_dir):
         "id": session_id, "project_dir": project_dir, "cwd": "", "branch": "",
         "custom_title": "", "ai_title": "", "first_prompt": "", "prompts": [],
         "tickets": {}, "tickets_assistant": {}, "mrs": [], "mr_urls": [], "skills": [],
-        "first_ts": "", "last_ts": "", "turns": 0, "continued_in": "", "_pending_cmd": None,
+        "first_ts": "", "last_ts": "", "turns": 0, "continued_in": "", "jira_host": "", "_pending_cmd": None,
     }
 
 def _prompt_text(content):
@@ -83,6 +88,9 @@ def absorb_line(state, line):
             if m not in state["mrs"]:
                 state["mrs"].append(m)
         _note_mr_urls(state, text)
+        jira = JIRA_URL_RE.search(text)
+        if jira and not state.get("jira_host"):
+            state["jira_host"] = jira.group(1)
         short = re.sub(r"\s+", " ", text)[:PROMPT_CHARS]
         state["first_prompt"] = state["first_prompt"] or short
         state["prompts"].append(short)
@@ -221,6 +229,36 @@ def title_of(state):
     if custom and JUNK_TITLE_RE.search(custom):
         custom = ""
     return custom or state["ai_title"] or _shaped_prompt(state)
+
+def verb_of(state):
+    """The kind of work, from the first skill the session started with that the config names."""
+    verbs = cfg()["skill_verbs"]
+    return next((verbs[s] for s in state["skills"] if s in verbs), "")
+
+def subject_of(state, live_name=""):
+    """What the session is about, without identifiers. A name the user gave the running session
+    wins; a review is named after the MR it was given once the wake has fetched it; otherwise the
+    session title. A leading commit type, ticket key or repeat of the verb is dropped, since the
+    picker and the status line show those on their own."""
+    subject = live_name
+    if not subject and verb_of(state) == "Review" and state["mr_urls"]:
+        from . import mrs
+        mr = mrs.lookup_url(state["mr_urls"][0])
+        subject = (mr or {}).get("title") or ""
+    subject = subject or title_of(state)
+    subject = KEY_PREFIX_RE.sub("", CONVENTIONAL_RE.sub("", subject)).strip()
+    verb = verb_of(state)
+    if verb and subject.lower().startswith(("doxy-" + verb.lower() + " ", verb.lower() + " ")):
+        subject = subject.split(" ", 1)[1]
+    subject = subject[:1].upper() + subject[1:]
+    return subject or primary_ticket(state) or "(untitled)"
+
+def ticket_url(state):
+    """The Jira link for the session's ticket: the configured host, else the host of a Jira link
+    the session was given; empty without either."""
+    ticket = primary_ticket(state)
+    host = cfg()["jira_host"] or state.get("jira_host") or ""
+    return "https://%s/browse/%s" % (host, ticket) if ticket and host else ""
 
 def project_of(state):
     """The repository a session belongs to: the checkout folder, also for a worktree inside it."""

@@ -10,9 +10,9 @@ Working on doxyme in Claude Code means several sessions open at the same time: o
 
 cockpit is the UI for that situation. It gives you three things:
 
-- **A picker.** One list of every Claude session across your repositories, with the ticket, title and MRs each one is about. Enter jumps to a running session or resumes a closed one.
+- **A picker.** One list of every Claude session across your repositories, each named by the kind of work and what it is about, with its MRs. Enter jumps to a running session or resumes a closed one.
 - **Snoozing.** Park a session until a time, or until its merge request gets review activity or merges. When that happens you get a notification that opens the session, and the session is reopened if you had closed it.
-- **A status line.** At the bottom of every session: the ticket it is about, its name, whether it is snoozed and how many snoozed sessions are due.
+- **A status line.** At the bottom of every session: the ticket it is about as a link, what it is about, whether it is snoozed and how many snoozed sessions are due.
 
 It reads Claude's session files and never writes to them, so it cannot damage a session.
 
@@ -34,7 +34,9 @@ Without tmux, setup skips the key binding and tells you to run `cockpit` in a ta
 
 ![picker](docs/picker.png)
 
-`prefix r` in tmux opens it, or `cockpit` in any shell. Each row is one session: its state, age, repository, ticket, title and the MRs it mentioned; a `z` marks a snoozed one, and the footer lists every snooze with its remaining time and reason. Running sessions show `●` when busy and `○` when idle. The order is due, running, snoozed, then closed by age, and typing a ticket number filters without reordering.
+`prefix r` in tmux opens it, or `cockpit` in any shell. Each row is one session: its state, age, repository, the kind of work, what it is about and the MRs it mentioned; a `z` marks a snoozed one, and the footer lists every snooze with its remaining time and reason. Running sessions show `●` when busy and `○` when idle. The order is due, running, snoozed, then closed by age, and typing a ticket number filters without reordering, since the ticket is a hidden column of every row.
+
+The kind of work is the skill the session started with, `Review`, `Implement`, `Design`, `Ticket` or `Epic` by default (`skill_verbs` in the config). The subject is what the session is about without identifiers: a name you gave it with `/rename`, else for a review the title of the MR it was given, else Claude's title, with a leading ticket key or commit type removed. A session started without a skill shows its title as before.
 
 The ticket is worked out from the session itself: the key you typed most in your prompts, then a key in the title, then one in Claude's replies, then the branch. A review session you opened by pasting an MR link still lists under the ticket that MR was about.
 
@@ -71,7 +73,7 @@ From a shell the same commands are `cockpit --snooze current …` and `cockpit -
 
 ![status line](docs/statusline.png)
 
-`model · effort | repo | ticket · session name | snooze | ⏰ N due | !MR title | branch [primary|worktree]`. The ticket is the same one the picker shows, so it is there even when Claude's title leaves it out. A snoozed session shows its wake time or the MR it waits on, dimmed; when any snooze is due a yellow count appears in every session. The merge request the session is working on, the latest one it dealt with that you authored, or failing that the one for the current branch, appears as its number and title, a link you can click in terminals that support hyperlinks, with `· merged` or `· closed` after it once it is no longer open; the lookup is served from a cache the minute job refreshes, so the status line never waits on GitLab. Setup adds the setting to `~/.claude/settings.json`:
+`model · effort | repo | ticket · subject | snooze | ⏰ N due | branch [primary|worktree] | !MR title`. The ticket is the one the picker filters on, so it is there even when the name leaves it out, and it is a link to the ticket in Jira in terminals that support hyperlinks; the host is `jira_host` in the config, or the host of the first Jira link the session was given. The subject is the picker's, so a `/rename` shows up here too. A snoozed session shows its wake time or the MR it waits on, dimmed; when any snooze is due a yellow count appears in every session. The merge request the session is working on, the latest one it dealt with that you authored, or failing that the one for the current branch, appears as its number and title, a link you can click in terminals that support hyperlinks, with `· merged` or `· closed` after it once it is no longer open; the lookup is served from a cache the minute job refreshes, so the status line never waits on GitLab. Setup adds the setting to `~/.claude/settings.json`:
 
 ```json
 "statusLine": { "type": "command", "command": "~/.local/bin/cockpit-statusline", "refreshInterval": 60 }
@@ -93,6 +95,8 @@ Claude redraws a session's status line when that session does something; the ref
 | `token_env` | `["GITLAB_TOKEN", "GITLAB_NPM_TOKEN"]` | Environment variables tried before the keychain. |
 | `reopen_on_wake` | `true` | Reopen a closed session in tmux when its snooze fires. |
 | `tmux_window_marks` | `true` | Prefix a snoozed session's tmux window name with ⏾, a due one with ⏰. |
+| `skill_verbs` | `{"doxy-review": "Review", …}` | The kind of work a session is, from the skill it started with. |
+| `jira_host` | `""` | Host for ticket links in the status line; empty uses the host of the first Jira link a session was given. |
 | `colour_accent`, `colour_branch` | `183`, `116` | 256-colour indexes for the status line. |
 
 MR watches need a GitLab token with `read_api`. The background job has no shell environment, so the token lives in the login keychain as `cockpit-gitlab`. Setup fills it from `GITLAB_NPM_TOKEN` or `GITLAB_TOKEN` when one of them is set in your shell, which is the case on a doxyme machine with npm access to GitLab; otherwise it prints the `security add-generic-password` line to run with a token of your own.

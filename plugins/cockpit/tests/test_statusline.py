@@ -14,10 +14,22 @@ OWN_MR = {"iid": 16595, "title": "retry stash writes", "url": "https://gitlab.co
 class StatuslineMr(unittest.TestCase):
     def fields(self, state, own):
         with mock.patch.object(snooze, "load", return_value={}), \
+             mock.patch.object(ui, "user_names", return_value={}), \
              mock.patch.object(mrs, "session_mr", return_value=own), \
              mock.patch.object(mrs, "lookup", return_value=BRANCH_MR) as lookup:
             out = ui.statusline_fields(state, "sid", "/repo", "feature-branch").split("\t")
         return out[5], out[6], lookup.called
+
+    def test_subject_and_ticket_link_are_the_last_fields(self):
+        state = new_state("sid", "-repo")
+        state["custom_title"] = "PROD-11125: read-protected stash fields"
+        state["tickets"] = {"PROD-11125": 1}
+        state["jira_host"] = "doxyme.atlassian.net"
+        with mock.patch.object(snooze, "load", return_value={}), \
+             mock.patch.object(ui, "user_names", return_value={}), \
+             mock.patch.object(mrs, "lookup", return_value=None):
+            out = ui.statusline_fields(state, "sid", "/repo", "b").split("\t")
+        self.assertEqual(out[7:], ["Read-protected stash fields", "https://doxyme.atlassian.net/browse/PROD-11125"])
 
     def test_session_with_links_never_shows_the_branch_mr(self):
         state = new_state("sid", "-repo")
