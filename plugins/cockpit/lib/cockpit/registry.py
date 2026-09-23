@@ -2,10 +2,15 @@
 import json
 import os
 
-from .config import REGISTRY
+from .config import REGISTRY, canonical
 
 def live_sessions():
-    live = {}
+    """Running Claude processes, keyed by canonical session id. Claude registers two kinds: an
+    interactive process, with a tmux pane when it runs in one, and a background session
+    ("kind": "bg", from claude --bg or a conversation continued into a background job), which has
+    no pane and is opened with `claude attach <jobId>`. When both exist for one conversation the
+    interactive entry is kept, since that is where Enter should land, busy if either is."""
+    live, background = {}, []
     if not os.path.isdir(REGISTRY):
         return live
     for name in os.listdir(REGISTRY):
@@ -17,7 +22,22 @@ def live_sessions():
             os.kill(int(d["pid"]), 0)
         except Exception:
             continue
-        live[d.get("sessionId", "")] = d
+        if d.get("kind") == "bg":
+            background.append(d)
+            continue
+        sid = canonical(d.get("sessionId", ""))
+        prev = live.get(sid)
+        if prev and prev.get("tmux") and not d.get("tmux"):
+            d = dict(prev, status="busy" if "busy" in (prev.get("status"), d.get("status")) else prev.get("status"))
+        elif prev and "busy" in (prev.get("status"), d.get("status")):
+            d = dict(d, status="busy")
+        live[sid] = d
+    for d in background:
+        sid = canonical(d.get("sessionId", ""))
+        if sid not in live:
+            live[sid] = d
+        elif d.get("status") == "busy":
+            live[sid] = dict(live[sid], status="busy")
     return live
 
 def current_session_id():

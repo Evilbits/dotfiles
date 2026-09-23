@@ -10,4 +10,11 @@ mkdir -p "$dst"
 cp -R "$src"/. "$dst"/
 find "$dst" -name '__pycache__' -type d -prune -exec rm -rf {} +
 cp "$(dirname "$0")/../plugins/redacted/picker.png" "$dst/docs/picker.png"
+# This repo is a marketplace of its own, so the copy installs without the company one, and the
+# company's GitLab paths in the examples become generic ones.
+sed -i '' \
+  -e 's#^/plugin marketplace add git@gitlab.com:doxyme/cooks/claude-plugins.git$#/plugin marketplace add https://github.com/Evilbits/dotfiles#' \
+  -e 's#^/plugin install cockpit@doxyme$#/plugin install cockpit@rasmus#' \
+  -e 's#https://gitlab.com/doxyme/[A-Za-z0-9_./-]*/-/merge_requests/#https://gitlab.com/acme/app/-/merge_requests/#g' \
+  "$dst/README.md"
 echo "synced $src -> $dst"

@@ -32,17 +32,30 @@ def notify(title, body, session_id, entry_script):
     tmux("display-message", "-d", "8000", "%s: %s" % (title, body))
 
 def wake(entry_script):
+    from . import mrs
+    from .tmux import mark_windows
+    mrs.refresh_wanted(log)
     data = snooze.load()
-    if not data:
-        return
     states, _ = index_sessions()
     live = live_sessions()
+    mark_windows(states, data, live)
+    if not data:
+        return
     user = gitlab.me() if any(e.get("mr") for e in data.values()) else ""
     now = time.time()
     for sid, entry in data.items():
         if entry.get("due"):
             continue
         events = []
+        if entry.get("mr") and not entry.get("mr_base"):
+            # The snooze was created while GitLab was unreachable: take the baseline now.
+            try:
+                snap = gitlab.snapshot(entry["mr"], user)
+                snooze.update(sid, mr_title=snap["title"], mr_base={k: snap[k] for k in ("state", "conflicts", "pipeline", "approvers", "max_note")})
+                log("baseline taken for !%d" % entry["mr"]["iid"])
+            except Exception as e:
+                log("baseline for !%s still pending: %s" % (entry["mr"]["iid"], e))
+            continue
         if entry.get("mr"):
             try:
                 events = gitlab.events(entry, gitlab.snapshot(entry["mr"], user))
@@ -77,8 +90,18 @@ def install(entry_script):
     subprocess.run(["launchctl", "bootout", "gui/%d" % os.getuid(), PLIST], capture_output=True)
     with open(PLIST, "w") as f:
         f.write(PLIST_XML % {"label": LAUNCHD_LABEL, "script": entry_script})
-    r = subprocess.run(["launchctl", "bootstrap", "gui/%d" % os.getuid(), PLIST], capture_output=True, text=True)
-    return "wake job installed, every minute" if r.returncode == 0 else r.stderr.strip()
+    domain = "gui/%d" % os.getuid()
+    # launchd refuses to bootstrap a label it booted out a moment ago (error 5), so retry, then
+    # fall back to the older load command, which tolerates it.
+    for attempt in range(4):
+        r = subprocess.run(["launchctl", "bootstrap", domain, PLIST], capture_output=True, text=True)
+        if r.returncode == 0:
+            break
+        time.sleep(1.5)
+    else:
+        r = subprocess.run(["launchctl", "load", "-w", PLIST], capture_output=True, text=True)
+    loaded = subprocess.run(["launchctl", "print", "%s/%s" % (domain, LAUNCHD_LABEL)], capture_output=True).returncode == 0
+    return "wake job installed, every minute" if loaded else "wake job could not be loaded: " + (r.stderr.strip() or "unknown launchd error")
 
 def uninstall():
     subprocess.run(["launchctl", "bootout", "gui/%d" % os.getuid(), PLIST], capture_output=True)

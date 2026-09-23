@@ -5,25 +5,39 @@ import datetime as dt
 import re
 import time
 
-from .config import SNOOZE, load_json, save_json
+from .config import SNOOZE, canonical, load_json, save_json
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+WEEKDAY_WORDS = {w: i for i, w in enumerate(WEEKDAYS)}
+WEEKDAY_WORDS.update({w: i for i, w in enumerate(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"])})
 
 def load():
-    """Entries only: older versions kept a `_me` string in this file."""
-    return {k: v for k, v in load_json(SNOOZE).items() if isinstance(v, dict)}
+    """Entries only; anything that is not an object is ignored."""
+    data = {}
+    for k, v in load_json(SNOOZE).items():
+        if isinstance(v, dict):
+            data.setdefault(canonical(k), v)
+    return data
 
 def put(session_id, entry):
     data = load()
-    data[session_id] = entry
+    data[canonical(session_id)] = entry
     save_json(SNOOZE, data, indent=1)
 
 def remove(session_id):
     data = load()
+    session_id = canonical(session_id)
     for k in list(data):
         if k == session_id or k.startswith(session_id):
             del data[k]
     save_json(SNOOZE, data, indent=1)
+
+def update(session_id, **fields):
+    """Merge fields into the entry as it is on disk now; a no-op if it was removed meanwhile."""
+    data = load()
+    if session_id in data:
+        data[session_id].update(fields)
+        save_json(SNOOZE, data, indent=1)
 
 def mark_due(session_id, event):
     """Set due on the entry as it is on disk now; a no-op if the user removed it meanwhile."""
@@ -47,8 +61,8 @@ def parse_until(spec, now=None):
         return (now + dt.timedelta(seconds=secs)).timestamp()
     if s in ("tomorrow", "tmr"):
         return (morning + dt.timedelta(days=1)).timestamp()
-    if s[:3] in WEEKDAYS:
-        days = (WEEKDAYS.index(s[:3]) - now.weekday()) % 7 or 7
+    if s in WEEKDAY_WORDS:
+        days = (WEEKDAY_WORDS[s] - now.weekday()) % 7 or 7
         return (morning + dt.timedelta(days=days)).timestamp()
     m = re.fullmatch(r"(\d{1,2}):(\d{2})", s)
     if m:
@@ -83,17 +97,39 @@ def remaining(ts):
 def is_due(e):
     return bool(e.get("due")) or (e.get("until") is not None and e["until"] <= time.time())
 
-def text(e):
-    """'⏰ !612: 2 new comments (x)' when due, else '⏾ !612 · in 2d 3h'."""
+def text(e, absolute=False):
+    """'⏰ !612: 2 new comments (x)' when due, else '⏾ !612 · in 2d 3h'. With absolute=True the
+    pending form says 'until Wed 09:00' instead of a countdown: the status line is redrawn only
+    when its session is active, so a countdown there goes stale while a clock time stays true."""
     mr = e.get("mr")
     tag = ("!%d%s" % (mr["iid"], " merge" if e.get("mr_mode") == "merge" else "")) if mr else ""
     if is_due(e):
-        what = e.get("event") or ("" if mr else "time")
-        return ("⏰ " + (tag + (": " if tag and what else "") + what)).rstrip(": ")
+        what = e.get("event") or ""
+        if what == "time":
+            what = "due" if not tag else ""
+        return ("⏰ " + (tag + (": " if tag and what else "") + what)).rstrip(": ") if (tag or what) else "⏰ due"
     bits = [tag] if tag else []
     if e.get("until") is not None:
-        bits.append("in " + remaining(e["until"]))
+        bits.append(("until " + fmt_until(e["until"])) if absolute else ("in " + remaining(e["until"])))
     return "⏾ " + " · ".join(bits)
+
+def woke_text(e):
+    """The chat line shown when typing into a snoozed session clears it: what fired, or that
+    nothing has yet, so the reader knows whether there is anything to act on."""
+    mr = e.get("mr")
+    tag = ("!%d" % mr["iid"]) if mr else ""
+    if is_due(e):
+        what = e.get("event") or "time"
+        head = "the time ran out" if what == "time" else (tag + " " + what).strip()
+        msg = "unsnoozed, it fired: " + head
+    else:
+        bits = []
+        if tag:
+            bits.append(("%s not merged yet" if e.get("mr_mode") == "merge" else "no review activity on %s yet") % tag)
+        if e.get("until") is not None:
+            bits.append("was set until " + fmt_until(e["until"]))
+        msg = "unsnoozed before it fired: " + ", ".join(bits)
+    return msg + ((" · " + e["reason"]) if e.get("reason") else "")
 
 def triggers(e):
     if not e.get("mr"):

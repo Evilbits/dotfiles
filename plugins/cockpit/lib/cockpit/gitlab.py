@@ -2,9 +2,22 @@
 import json
 import os
 import re
+import socket
 import subprocess
+import urllib.error
 import urllib.parse
 import urllib.request
+
+# gitlab.com resolves to IPv4 and IPv6; a machine without an IPv6 route fails with "No route to
+# host" whenever urllib happens to try the IPv6 address first (curl falls back, urllib does not).
+# Prefer IPv4 for every connection this module makes.
+_getaddrinfo = socket.getaddrinfo
+
+def _ipv4_first(*args, **kwargs):
+    infos = _getaddrinfo(*args, **kwargs)
+    return [i for i in infos if i[0] == socket.AF_INET] + [i for i in infos if i[0] != socket.AF_INET]
+
+socket.getaddrinfo = _ipv4_first
 
 from .config import CACHE, HOME, KEYCHAIN_SERVICE, cfg, load_json, save_json
 
@@ -20,11 +33,10 @@ def token():
         if os.environ.get(var):
             _token = os.environ[var]
             return _token
-    for service in (KEYCHAIN_SERVICE, "claude-fzf-sessions-gitlab", "claude-sessions-gitlab"):
-        r = subprocess.run(["security", "find-generic-password", "-s", service, "-w"], capture_output=True, text=True)
-        if r.returncode == 0 and r.stdout.strip():
-            _token = r.stdout.strip()
-            return _token
+    r = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"], capture_output=True, text=True)
+    if r.returncode == 0 and r.stdout.strip():
+        _token = r.stdout.strip()
+        return _token
     try:
         for line in open(os.path.join(HOME, ".npmrc")):
             if "_authToken=" in line and cfg()["gitlab_host"] in line:
@@ -37,14 +49,40 @@ def token():
     _token = ""
     return _token
 
-def get(host, path):
+def token_source():
+    """Where token() found its value: 'env:NAME', 'keychain', 'npmrc' or ''. Same order as token()."""
+    for var in cfg()["token_env"]:
+        if os.environ.get(var):
+            return "env:" + var
+    r = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"], capture_output=True, text=True)
+    if r.returncode == 0 and r.stdout.strip():
+        return "keychain"
+    return "npmrc" if token() else ""
+
+def store_token(value):
+    """Put the token in the login keychain under this plugin's name, so the launchd job can read it."""
+    r = subprocess.run(["security", "add-generic-password", "-U", "-a", os.environ.get("USER", "me"), "-s", KEYCHAIN_SERVICE, "-w", value], capture_output=True, text=True)
+    return r.returncode == 0
+
+def get(host, path, attempts=3):
+    """One GET; a connection-level failure (timeout, no route) is retried, an HTTP error is not.
+    The token is only ever sent to the configured GitLab host."""
+    if host != cfg()["gitlab_host"]:
+        raise ValueError("refusing to send the GitLab token to %s" % host)
     req = urllib.request.Request("https://%s/api/v4/%s" % (host, path), headers={"PRIVATE-TOKEN": token()})
-    with urllib.request.urlopen(req, timeout=15) as r:
-        return json.load(r)
+    for attempt in range(attempts):
+        try:
+            with urllib.request.urlopen(req, timeout=15) as r:
+                return json.load(r)
+        except urllib.error.HTTPError:
+            raise
+        except (urllib.error.URLError, OSError):
+            if attempt == attempts - 1:
+                raise
 
 def mr_ref(url):
     m = MR_URL_RE.match(url.strip())
-    if not m:
+    if not m or m.group(1) != cfg()["gitlab_host"]:
         return None
     host, project, iid = m.groups()
     return {"host": host, "project": urllib.parse.quote(project, safe=""), "path": project, "iid": int(iid), "url": url.strip()}

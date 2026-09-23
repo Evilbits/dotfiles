@@ -1,0 +1,19 @@
+{
+  "name": "rasmus",
+  "description": "Rasmus Reiler's Claude Code plugins",
+  "owner": {
+    "name": "Rasmus Reiler"
+  },
+  "plugins": [
+    {
+      "name": "cockpit",
+      "source": "./plugins/cockpit",
+      "description": "Work across many Claude Code sessions: a picker to find and resume any session, snoozes that park a session until a time or until its MR moves, and a status line that names the ticket"
+    },
+    {
+      "name": "cockpit-bar",
+      "source": "./plugins/cockpit-bar",
+      "description": "macOS menu bar app over cockpit, forked from claude-status-bar: the spinning splat and activity text, due, running and snoozed sessions with their MRs, click to jump to the tmux pane, snooze actions"
+    }
+  ]
+}

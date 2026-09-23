@@ -18,4 +18,4 @@ Reply with the command's one output line and nothing else.
 
 `/snooze off`, or any request to unsnooze, runs `cockpit --unsnooze current`.
 
-What happens next: the session moves to the snoozed section of the picker showing the MR and remaining time, the status line shows the same, and a launchd job checks every minute. When the snooze fires it sends a notification that opens the session when clicked, marks the session due in the picker and status line, and reopens it in tmux if it was closed.
+What happens next: the session moves to the snoozed section of the picker showing the MR and remaining time, the status line shows the same, and a launchd job checks every minute. When the snooze fires it sends a notification that opens the session when clicked, marks the session due in the picker and status line, and reopens it in tmux if it was closed. Opening the session does not clear the snooze; the first prompt typed into it does (`/exit`, `/clear` and another `/snooze` do not count), and a system message in the chat then says what fired or that nothing has happened yet.

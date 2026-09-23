@@ -4,8 +4,7 @@
 input=$(cat)
 here=$(dirname "$(readlink "$0" || echo "$0")")
 sessions="$here/cockpit"
-accent=$(python3 -c 'import json,os;p=os.path.expanduser("~/.config/cockpit/config.json");print(json.load(open(p)).get("colour_accent",183) if os.path.exists(p) else 183)' 2>/dev/null || echo 183)
-branchcol=$(python3 -c 'import json,os;p=os.path.expanduser("~/.config/cockpit/config.json");print(json.load(open(p)).get("colour_branch",116) if os.path.exists(p) else 116)' 2>/dev/null || echo 116)
+accent=183; branchcol=116; linkcol=111
 
 fields=$(printf '%s' "$input" | jq -r '[.model.display_name, (.workspace.current_dir // .cwd), (.effort.level // ""), (.session_name // ""), (.session_id // "")] | @tsv')
 model=$(printf '%s' "$fields" | cut -f1)
@@ -14,12 +13,21 @@ effort=$(printf '%s' "$fields" | cut -f3)
 session=$(printf '%s' "$fields" | cut -f4)
 session_id=$(printf '%s' "$fields" | cut -f5)
 
-ticket=""; own_snooze=""; due_count=0
+# Resolve git first so the MR lookup can be keyed by branch.
+git_info=$(git -C "$dir" rev-parse --path-format=absolute --git-dir --git-common-dir --show-toplevel --abbrev-ref HEAD 2>/dev/null) || git_info=""
+branch=$(printf '%s\n' "$git_info" | sed -n 4p)
+[ "$branch" = "HEAD" ] && branch="@$(git -C "$dir" rev-parse --short HEAD 2>/dev/null)"
+
+ticket=""; own_snooze=""; due_count=0; mr_label=""; mr_url=""
 if [ -n "$session_id" ] && [ -x "$sessions" ]; then
-  sl=$("$sessions" --statusline "$session_id" 2>/dev/null)
+  sl=$("$sessions" --statusline "$session_id" --dir "$dir" --branch "$branch" 2>/dev/null)
   ticket=$(printf '%s' "$sl" | cut -f1)
   own_snooze=$(printf '%s' "$sl" | cut -f2)
   due_count=$(printf '%s' "$sl" | cut -f3)
+  accent=$(printf '%s' "$sl" | cut -f4); accent=${accent:-183}
+  branchcol=$(printf '%s' "$sl" | cut -f5); branchcol=${branchcol:-116}
+  mr_label=$(printf '%s' "$sl" | cut -f6)
+  mr_url=$(printf '%s' "$sl" | cut -f7)
 fi
 if [ -n "$ticket" ]; then
   case "$session" in
@@ -35,21 +43,22 @@ name_seg=""
 [ -n "$session" ] && name_seg="$(printf '\033[38;5;%sm%s\033[0m | ' "$accent" "$session")"
 [ -n "$own_snooze" ] && name_seg="$name_seg$(printf '\033[2m%s\033[0m | ' "$own_snooze")"
 [ "${due_count:-0}" -gt 0 ] 2>/dev/null && name_seg="$name_seg$(printf '\033[33m⏰ %s due\033[0m | ' "$due_count")"
+# The session's MR, shown after the branch as an underlined link (OSC 8) in the link colour.
+mr_seg=""
+[ -n "$mr_label" ] && mr_seg="$(printf ' | \033]8;;%s\033\\\033[4;38;5;%sm%s\033[0m\033]8;;\033\\' "$mr_url" "$linkcol" "$mr_label")"
 
-if ! git_info=$(git -C "$dir" rev-parse --path-format=absolute --git-dir --git-common-dir --show-toplevel --abbrev-ref HEAD 2>/dev/null); then
-  printf '%s | %s | %s' "$left" "$(basename "$dir")" "${name_seg% | }"
+if [ -z "$git_info" ]; then
+  printf '%s | %s | %s%s' "$left" "$(basename "$dir")" "${name_seg% | }" "$mr_seg"
   exit 0
 fi
 git_dir=$(printf '%s\n' "$git_info" | sed -n 1p)
 common_dir=$(printf '%s\n' "$git_info" | sed -n 2p)
 toplevel=$(printf '%s\n' "$git_info" | sed -n 3p)
-branch=$(printf '%s\n' "$git_info" | sed -n 4p)
-[ "$branch" = "HEAD" ] && branch="@$(git -C "$dir" rev-parse --short HEAD 2>/dev/null)"
 repo=$(basename "$(dirname "$common_dir")")
 if [ "$git_dir" != "$common_dir" ]; then
   folder=$(basename "$toplevel")
   [ "$folder" = "$branch" ] && label="worktree" || label="worktree: $folder"
-  printf '%s | %s | %s\033[33m⧉ %s [%s]\033[0m' "$left" "$repo" "$name_seg" "$branch" "$label"
+  printf '%s | %s | %s\033[33m⧉ %s [%s]\033[0m%s' "$left" "$repo" "$name_seg" "$branch" "$label" "$mr_seg"
 else
-  printf '%s | %s | %s\033[38;5;%sm⎇ %s [primary]\033[0m' "$left" "$repo" "$name_seg" "$branchcol" "$branch"
+  printf '%s | %s | %s\033[38;5;%sm⎇ %s [primary]\033[0m%s' "$left" "$repo" "$name_seg" "$branchcol" "$branch" "$mr_seg"
 fi

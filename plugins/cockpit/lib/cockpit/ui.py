@@ -8,7 +8,7 @@ from collections import Counter
 
 from . import snooze
 from .config import cfg
-from .index import find, primary_ticket, project_of, skill_of, title_of
+from .index import find, primary_ticket, project_of, title_of
 
 def _age(mtime):
     s = int(time.time() - mtime)
@@ -16,6 +16,16 @@ def _age(mtime):
         if s >= size:
             return "%d%s" % (s // size, unit)
     return "now"
+
+def _when(ts):
+    """An ISO timestamp from a transcript as 'in 3d 2h' style age plus the local date and time."""
+    from datetime import datetime, timezone
+    try:
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone()
+    except ValueError:
+        return ts
+    age = _age(dt.timestamp())
+    return "%s (%s)" % ("just now" if age == "now" else age + " ago", dt.strftime("%a %d %b %H:%M"))
 
 def fit(s, n):
     s = s or ""
@@ -40,13 +50,10 @@ def rows(states, mtimes, live, only_snoozed=False):
         l = live.get(st["id"])
         e = snoozed.get(st["id"])
         marker = "⏰" if e and snooze.is_due(e) else "z" if e else ("●" if l and l.get("status") == "busy" else "○") if l else " "
-        title = title_of(st)
-        if e:
-            title += "  %s%s" % (snooze.text(e), (" · " + e["reason"]) if e.get("reason") else "")
         out.append("\t".join([
             st["id"], marker, fit(_age(mtimes.get(st["id"], 0)), 4), fit(project_of(st), 12),
-            fit(primary_ticket(st), 10), fit(skill_of(st), 14), fit(title, 60),
-            fit(" ".join("!" + m for m in st["mrs"][:2]), 14),
+            fit(primary_ticket(st), 10), fit(title_of(st), 60),
+            " ".join("!" + m for m in st["mrs"][:2]),
         ]))
     return out
 
@@ -54,38 +61,65 @@ def snoozed_lines(states, banner=False):
     """One line per snoozed session, soonest first. The footer form is column-aligned for fzf;
     the banner form leads with the snooze text and leaves the title unclipped."""
     snoozed = snooze.load()
-    out = []
+    rows_ = []
     for sid, e in sorted(snoozed.items(), key=lambda kv: kv[1].get("until") or float("inf")):
         st = find(states, sid)
-        if not st:
-            continue
-        reason = ("  · " + e["reason"]) if e.get("reason") else ""
+        if st:
+            rows_.append((snooze.text(e), primary_ticket(st), title_of(st), ("  · " + e["reason"]) if e.get("reason") else ""))
+    if not rows_:
+        return []
+    # Columns sized to what is present, so a short list is not padded for the longest possible text.
+    w_snooze = max(len(r[0]) for r in rows_)
+    w_ticket = max([len(r[1]) for r in rows_] + [1])
+    out = []
+    for text, ticket, title, reason in rows_:
         if banner:
-            out.append("%s  %s  %s%s" % (fit(snooze.text(e), 30), fit(primary_ticket(st), 10), title_of(st), reason))
+            out.append("%s  %s  %s%s" % (fit(text, w_snooze), fit(ticket, w_ticket), title, reason))
         else:
-            out.append("%s  %s  %s%s" % (fit(primary_ticket(st), 10), fit(snooze.text(e), 26), fit(title_of(st), 40), reason))
+            out.append("%s  %s  %s%s" % (fit(ticket, w_ticket), fit(text, min(w_snooze, 26)), fit(title, 40), reason))
     return out
 
-def statusline_fields(state, session_id):
+def statusline_fields(state, session_id, repo_dir="", branch=""):
+    """ticket, own snooze, due count, accent colour, branch colour, MR label, MR url."""
+    from . import mrs
     ticket = primary_ticket(state) if state else ""
     snoozed = snooze.load()
     own = snoozed.get(session_id)
-    own_text = (snooze.text(own) + ((" · " + own["reason"]) if own.get("reason") else "")) if own else ""
+    own_text = (snooze.text(own, absolute=True) + ((" · " + own["reason"]) if own.get("reason") else "")) if own else ""
     due = sum(1 for e in snoozed.values() if snooze.is_due(e))
-    return "%s\t%s\t%d" % (ticket, own_text, due)
+    # A session that has dealt with MR links shows one of those, or nothing until they are fetched;
+    # the checkout's branch MR is only a guess for sessions that never named one.
+    if state and state.get("mr_urls"):
+        mr = mrs.session_mr(state)
+    else:
+        mr = mrs.lookup(repo_dir, branch) if repo_dir and branch else None
+    mr_label = ("!%d %s" % (mr["iid"], mr["title"])) if mr else ""
+    if len(mr_label) > 30:
+        mr_label = mr_label[:29] + "…"
+    if mr and mr.get("state") != "opened":
+        mr_label += " · " + mr["state"]
+    return "%s\t%s\t%d\t%s\t%s\t%s\t%s" % (ticket, own_text, due, cfg()["colour_accent"], cfg()["colour_branch"], mr_label, mr["url"] if mr else "")
 
 def preview(st, live):
     accent = "\033[1;38;5;%dm" % cfg()["colour_accent"]
     dim, rst, bold = "\033[2m", "\033[0m", "\033[1m"
     width = int(os.environ.get("FZF_PREVIEW_COLUMNS") or 80)
     wrap = lambda s: "\n".join(textwrap.wrap(s, width - 2)) if s else ""
-    label = lambda k, v: print(dim + k.ljust(11) + rst + v)
+    label = lambda k, v: print(dim + k.ljust(12) + rst + v)
     header = lambda s: print(accent + s + rst)
     print(bold + wrap(title_of(st)) + rst)
     if st["ai_title"] and st["ai_title"] != title_of(st):
         label("ai title", st["ai_title"])
     print()
-    label("state", ("%s in tmux %s" % (live.get("status"), live.get("tmux"))) if live else "closed, resumable")
+    if live:
+        where = (" in tmux " + live["tmux"]) if live.get("tmux") else (", running in the background (Enter attaches)" if live.get("kind") == "bg" else ", not in tmux")
+        label("state", "%s%s" % (live.get("status"), where))
+    else:
+        label("state", "closed, resumable")
+    if st["first_ts"]:
+        label("started", _when(st["first_ts"]))
+    if st["last_ts"]:
+        label("last prompt", _when(st["last_ts"]))
     e = snooze.load().get(st["id"])
     if e:
         print()
@@ -117,7 +151,7 @@ def preview(st, live):
         print(wrap("- " + p))
         print()
 
-HEADER = "   age  project      ticket     skill          title                                                        MRs             ⏰due ●busy ○idle z snoozed   order: due, live, snoozed, closed   ctrl-z snoozed only  ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
+HEADER = "   age  project      ticket     title                                                        MRs          ⏰due ●busy ○idle z snoozed   ctrl-z snoozed only  ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
 
 def pick(lines, footer, me):
     args = [
