@@ -38,17 +38,20 @@ def lookup_url(url):
         return None
     return _want(m.group(2) + "!" + m.group(3), {"project": m.group(2), "iid": int(m.group(3))})
 
-def session_mr(state):
-    """The MR a session is working on: the latest link it dealt with that the token owner authored,
-    else the latest link at all. None until the wake has fetched them."""
+def session_mrs(state):
+    """The MRs that came out of a session, newest first: every link it dealt with that the token
+    owner authored, else the latest link at all. Empty until the wake has fetched them."""
     from .gitlab import me
     mrs_ = [lookup_url(u) for u in reversed(state.get("mr_urls", []))]
     mrs_ = [m for m in mrs_ if m]
     who = me()
-    for m in mrs_:
-        if m.get("author") == who:
-            return m
-    return mrs_[0] if mrs_ else None
+    own = [m for m in mrs_ if m.get("author") == who]
+    return own or mrs_[:1]
+
+def session_mr(state):
+    """The MR a session is working on: the newest of session_mrs, None until fetched."""
+    found = session_mrs(state)
+    return found[0] if found else None
 
 def lookup(repo_dir, branch):
     """The cached latest MR for this branch, any state, as {iid, title, url, state} or None. Records

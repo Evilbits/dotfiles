@@ -1,7 +1,7 @@
 {
   "name": "cockpit",
   "description": "Work across many Claude Code sessions in doxyme: a picker to find and resume any session, snoozes that park a session until a time or until its MR moves, and a status line that names the ticket",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "author": {
     "name": "doxy.me"
   },

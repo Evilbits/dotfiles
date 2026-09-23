@@ -6,7 +6,7 @@ import unittest
 from unittest import mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lib"))
-from cockpit import index, mrs  # noqa: E402
+from cockpit import config, index, mrs  # noqa: E402
 
 def user(text):
     return json.dumps({"type": "user", "message": {"role": "user", "content": text}, "timestamp": "2026-09-23T10:00:00Z"}, separators=(",", ":"))
@@ -21,6 +21,12 @@ def custom(title):
 MR_URL = "https://gitlab.com/g/p/-/merge_requests/16595"
 
 class Describe(unittest.TestCase):
+    def setUp(self):
+        # The machine's own ~/.config/cockpit/config.json must not leak into these assertions.
+        patcher = mock.patch.object(index, "cfg", return_value=dict(config.DEFAULTS))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def absorb(self, *lines):
         st = index.new_state("s1", "p")
         for l in lines:

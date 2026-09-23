@@ -83,7 +83,9 @@ def snoozed_lines(states, banner=False):
     return out
 
 def statusline_fields(state, session_id, repo_dir="", branch=""):
-    """ticket, own snooze, due count, accent colour, branch colour, MR label, MR url, subject, ticket url."""
+    """ticket, own snooze, due count, accent colour, branch colour, MR labels, MR urls, subject, ticket url.
+    The MR fields hold up to three MRs newest first, joined with \x1f, so the newest stays on screen
+    when the bar runs out of room; only the newest carries its title."""
     from . import mrs
     ticket = primary_ticket(state) if state else ""
     subject = subject_of(state, user_names().get(state["id"], "")) if state else ""
@@ -95,15 +97,20 @@ def statusline_fields(state, session_id, repo_dir="", branch=""):
     # A session that has dealt with MR links shows one of those, or nothing until they are fetched;
     # the checkout's branch MR is only a guess for sessions that never named one.
     if state and state.get("mr_urls"):
-        mr = mrs.session_mr(state)
+        found = mrs.session_mrs(state)[:3]
     else:
         mr = mrs.lookup(repo_dir, branch) if repo_dir and branch else None
-    mr_label = ("!%d %s" % (mr["iid"], mr["title"])) if mr else ""
-    if len(mr_label) > 30:
-        mr_label = mr_label[:29] + "…"
-    if mr and mr.get("state") != "opened":
-        mr_label += " · " + mr["state"]
-    return "%s\t%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s" % (ticket, own_text, due, cfg()["colour_accent"], cfg()["colour_branch"], mr_label, mr["url"] if mr else "", subject, link)
+        found = [mr] if mr else []
+    labels = []
+    for i, mr in enumerate(found):
+        label = ("!%d %s" % (mr["iid"], mr["title"])) if i == 0 else "!%d" % mr["iid"]
+        if len(label) > 30:
+            label = label[:29] + "…"
+        if mr.get("state") != "opened":
+            label += " · " + mr["state"]
+        labels.append(label)
+    return "%s\t%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s" % (ticket, own_text, due, cfg()["colour_accent"], cfg()["colour_branch"],
+                                                    "\x1f".join(labels), "\x1f".join(m["url"] for m in found), subject, link)
 
 def preview(st, live):
     accent = "\033[1;38;5;%dm" % cfg()["colour_accent"]

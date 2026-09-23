@@ -56,9 +56,18 @@ elif [ -n "$session" ]; then
 fi
 [ -n "$own_snooze" ] && name_seg="$name_seg$(printf '\033[2m%s\033[0m | ' "$own_snooze")"
 [ "${due_count:-0}" -gt 0 ] 2>/dev/null && name_seg="$name_seg$(printf '\033[33m⏰ %s due\033[0m | ' "$due_count")"
-# The session's MR, shown after the branch as an underlined link (OSC 8) in the link colour.
+# The session's MRs, newest first, after the branch: each an underlined link (OSC 8) in the link colour.
 mr_seg=""
-[ -n "$mr_label" ] && mr_seg="$(printf ' | \033]8;;%s\033\\\033[4;38;5;%sm%s\033[0m\033]8;;\033\\' "$mr_url" "$linkcol" "$mr_label")"
+if [ -n "$mr_label" ]; then
+  us=$(printf '\037')
+  labels="$mr_label$us"; urls="$mr_url$us"
+  while [ -n "$labels" ]; do
+    label=${labels%%"$us"*}; labels=${labels#*"$us"}
+    url=${urls%%"$us"*}; urls=${urls#*"$us"}
+    link="$(printf '\033]8;;%s\033\\\033[4;38;5;%sm%s\033[0m\033]8;;\033\\' "$url" "$linkcol" "$label")"
+    [ -z "$mr_seg" ] && mr_seg=" | $link" || mr_seg="$mr_seg · $link"
+  done
+fi
 
 if [ -z "$git_info" ]; then
   printf '%s | %s | %s%s' "$left" "$(basename "$dir")" "${name_seg% | }" "$mr_seg"

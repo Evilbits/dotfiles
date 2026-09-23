@@ -10,15 +10,35 @@ from cockpit.index import new_state  # noqa: E402
 
 BRANCH_MR = {"iid": 17005, "title": "docs: restructure", "url": "https://gitlab.com/g/p/-/merge_requests/17005", "state": "merged"}
 OWN_MR = {"iid": 16595, "title": "retry stash writes", "url": "https://gitlab.com/g/p/-/merge_requests/16595", "state": "opened"}
+OLDER_MR = {"iid": 89, "title": "never show the branch MR", "url": "https://gitlab.com/g/p/-/merge_requests/89", "state": "merged"}
 
 class StatuslineMr(unittest.TestCase):
     def fields(self, state, own):
         with mock.patch.object(snooze, "load", return_value={}), \
              mock.patch.object(ui, "user_names", return_value={}), \
-             mock.patch.object(mrs, "session_mr", return_value=own), \
+             mock.patch.object(mrs, "session_mrs", return_value=[own] if own else []), \
              mock.patch.object(mrs, "lookup", return_value=BRANCH_MR) as lookup:
             out = ui.statusline_fields(state, "sid", "/repo", "feature-branch").split("\t")
         return out[5], out[6], lookup.called
+
+    def test_every_own_mr_is_listed_newest_first_with_the_title_on_the_newest(self):
+        state = new_state("sid", "-repo")
+        state["mr_urls"] = [OLDER_MR["url"], OWN_MR["url"]]
+        with mock.patch.object(snooze, "load", return_value={}), \
+             mock.patch.object(ui, "user_names", return_value={}), \
+             mock.patch.object(mrs, "session_mrs", return_value=[OWN_MR, OLDER_MR]):
+            out = ui.statusline_fields(state, "sid", "/repo", "b").split("\t")
+        self.assertEqual(out[5].split("\x1f"), ["!16595 retry stash writes", "!89 · merged"])
+        self.assertEqual(out[6].split("\x1f"), [OWN_MR["url"], OLDER_MR["url"]])
+
+    def test_session_mrs_prefers_the_authors_own_newest_first(self):
+        state = new_state("sid", "-repo")
+        state["mr_urls"] = [OLDER_MR["url"], BRANCH_MR["url"], OWN_MR["url"]]
+        by_url = {m["url"]: dict(m, author="me" if m is not BRANCH_MR else "other") for m in (OLDER_MR, BRANCH_MR, OWN_MR)}
+        with mock.patch.object(mrs, "lookup_url", side_effect=lambda u: by_url[u]), \
+             mock.patch("cockpit.gitlab.me", return_value="me"):
+            found = mrs.session_mrs(state)
+        self.assertEqual([m["iid"] for m in found], [16595, 89])
 
     def test_subject_and_ticket_link_are_the_last_fields(self):
         state = new_state("sid", "-repo")

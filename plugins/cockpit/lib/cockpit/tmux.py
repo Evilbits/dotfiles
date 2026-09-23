@@ -7,8 +7,18 @@ import time
 
 from .config import CLAUDE_BIN, HOME, OPENED, STATE_DIR, cfg, load_json, save_json
 import sys
-from .index import primary_ticket
-from .registry import live_sessions
+from .index import primary_ticket, subject_of
+from .registry import live_sessions, user_names
+
+WINDOW_NAME_MAX = 28
+
+def window_name(st, live_name=""):
+    """What a tmux window hosting the session is called: the session's subject, clipped so the
+    status bar keeps room for the other windows."""
+    name = subject_of(st, live_name) if st else ""
+    if len(name) > WINDOW_NAME_MAX:
+        name = name[:WINDOW_NAME_MAX - 1].rstrip() + "…"
+    return name or (st["id"][:8] if st else "")
 
 def tmux(*args):
     """Run a tmux command; on a machine without tmux behave like a failed command."""
@@ -142,7 +152,7 @@ def open_session(st, origin=None):
         jump(prev)
         return "jumped to " + prev
     if origin:
-        tmux("rename-window", "-t", origin, primary_ticket(st) or st["id"][:8])
+        tmux("rename-window", "-t", origin, window_name(st, user_names().get(st["id"], "")))
         if origin == os.environ.get("TMUX_PANE"):
             os.chdir(cwd)
             os.execvp("sh", ["sh", "-c", " ".join(shlex.quote(a) for a in argv) + HOLD])
@@ -152,7 +162,7 @@ def open_session(st, origin=None):
             save_json(OPENED, opened)
             return verb + " in place at " + target
     sess = session_for(cwd)
-    r = tmux("new-window", "-t", sess + ":", "-n", primary_ticket(st) or st["id"][:8], "-c", cwd, "-P", "-F", "#{session_name}:#{window_id}.#{pane_id}", cmd)
+    r = tmux("new-window", "-t", sess + ":", "-n", window_name(st, user_names().get(st["id"], "")), "-c", cwd, "-P", "-F", "#{session_name}:#{window_id}.#{pane_id}", cmd)
     target = r.stdout.strip()
     if target:
         remember(opened, st["id"], target)
@@ -164,8 +174,8 @@ WINDOWS = os.path.join(STATE_DIR, "windows.json")
 MARKS = ("⏰ ", "⏾ ")
 
 def mark_windows(states, snoozed, live):
-    """Show snooze state in tmux window names: '⏾ PROD-11125' while snoozed, '⏰ PROD-11125' when
-    due, and the window's own name back once neither applies. Only windows hosting a session that
+    """Show snooze state in tmux window names: '⏾ Read-protected stash fields' while snoozed, '⏰ …'
+    when due, and the window's own name back once neither applies. Only windows hosting a session that
     is or was marked are touched; the original name and its automatic-rename setting are kept in
     the state folder so the restore is exact."""
     from . import snooze as snooze_mod
@@ -173,6 +183,7 @@ def mark_windows(states, snoozed, live):
     if not cfg()["tmux_window_marks"] or not available():
         return
     remembered = load_json(WINDOWS)
+    names = user_names()
     changed = False
     wanted = {}
     for sid, entry in live.items():
@@ -184,7 +195,7 @@ def mark_windows(states, snoozed, live):
         if not e:
             continue
         st = find(states, sid)
-        label = (primary_ticket(st) if st else "") or sid[:8]
+        label = window_name(st, names.get(sid, "")) if st else sid[:8]
         wanted[window] = (MARKS[0] if snooze_mod.is_due(e) else MARKS[1]) + label
     for window, name in wanted.items():
         r = tmux("display-message", "-p", "-t", window, "#{window_name}\t#{automatic-rename}")

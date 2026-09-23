@@ -1,8 +1,42 @@
 """Running Claude sessions, from the registry Claude Code keeps under ~/.claude/sessions."""
 import json
 import os
+import subprocess
 
 from .config import REGISTRY, canonical
+
+def attached_panes():
+    """tmux panes running `claude attach <jobId>`, keyed by job id, as session:@window.%pane. A
+    background session has no pane of its own; the pane showing it is where Enter should land and
+    where a snooze mark belongs, so it is found from the processes instead."""
+    try:
+        pids = subprocess.run(["pgrep", "-f", "claude attach "], capture_output=True, text=True).stdout.split()
+        panes = subprocess.run(["tmux", "list-panes", "-a", "-F", "#{pane_pid}\t#{session_name}:#{window_id}.#{pane_id}"],
+                               capture_output=True, text=True).stdout
+        ps = subprocess.run(["ps", "-axo", "pid=,ppid=,command="], capture_output=True, text=True).stdout
+    except FileNotFoundError:
+        return {}
+    by_pane_pid = dict(l.split("\t", 1) for l in panes.splitlines() if "\t" in l)
+    parent, command = {}, {}
+    for l in ps.splitlines():
+        parts = l.split(None, 2)
+        if len(parts) == 3:
+            parent[parts[0]], command[parts[0]] = parts[1], parts[2]
+    out = {}
+    for pid in pids:
+        words = command.get(pid, "").split()
+        if "attach" not in words or words.index("attach") + 1 >= len(words):
+            continue
+        job = words[words.index("attach") + 1]
+        p = pid
+        for _ in range(8):
+            if p in by_pane_pid:
+                out[job] = by_pane_pid[p]
+                break
+            p = parent.get(p, "")
+            if not p:
+                break
+    return out
 
 def live_sessions():
     """Running Claude processes, keyed by canonical session id. Claude registers two kinds: an
@@ -32,8 +66,11 @@ def live_sessions():
         elif prev and "busy" in (prev.get("status"), d.get("status")):
             d = dict(d, status="busy")
         live[sid] = d
+    attached = attached_panes() if background else {}
     for d in background:
         sid = canonical(d.get("sessionId", ""))
+        if d.get("jobId") in attached and not d.get("tmux"):
+            d = dict(d, tmux=attached[d["jobId"]])
         if sid not in live:
             live[sid] = d
         elif d.get("status") == "busy":
