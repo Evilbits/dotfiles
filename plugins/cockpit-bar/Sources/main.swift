@@ -7,9 +7,14 @@ import Cocoa
 // session id so each row shows what that session is doing right now.
 final class StatusController: NSObject, NSMenuDelegate {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-    let baseDir = (NSHomeDirectory() as NSString).appendingPathComponent(".local/state/cockpit/bar")
+    // COCKPIT_BAR_STATE overrides the state folder for the same reason as COCKPIT_BAR_PROVIDER below.
+    let baseDir = ProcessInfo.processInfo.environment["COCKPIT_BAR_STATE"]
+        ?? (NSHomeDirectory() as NSString).appendingPathComponent(".local/state/cockpit/bar")
     var stateDir: String { (baseDir as NSString).appendingPathComponent("state.d") }
-    let providerPath = (Bundle.main.object(forInfoDictionaryKey: "CockpitBarProvider") as? String) ?? ""
+    // COCKPIT_BAR_PROVIDER overrides the built-in path, so a demo provider with made-up rows can drive a
+    // second instance for screenshots without touching the installed app.
+    let providerPath = ProcessInfo.processInfo.environment["COCKPIT_BAR_PROVIDER"]
+        ?? (Bundle.main.object(forInfoDictionaryKey: "CockpitBarProvider") as? String) ?? ""
 
     var pollTimer: Timer?
     var rowsTimer: Timer?

@@ -35,8 +35,10 @@ export function buildTitlePrompt(userMessages, options = {}) {
   // The first exchange, not only the first message: a session opened with a skill and a link
   // ("doxy-debug https://…") says nothing about the problem, the first reply restates it.
   const first = (userMessages[0] || "").slice(0, 1200);
-  const reply = (assistantMessages[0] || "").slice(0, 800);
-  const userContext = reply ? `${first}\n\nFirst assistant reply:\n${reply}` : first;
+  // The first replies are often only an announcement ("Using /doxy-debug…"); the facts arrive a
+  // reply or two later, so the first three are shown, each clipped.
+  const replies = assistantMessages.slice(0, 3).map((r) => r.slice(0, 500)).join("\n…\n");
+  const userContext = replies ? `${first}\n\nFirst assistant replies:\n${replies}` : first;
 
   const replyLine = includeQuotesNote
     ? `${replyInstruction} — no explanation, no quotes`

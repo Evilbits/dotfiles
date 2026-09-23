@@ -1,0 +1,30 @@
+#!/usr/bin/python3
+"""A stand-in for bin/cockpit-bar that prints made-up rows, for the README screenshot."""
+import json, sys
+def mr(iid, title, state, repo="acme-app"):
+    return {"url": "https://gitlab.com/acme/%s/-/merge_requests/%d" % (repo, iid), "project": "acme/" + repo, "repo": repo, "iid": iid, "title": title, "state": state}
+rows = [
+    {"id": "a1", "group": 1, "ticket": "ACME-4821", "ticket_url": "https://acme.atlassian.net/browse/ACME-4821", "verb": "Implement", "title": "Retry patient attach on timeout", "repo": "acme-app", "branch": "ACME-4821",
+     "live": {"tmux": "acme-app:@3.%12", "kind": "interactive"}, "snoozed": False, "due": False, "snooze_text": "", "snooze_short": "", "wakes": "",
+     "started": "2h ago (Wed 23 Sep 16:02)", "last": "just now (Wed 23 Sep 18:20)", "mrs": [mr(1207, "feat: ACME-4821 - retry patient attach", "opened")], "state_ids": ["a1"]},
+    {"id": "a2", "group": 1, "ticket": "ACME-4790", "ticket_url": "https://acme.atlassian.net/browse/ACME-4790", "verb": "Review", "title": "Session token refresh", "repo": "acme-app", "branch": "master",
+     "live": {"tmux": "acme-app:@5.%20", "kind": "interactive"}, "snoozed": False, "due": False, "snooze_text": "", "snooze_short": "", "wakes": "",
+     "started": "1d ago (Tue 22 Sep 10:15)", "last": "40m ago (Wed 23 Sep 17:41)", "mrs": [mr(1198, "fix: ACME-4790 - refresh the session token before it expires", "opened")], "state_ids": ["a2"]},
+    {"id": "a3", "group": 2, "ticket": "ACME-4655", "ticket_url": "https://acme.atlassian.net/browse/ACME-4655", "verb": "Implement", "title": "Archive export for clinics", "repo": "acme-app", "branch": "ACME-4655",
+     "live": None, "snoozed": True, "due": False, "snooze_text": "⏾ !1184 · until Thu 09:00 · waiting for review", "snooze_short": "⏾ !1184", "wakes": "a comment by someone else, an approval, a failed pipeline, a conflict, merge or close",
+     "started": "3d ago (Sun 20 Sep 14:30)", "last": "1d ago (Tue 22 Sep 17:05)", "mrs": [mr(1184, "feat: ACME-4655 - archive export", "opened")], "state_ids": []},
+    {"id": "a4", "group": 2, "ticket": "ACME-4702", "ticket_url": "https://acme.atlassian.net/browse/ACME-4702", "verb": "Design", "title": "Notification preferences", "repo": "acme-app", "branch": "master",
+     "live": None, "snoozed": True, "due": False, "snooze_text": "⏾ until Fri 09:00 · product feedback", "snooze_short": "⏾ in 1d 14h", "wakes": "",
+     "started": "5d ago (Fri 18 Sep 11:00)", "last": "2d ago (Mon 21 Sep 15:20)", "mrs": [], "state_ids": []},
+    {"id": "a5", "group": 3, "ticket": "ACME-4610", "ticket_url": "https://acme.atlassian.net/browse/ACME-4610", "verb": "Review", "title": "Waiting room reconnect", "repo": "acme-app", "branch": "master",
+     "live": None, "snoozed": False, "due": False, "snooze_text": "", "snooze_short": "", "wakes": "",
+     "started": "1w ago", "last": "4d ago", "mrs": [mr(1161, "fix: ACME-4610 - reconnect the waiting room after sleep", "merged")], "state_ids": []},
+    {"id": "a6", "group": 3, "ticket": "", "ticket_url": "", "verb": "Debug", "title": "Duplicate webhook callbacks", "repo": "acme-api", "branch": "master",
+     "live": None, "snoozed": False, "due": False, "snooze_text": "", "snooze_short": "", "wakes": "",
+     "started": "1w ago", "last": "6d ago", "mrs": [], "state_ids": []},
+    {"id": "a7", "group": 3, "ticket": "", "ticket_url": "", "verb": "", "title": "Explain the release pipeline", "repo": "acme-app", "branch": "master",
+     "live": None, "snoozed": False, "due": False, "snooze_text": "", "snooze_short": "", "wakes": "",
+     "started": "2w ago", "last": "2w ago", "mrs": [], "state_ids": []},
+]
+if sys.argv[1:] == ["--json"] or not sys.argv[1:]:
+    json.dump({"rows": rows, "due": 0}, sys.stdout)

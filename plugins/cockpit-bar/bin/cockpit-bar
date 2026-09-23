@@ -110,7 +110,6 @@ def collect():
         })
     return {"rows": out, "due": sum(1 for r in out if r["due"])}
 
-VERBS = {"doxy-review": "Review", "doxy-implement": "Implement", "doxy-design": "Design", "doxy-ticket": "Ticket", "doxy-epic": "Epic"}
 KEY_RE = re.compile(r"^\s*(?:[A-Z][A-Z0-9]{1,9}-\d{1,6}|NOJIRA)\s*[:·\-]?\s*")
 CONVENTIONAL_RE = re.compile(r"^[a-z]+(?:\([^)]*\))?!?:\s*")  # feat(scope): … / fix: …
 
@@ -118,7 +117,9 @@ def describe(s, ticket, found, renamed):
     """(verb, subject): what kind of work the session is and what it is about, without identifiers.
     The verb is the doxy skill it started with. The subject is a rename if there is one, else for a
     review the MR's title, else the session title with a leading ticket key removed."""
-    verb = next((VERBS[k] for k in s.get("skills", []) if k in VERBS), "")
+    from cockpit.config import cfg
+    verbs = cfg().get("skill_verbs") or {}   # the same map the picker uses, incl. the user's own skills
+    verb = next((verbs[k] for k in s.get("skills", []) if k in verbs), "")
     subject = renamed
     if not subject and verb == "Review":
         first = [u for u in s.get("mr_urls", []) if u in {f["url"] for f in found}]
