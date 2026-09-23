@@ -129,14 +129,15 @@ export function generateTitleViaCLI(prompt, model, onReject) {
     let stderr = "";
     let settled = false;
 
-    // A bare model call: no tools, no skills, no hooks, no MCP. With the user's settings loaded the
-    // worker once ran the skill named in the first message instead of titling the session.
+    // A plain model call: no tools, no skills, no user settings, no MCP (--bare would also drop the
+    // keychain login). With the user's settings loaded the worker once ran the skill named in the
+    // first message instead of titling the session.
     const child = spawn("claude", [
       "-p",
       "--model", model,
-      "--bare",
       "--tools", "",
       "--disable-slash-commands",
+      "--setting-sources", "",
       "--strict-mcp-config",
       "--mcp-config", '{"mcpServers":{}}',
     ], {
