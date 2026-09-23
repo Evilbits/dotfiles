@@ -186,5 +186,10 @@
     "enabled": true,
     "mode": "hold"
   },
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "statusLine": {
+    "type": "command",
+    "command": "~/.local/bin/cockpit-statusline",
+    "refreshInterval": 60
+  }
 }
