@@ -160,11 +160,11 @@ async function main() {
 async function nameSessionAI(sessionId, jsonlPath) {
   if (isMarkerDone(join(MARKER_DIR, sessionId))) return;
 
-  const { userMessages } = extractMessages(jsonlPath);
+  const { userMessages, assistantMessages } = extractMessages(jsonlPath);
   if (userMessages.length === 0) return;
 
   const model = getConfigModel();
-  const title = await generateTitleViaClaude(userMessages, model);
+  const title = await generateTitleViaClaude(userMessages, model, assistantMessages);
   // The user may have /rename'd while the worker ran; their name wins, and it must stay the last
   // custom-title record, so never append a generated one over it.
   const userRename = findLatestRename(jsonlPath);
@@ -215,9 +215,10 @@ export function getConfigModel() {
   }
 }
 
-function generateTitleViaClaude(userMessages, model) {
+function generateTitleViaClaude(userMessages, model, assistantMessages = []) {
   const prompt = buildTitlePrompt(userMessages, {
     replyInstruction: "Reply with ONLY the title, nothing else",
+    assistantMessages,
   });
   return generateTitleViaCLI(prompt, model, ({ reason, stdout, stderr, code }) => {
     log(
