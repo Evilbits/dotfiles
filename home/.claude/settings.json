@@ -104,7 +104,8 @@
     "blitz@doxyme": true,
     "cockpit@doxyme": true,
     "swift-lsp@claude-plugins-official": true,
-    "cockpit-bar@rasmus": true
+    "cockpit-bar@rasmus": true,
+    "doxy@rasmus": true
   },
   "extraKnownMarketplaces": {
     "doxyme": {
