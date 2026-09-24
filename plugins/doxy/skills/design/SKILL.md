@@ -1,5 +1,5 @@
 ---
-name: doxy-design
+name: design
 description: >-
     Work an idea into a written design brief for the doxyme Apps/SDK domain:
     the need, the proposal, what was considered and rejected, verified facts
@@ -12,7 +12,7 @@ description: >-
     a document. Ends with the document; does not write tickets or code.
 ---
 
-# /doxy-design — from an idea to a brief the team can discuss
+# /doxy:design — from an idea to a brief the team can discuss
 
 The conversation engine is the repo's brainstorming skill, which asks one question at a time, prefers multiple choice, and refuses to design past the user's intent. This skill adds what it lacks in this domain: grounding before the first question, a restatement checkpoint, the brief's shape, and feeding every correction back into the repo.
 
@@ -45,8 +45,8 @@ Then stop. The user corrects it once, in one place, instead of in questions four
 
 Read and follow `.cursor/skills/brainstorming/SKILL.md`. Do not call the `superpowers:brainstorming` Skill tool. Four overrides, stated before starting:
 
-1. **The document it writes is the brief in step 3**, at `~/dotfiles/home/.config/claude/specs/YYYY-MM-DD-<ticket-id-lowercase-or-topic>-design.md`. Ignore its `docs/plans/` path. **Never commit it**; skip any step that says to.
-2. **Its terminal step does not run.** Brainstorming ends by invoking writing-plans; here it ends with the document. Plans and tickets are `/doxy-implement` and `/doxy-ticket`, invoked only if asked.
+1. **The document it writes is the brief in step 3**, at `~/.claude/specs/YYYY-MM-DD-<ticket-id-lowercase-or-topic>-design.md`. Ignore its `docs/plans/` path. **Never commit it**; skip any step that says to.
+2. **Its terminal step does not run.** Brainstorming ends by invoking writing-plans; here it ends with the document. Plans and tickets are `/doxy:implement` and `/doxy:ticket`, invoked only if asked.
 3. **Every option is phrased in doxyme vocabulary** as loaded in step 0, with a one-line consequence each. Options are lettered; replies read "Let's go with A".
 4. **Track three lists as the conversation runs**, since they become sections of the brief: decisions taken; alternatives considered and rejected, with the reason; facts verified against code or a source, with where and as of when.
 
@@ -62,7 +62,7 @@ Sections, in this order, each earning its place:
 - **Verified facts.** Anything the proposal depends on being true, with the file, merge request or ticket it was checked against and the date. Opt-in or in-flight platform behaviour is labelled as such.
 - **Open questions.** Each with the person or team that owns the answer.
 - **Out of scope.** Named, so nobody argues it in the discussion.
-- **Shape.** Mandatory, one of four, with two sentences of reasoning. `/doxy-ticket` reads this to decide what to write:
+- **Shape.** Mandatory, one of four, with two sentences of reasoning. `/doxy:ticket` reads this to decide what to write:
   - **Epic** — the work splits into several changes each reviewable on its own, or spans more than one system or owner, or has an ordering the tickets must carry. List the candidate tickets by one-line title.
   - **Ticket** — one change, one MR, one owner. Say why it does not split.
   - **Spike** — an open question dominates and its answer decides the shape. Name the question and what answering it settles.
@@ -89,6 +89,6 @@ Present the additions and ask before writing any; they ship as an MR the team ca
 
 ## Hand-off
 
-The brief ends this skill. `/doxy-ticket` reads the Shape verdict and writes an epic with tickets, a single ticket, or a spike; `/doxy-implement` takes a ticket, or a NOJIRA brief, to code. When the brief is done, say which Shape it landed on and offer the next skill in one line.
+The brief ends this skill. `/doxy:ticket` reads the Shape verdict and writes an epic with tickets, a single ticket, or a spike; `/doxy:implement` takes a ticket, or a NOJIRA brief, to code. When the brief is done, say which Shape it landed on and offer the next skill in one line.
 
-**A request to build, branch, or start is the hand-off, never permission to implement here.** "Let's build this", "put it on a NOJIRA branch", "go ahead" all mean: stop, and invoke `/doxy-implement` with the brief. That skill owns the branch ritual, the plan-or-execute question and the commit cycle; skipping it takes a decision away from the user. This happened once, on the AI-context restructure, and the work had to be reviewed after the fact.
+**A request to build, branch, or start is the hand-off, never permission to implement here.** "Let's build this", "put it on a NOJIRA branch", "go ahead" all mean: stop, and invoke `/doxy:implement` with the brief. That skill owns the branch ritual, the plan-or-execute question and the commit cycle; skipping it takes a decision away from the user. This happened once, on the AI-context restructure, and the work had to be reviewed after the fact.

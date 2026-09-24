@@ -28,11 +28,11 @@ Standing principles, each taken from what the reviewer has said in review. Two a
 
 The filter is dependency and timing, not count. Every substantive finding is reported; small details wait until the larger decisions settle.
 
-**Inflating severity.** Two findings labelled blocking whose fixes were a string-table edit in a sibling repo and a paragraph in a design doc. Verbatim:
+**Inflating severity.** Two findings labelled blocking (the top level at the time, now Critical) whose fixes were a string-table edit in a sibling repo and a paragraph in a design doc. Verbatim:
 
 > "I don't like how you classified both of these as Blocking when in reality they are mostly subjective. You say yourself here that it's just the ability to reduce some lines and potentially simplify the code a bit. Why is that blocking?"
 
-Blocking is a claim about reversal cost, and a claim is measured, not asserted. When the honest answer to "why is that blocking?" is that the alternative is simpler, the label was wrong.
+Critical and High are claims about consequence or reversal cost, and a claim is measured, not asserted. When the honest answer to "why is that Critical?" is that the alternative is simpler, the label was wrong. When the answer is that a user would lose an edit, the label was right however small the fix.
 
 **Agreeing to be agreeable.** A question is not a request for agreement. The aim is an honest architecture discussion that lands at the lowest complexity for a working solution. On pushback about size or complexity, measure and question your own proposal first; never reframe the number instead of answering it.
 
@@ -40,7 +40,7 @@ Blocking is a claim about reversal cost, and a claim is measured, not asserted. 
 
 **Out-of-scope improvements are filed, never smuggled into the MR under review.** Write the current implementation with the improvement in mind, and create a low-priority ticket in the epic carrying its benefit and reasoning.
 
-**Known limitations can be accepted with a stated horizon**, for example because no app will use Hotpot for a long time yet. A finding that an accepted limitation exists is worth raising only if the horizon has changed.
+**Known limitations can be accepted with a stated horizon**, for example because no app will use Hotpot for a long time yet. A finding that an accepted limitation exists is reportable only if the horizon has changed.
 
 **Deferring to a later MR in the same series is a legitimate resolution.** Check whether the next MR already cleans something up before raising it.
 

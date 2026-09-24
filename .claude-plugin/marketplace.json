@@ -14,6 +14,11 @@
       "name": "cockpit-bar",
       "source": "./plugins/cockpit-bar",
       "description": "macOS menu bar app over cockpit, forked from claude-status-bar: the spinning splat and activity text, due, running and snoozed sessions with their MRs, click to jump to the tmux pane, snooze actions"
+    },
+    {
+      "name": "doxy",
+      "source": "./plugins/doxy",
+      "description": "Doxyme workflow skills, one step each: /doxy:design, /doxy:ticket, /doxy:implement, /doxy:review, /doxy:debug"
     }
   ]
 }

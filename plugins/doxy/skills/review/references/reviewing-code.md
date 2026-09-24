@@ -16,7 +16,7 @@ Note what the author says is deliberate. A deliberate choice can still be wrong,
 
 ## 2 — Architecture pass
 
-Before reading for bugs. Answer each question even when the answer is "fine". Where a question finds something a blocking finding would later suppress, record it inside the answer and mark it held.
+Before reading for bugs. Answer each question for yourself and record a pass in one word; only a failed check becomes a finding. Where a question finds something a Critical or High finding would later suppress, record it inside the answer and mark it held.
 
 1. **Layer placement.** Does every piece live in the layer that owns it? Run the ownership tests in `apps/extensions/AGENTS.md`: Where data lives, Where code lives, Capability or app feature.
 2. **Capability genericity.** If a capability is added or extended, run the five tests in `apps/extensions/.cursor/rules/02-capability-rules.mdc`. **Most capabilities pass them**; `interpreter` and `transcription` are the named exceptions and not precedent. Record the verdict on each test, and if they pass, say so and move on.
@@ -54,15 +54,15 @@ Then check:
 - A named alternative is simpler once written out, including what it adds.
 - **A claim about another system's semantics comes from that system, never inferred from the code that consumes it.** How Hotpot resolves concurrent writes, what the Journal is for, what Convex guarantees inside a document: answered by the Hotpot repo at `~/dev/hotpot`, its merge requests and their discussions. The SDK's call sites say what this library does today, which differs from what the platform supports whenever a platform capability is opt-in. An unverified claim is stated as unverified.
 
-Drop any finding that does not survive. A confident wrong finding costs more trust than a missed nit.
+Drop any finding that does not survive. A confident wrong finding costs more trust than a missed Low.
 
 ## 5 — Present the review
 
-Give each finding an ID and a severity, for example `[A1 — blocking]`.
+Give each finding an ID and a severity, for example `[C1 — Critical]`. Order Critical, High, Medium, Low, defects first within a level. A `C` finding never appears below an `A` finding of the same level.
 
 Two prefixes: **`A`** for shape (layer placement, capability genericity, published surface, vocabulary, decision points, arrangement) and **`C`** for a defect. A defect whose fix is a restructure stays one `C` finding with its own two-way costing, never an `A` and a `C` cross-referencing each other.
 
-Each finding gives, in order: the claim in one sentence; the `file:line` anchor; the **cause**, not the symptom; the consequence for the app consumer or a future reader.
+Each finding uses the layout in `SKILL.md`, What reaches the MR: header with ID, level, anchor and claim, then **Consequence**, **Cause**, **Fix** on their own labelled lines. Cause is the mechanism, never the symptom restated. In a posted GitLab comment the labels are dropped and the same three parts become the sentences of the comment, consequence first.
 
 ### Costing a rewrite
 

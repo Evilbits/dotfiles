@@ -55,7 +55,7 @@ The code-review questions, asked of the design:
 
 ## 5 — Triage and present
 
-Follow the primer's triage. Severity by cost to reverse applies with more force, because a proposal has shipped nothing: **blocking** means this should not be built in this shape.
+Follow the primer's triage. Reversal cost carries more weight here, because a proposal has shipped nothing: **Critical** means this should not be built in this shape.
 
 Give each finding an ID and severity. Two prefixes: **`A`** for the shape of the design, **`C`** for a claim that is wrong or a mechanism that will not work as described. A wrong load-bearing claim is a `C`, since it must be resolved whichever design wins.
 

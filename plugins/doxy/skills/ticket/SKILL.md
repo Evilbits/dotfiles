@@ -1,5 +1,5 @@
 ---
-name: doxy-ticket
+name: ticket
 description: >-
     Write, amend or check Jira tickets in the PROD project from a design brief
     or a conversation: an epic with its tickets, a single ticket, or a spike,
@@ -9,13 +9,13 @@ description: >-
     links between tickets, or to reevaluate an existing ticket or epic: whether
     it is still required or already done, whether it is written correctly, what
     input or data it is missing, or whether the work could be done differently.
-    Also use when /doxy-design has produced a brief with a Shape verdict and the
+    Also use when /doxy:design has produced a brief with a Shape verdict and the
     next step is Jira.
 ---
 
-# /doxy-ticket — from a brief to Jira, in the team's format
+# /doxy:ticket — from a brief to Jira, in the team's format
 
-Reads the brief `/doxy-design` produced, or the design still in the session, and writes what its **Shape** verdict calls for. Nothing reaches Jira until the drafts are approved.
+Reads the brief `/doxy:design` produced, or the design still in the session, and writes what its **Shape** verdict calls for. Nothing reaches Jira until the drafts are approved.
 
 Four modes. Pick from the brief's Shape when there is one, say which mode and why, and let the user override:
 
@@ -28,7 +28,7 @@ Maintenance requests on existing tickets (section 3) run in whichever mode fits.
 
 ## 0 — Ground
 
-Read the brief in full if there is one (`~/dotfiles/home/.config/claude/specs/*-design.md` for the ticket or topic). Load the colocated rules for the domain as `/doxy-design` step 0 does, so tickets use doxyme vocabulary and not the generic meaning of "app", "feature", "capability" or "session". Fetch the epic and any tickets named as dependencies, so links point at real keys.
+Read the brief in full if there is one (`~/.claude/specs/*-design.md` for the ticket or topic). Load the colocated rules for the domain as `/doxy:design` step 0 does, so tickets use doxyme vocabulary and not the generic meaning of "app", "feature", "capability" or "session". Fetch the epic and any tickets named as dependencies, so links point at real keys.
 
 Code locations in the brief's **Verified facts** go into the tickets' Context. A fact the tickets depend on that is not in the brief is verified now against the code, and said so; a ticket never asserts something unchecked.
 
@@ -92,12 +92,12 @@ The most common Jira request in the user's history: "is this ticket still releva
 
 **3. Is anything missing?** Ground truth is what an engineer with no context would need: an acceptance criterion for each failure path and each "nothing changes for X" case; a test that pins a behaviour nobody is sure of; file anchors for the current state; dependencies that exist in code but not in Depends on; a verified fact the ticket assumes without stating; an open question with an owner but no sentence. Anything the reader would have to ask the author is missing.
 
-**4. Could it be done differently?** Only when the ticket prescribes an approach. Ground truth is the architecture frame: load `~/.claude/skills/doxy-review/SKILL.md` and its `reviewing-proposals.md`, treat the ticket as the proposal, and run the load-bearing-claims check and the architecture pass. A ticket that only states an outcome has nothing to reevaluate here, and that is the correct answer.
+**4. Could it be done differently?** Only when the ticket prescribes an approach. Ground truth is the architecture frame: load `~/.claude/skills/doxy:review/SKILL.md` and its `reviewing-proposals.md`, treat the ticket as the proposal, and run the load-bearing-claims check and the architecture pass. A ticket that only states an outcome has nothing to reevaluate here, and that is the correct answer.
 
 **Output.** One verdict line per question, then the proposed edited ticket for questions 1 to 3, gated as in section 2: shown in full, copied to the clipboard, nothing written to Jira until approved.
 
-**If question 4 finds a different approach**, do not rewrite the ticket around it. State the finding and hand to `/doxy-design`, because a change of approach is a design conversation whose outcome may be a different ticket, an epic, or no ticket, and its Shape verdict returns through this skill. Rewriting an approach inside a ticket edit is how a design decision gets made without a discussion.
+**If question 4 finds a different approach**, do not rewrite the ticket around it. State the finding and hand to `/doxy:design`, because a change of approach is a design conversation whose outcome may be a different ticket, an epic, or no ticket, and its Shape verdict returns through this skill. Rewriting an approach inside a ticket edit is how a design decision gets made without a discussion.
 
 ## Hand-off
 
-Tickets exist. `/doxy-implement <key>` takes one to code. The brief stays in the spec folder and is never committed.
+Tickets exist. `/doxy:implement <key>` takes one to code. The brief stays in the spec folder and is never committed.

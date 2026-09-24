@@ -41,7 +41,18 @@ Afterwards: `prefix + I` inside tmux installs its plugins, the first `nvim` star
 
 ## Claude Code
 
-`home/.claude` holds the global instructions, the settings with their hooks, and the session tooling. Its `.gitignore` tracks only those; everything Claude writes at runtime stays out of the repo. The skills live in the company skills directory.
+`home/.claude` holds the global instructions, the settings with their hooks, and `specs`, the folder every doxy skill writes its briefs and post mortems to. Its `.gitignore` tracks only those; everything Claude writes at runtime stays out of the repo.
+
+### Workflow skills
+
+`plugins/doxy` is one plugin with five skills, one step of the development flow each: `/doxy:design` takes an idea to a brief the team can discuss, `/doxy:ticket` turns the brief into Jira tickets, `/doxy:implement` takes a ticket to a draft MR with a fresh-context review, `/doxy:review` reviews a change or a proposal from the Apps/SDK architecture frame, and `/doxy:debug` takes a bug report through Datadog, Slack and the code to a short post mortem. They trigger on natural requests too; the slash names are for invoking one on purpose.
+
+```
+/plugin marketplace add https://github.com/Evilbits/dotfiles
+/plugin install doxy@rasmus
+```
+
+Briefs and post mortems land in `~/.claude/specs`, which the linker points at `home/.config/claude/specs` here. On another machine that folder is created on first use.
 
 ### Hooks
 
