@@ -45,7 +45,7 @@ Afterwards: `prefix + I` inside tmux installs its plugins, the first `nvim` star
 
 ### Workflow skills
 
-`plugins/doxy` is one plugin with five skills, one step of the development flow each: `/doxy:design` takes an idea to a brief the team can discuss, `/doxy:ticket` turns the brief into Jira tickets, `/doxy:implement` takes a ticket to a draft MR with a fresh-context review, `/doxy:review` reviews a change or a proposal from the Apps/SDK architecture frame, and `/doxy:debug` takes a bug report through Datadog, Slack and the code to a short post mortem. They trigger on natural requests too; the slash names are for invoking one on purpose.
+`plugins/doxy` is one plugin with six skills, one step of the development flow each: `/doxy:feature` interviews a product manager or designer about a feature in product words and writes Jira tickets already checked against the code, with every point that crosses a platform boundary gated by an engineering-review spike, `/doxy:design` takes an idea to a brief the team can discuss, `/doxy:ticket` turns the brief into Jira tickets, `/doxy:implement` takes a ticket to a draft MR with a fresh-context review, `/doxy:review` reviews a change or a proposal from the Apps/SDK architecture frame, and `/doxy:debug` takes a bug report through Datadog, Slack and the code to a short post mortem. They trigger on natural requests too; the slash names are for invoking one on purpose.
 
 ```
 /plugin marketplace add https://github.com/Evilbits/dotfiles

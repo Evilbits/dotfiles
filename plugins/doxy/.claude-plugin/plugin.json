@@ -1,7 +1,7 @@
 {
   "name": "doxy",
-  "description": "Rasmus's doxyme workflow skills, one step of the flow each: /doxy:design (idea to a team brief), /doxy:ticket (brief to Jira), /doxy:implement (ticket to a draft MR), /doxy:review (Apps/SDK architecture review), /doxy:debug (bug report to a post mortem). Briefs and post mortems go to ~/.claude/specs.",
-  "version": "0.2.0",
+  "description": "Rasmus's doxyme workflow skills, one step of the flow each: /doxy:feature (a product person's idea to vetted Jira tickets), /doxy:design (idea to a team brief), /doxy:ticket (brief to Jira), /doxy:implement (ticket to a draft MR), /doxy:review (Apps/SDK architecture review), /doxy:debug (bug report to a post mortem). Briefs and post mortems go to ~/.claude/specs.",
+  "version": "0.3.0",
   "author": { "name": "Rasmus Reiler" },
   "repository": "https://github.com/Evilbits/dotfiles"
 }

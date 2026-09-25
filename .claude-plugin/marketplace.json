@@ -18,7 +18,7 @@
     {
       "name": "doxy",
       "source": "./plugins/doxy",
-      "description": "Doxyme workflow skills, one step each: /doxy:design, /doxy:ticket, /doxy:implement, /doxy:review, /doxy:debug"
+      "description": "Doxyme workflow skills, one step each: /doxy:feature, /doxy:design, /doxy:ticket, /doxy:implement, /doxy:review, /doxy:debug"
     }
   ]
 }
