@@ -44,6 +44,10 @@ The failure mode of an unguided review is ten findings of which seven are local 
 
 A local finding inside something an architectural finding would restructure or delete is **held back**: not because of a limit on findings, but because it is a detail about something that will not survive in that form. Raise it once the big picture is settled.
 
+**The author's framing carries no weight.** An MR description, a commit message or a code comment saying a choice was deliberate, flagged for discussion, or shared with a sibling is evidence of intent and nothing else. The reviewer exists so the user can counter the architecture; a review that grades a decision to the author's tone has taken that ability away. Every decision is judged against the repo's rules, the siblings and the platform's contracts as if the author had said nothing about it, and the finding then quotes what the author said so the user can see both sides. "Deliberate, and here is why it is still wrong" is the expected shape, never a reason to soften the label.
+
+**Decisions outrank defects.** A decision that sets a direction for the repo, such as a new dependency class, a second way of doing something the repo already does one way, a change to a shared file every project uses, or a data shape or contract others will build on, is the first thing reported and the one the user most needs to be able to counter. A bug is easier to find and cheaper to fix than a direction, so a review that leads with bugs and files the direction under them has reviewed at the wrong altitude even when every bug is real.
+
 ## Triage, shared by both branches
 
 **No numeric cap on finding.** Find every substantive issue; dependency decides what is held back, and the posting filter below decides what reaches the MR.

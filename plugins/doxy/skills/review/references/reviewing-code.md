@@ -6,18 +6,23 @@ Mechanics for an MR, a diff, a branch or a commit range. `SKILL.md` carries the 
 
 Diff against the MR's target branch, never master by default. A title ending `(n/N)` is a stacked MR: when the target is a feature branch, the review covers `target..source` only. If the target has already merged and the diff still shows the parent's commits, the stack is unsynced: say so and stop, since every finding would land on the wrong MR.
 
+**Split the diff by blast radius before reading it.** List every changed path outside the change's own directory: `.gitlab/`, root configs, the lockfile beyond the change's own dependencies, shared libs, docs that describe other things. Each of those is reviewed as its own change with its own goal, consequence line and severity, because it lands on every project in the repo whatever the feature does. A repo-wide change riding in a feature MR is reported on its own even when it is correct.
+
 ## 1 — Establish the change's own goal
 
 State in one or two sentences what the change sets out to achieve and what it defers. Every finding is judged against that goal; one that asks the change to solve a different problem is out of scope.
 
 **The MR description is evidence of the author's intent and nothing more; on a merged MR it is often not even that.** Merged descriptions are rewritten to describe the design as it ended up, review changes included, so they can describe code that does not exist at the revision under review. Take what the change does from the commit trail and the code, and treat the description as a claim to check. On a historical revision, read the description last or not at all, and disclose it if you did.
 
-Note what the author says is deliberate. A deliberate choice can still be wrong, and "this is deliberate, and here is why it is still wrong" is a stronger finding than one that reads as an oversight.
+Note what the author says is deliberate, then set it aside; `SKILL.md` says why the author's framing carries no weight in severity. A deliberate choice can still be wrong, and "this is deliberate, and here is why it is still wrong" is a stronger finding than one that reads as an oversight.
 
 ## 2 — Architecture pass
 
 Before reading for bugs. Answer each question for yourself and record a pass in one word; only a failed check becomes a finding. Where a question finds something a Critical or High finding would later suppress, record it inside the answer and mark it held.
 
+0. **Rules and precedent, before the platform checks.** Two mechanical steps, run on every change, that catch the decisions the user most needs to see.
+   - *Rules.* For every `.mdc` under any `.cursor/rules/` whose `globs` match a changed path, or whose `description` matches the change, read its imperative sentences against the diff and record each as pass or broken. A broken sentence is Critical by the severity table, whatever the author says about it, and a bent one is High. Read the rule's globs literally: a rule that lives under `libs/ui` still applies to `apps/extensions` if its glob says so.
+   - *Precedent.* For every dependency, styling or state system, build plugin, folder layout, config file, CI pattern, data store or protocol the change introduces, grep the siblings (`apps/extensions/*/package.json`, `apps/*/`, `.gitlab/ci/`) and record how many already use it. Zero siblings means a first-of-its-kind decision for the repo. That is an architecture finding at Critical or High on its own, because the next change will cite this one as precedent and there is no later review point; the reviewer presents the choice, the rule or convention it departs from, the measured footprint and both ways out (converge, or change the rule first in its own MR) so the user can decide. A choice one sibling already made is judged on whether that sibling is the standard or the exception the rules name.
 1. **Layer placement.** Does every piece live in the layer that owns it? Run the ownership tests in `apps/extensions/AGENTS.md`: Where data lives, Where code lives, Capability or app feature.
 2. **Capability genericity.** If a capability is added or extended, run the five tests in `apps/extensions/.cursor/rules/02-capability-rules.mdc`. **Most capabilities pass them**; `interpreter` and `transcription` are the named exceptions and not precedent. Record the verdict on each test, and if they pass, say so and move on.
 3. **App-facing surface.** Is the public surface the thinnest that supports the use case? Two things fail: an export a consumer must never call, and an export no consumer uses today, type-only exports included, since a published type is permanent once an app imports it. Challenge hardest the types that describe the library's internal storage or wire model; hiding those is the library's purpose.
@@ -88,3 +93,5 @@ When the review is settled, output where each comment goes.
 **Unattached MR comment.** Anything about the shape of the change across files. Draft in full in the reviewer's voice: first person, question-led where the answer is open, hedged where uncertain, no lists, no em dashes, no AI cadence. Pipe each draft to the clipboard.
 
 Out-of-scope findings become ticket suggestions: the epic, a title and the reasoning, so the MR stays as scoped. Never ask an MR to absorb work that belongs in its own ticket.
+
+**Review state.** The GitLab MCP posts comments and a summary note; it cannot set the reviewer state (Comment, Approve, Request changes) that GitLab's Submit review dialog sets, and a `verdict` passed to it is only text. Say so when handing over, and let the user set the state in the UI, or set it through `glab api graphql` with `mergeRequestUpdateReviewerState` when they ask.
