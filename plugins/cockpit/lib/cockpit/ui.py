@@ -11,6 +11,8 @@ from .config import cfg
 from .index import find, primary_ticket, project_of, subject_of, ticket_url, title_of, verb_of
 from .registry import user_names
 
+DIM, RESET = "\033[2m", "\033[0m"
+
 def _age(mtime):
     s = int(time.time() - mtime)
     for unit, size in (("w", 604800), ("d", 86400), ("h", 3600), ("m", 60)):
@@ -52,11 +54,12 @@ def rows(states, mtimes, live, only_snoozed=False):
         l = live.get(st["id"])
         e = snoozed.get(st["id"])
         marker = "⏰" if e and snooze.is_due(e) else "z" if e else ("●" if l and l.get("status") == "busy" else "○") if l else " "
-        # The ticket is the last column: hidden by --with-nth, still matched when typed into the filter.
+        # The ticket is the last column, dimmed: fzf matches only the text it shows, so a hidden
+        # column would be unsearchable, and typing a key must still find the session.
         out.append("\t".join([
             st["id"], marker, fit(_age(mtimes.get(st["id"], 0)), 4), fit(project_of(st), 12),
             fit(verb_of(st), 9), fit(subject_of(st, names.get(st["id"], "")), 60),
-            " ".join("!" + m for m in st["mrs"][:2]), primary_ticket(st),
+            fit(" ".join("!" + m for m in st["mrs"][:2]), 13), DIM + primary_ticket(st) + RESET,
         ]))
     return out
 
@@ -166,11 +169,11 @@ def preview(st, live):
         print(wrap("- " + p))
         print()
 
-HEADER = "   age  project      kind      subject                                                      MRs          ⏰due ●busy ○idle z snoozed   ctrl-z snoozed only  ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
+HEADER = "   age  project      kind      subject                                                      MRs           ticket      ⏰due ●busy ○idle z snoozed   ctrl-z snoozed only  ctrl-s snooze  ctrl-u unsnooze  ctrl-y copy id"
 
 def pick(lines, footer, me):
     args = [
-        "fzf", "--reverse", "--no-sort", "--delimiter", "\t", "--with-nth", "2..7", "--tabstop", "1",
+        "fzf", "--reverse", "--no-sort", "--ansi", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
         "--header", HEADER, "--header-first",
         "--preview", "'%s' --preview {1}" % me, "--preview-window", "right,50%,wrap",
         "--bind", "ctrl-y:execute-silent(printf %s {1} | pbcopy)",

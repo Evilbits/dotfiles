@@ -34,7 +34,7 @@ Without tmux, setup skips the key binding and tells you to run `cockpit` in a ta
 
 ![picker](docs/picker.png)
 
-`prefix r` in tmux opens it, or `cockpit` in any shell. Each row is one session: its state, age, repository, the kind of work, what it is about and the MRs it mentioned; a `z` marks a snoozed one, and the footer lists every snooze with its remaining time and reason. Running sessions show `●` when busy and `○` when idle. The order is due, running, snoozed, then closed by age, and typing a ticket number filters without reordering, since the ticket is a hidden column of every row.
+`prefix r` in tmux opens it, or `cockpit` in any shell. Each row is one session: its state, age, repository, the kind of work, what it is about and the MRs it mentioned; a `z` marks a snoozed one, and the footer lists every snooze with its remaining time and reason. Running sessions show `●` when busy and `○` when idle. The order is due, running, snoozed, then closed by age, and typing a ticket number filters without reordering, since the ticket sits dimmed at the end of every row.
 
 The kind of work is the skill the session started with, `Review`, `Implement`, `Design`, `Ticket` or `Epic` by default (`skill_verbs` in the config). The subject is what the session is about without identifiers: a name you gave it with `/rename`, else for a review the title of the MR it was given, else Claude's title, with a leading ticket key or commit type removed. A session started without a skill shows its title as before.
 
