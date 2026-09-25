@@ -24,10 +24,12 @@ The failure this prevents: [PROD-11354](https://doxyme.atlassian.net/browse/PROD
 
 ## 0 — Load the map before the first question
 
+**Where the code comes from.** Decide once, before anything else. If the working directory is a doxyme-core checkout (it has `apps/extensions/AGENTS.md`), read everything locally, since that is fastest. Otherwise read the doxyme-core repository through the GitLab connector: project `doxyme/code/doxyme-core`, ref `master`. There, reading a file is the repository-file tool, listing a folder is the repository-tree tool, finding a known name is the code search with scope `blobs`, and finding the code behind a described behaviour is the semantic code search. If neither works, stop and tell the person, in one sentence, to switch on the GitLab connector and start again. Never interview without the map. Never mention which source you used unless it failed.
+
 1. Every input the person gave: a design link, a Slack thread, an existing ticket, a doc. All of it, in full.
 2. **Prior work.** Search Jira for epics and tickets on the same app or area, and on the feature's own words. Keep a hit only if it built or is building the same thing this feature extends: the same app, role, seat, surface or object, so that its decisions would carry into this one. "Create a new Admin seat role" is prior work for a new Secretary seat role; "Rename Member role to User role" touches the same area and is not. When in doubt, leave it out; a missed epic costs one question later, a wrong one pollutes the ledger. The person picks in step 1 before anything is read in full. When the picked prior work is in the code, read that too: the ticket says what was decided, the code says what was built, and the code wins for what the product does today.
-3. `apps/extensions/AGENTS.md` in full: what an app is and is not, the applet table (where an app can appear), the data table, the capability tests. Then `libs/extensions/glossary.md` and `docs/guides/entitlements/concepts.md`. List the existing apps from `apps/extensions/*/manifest.json`, name and declared capabilities.
-4. For each area the ask touches outside apps (waiting room, call, account settings, plans and billing, patient side, notifications), find the code that implements what the person describes and note what exists today. Glob `**/.cursor/rules/*.mdc` and read what matches.
+3. `apps/extensions/AGENTS.md` in full: what an app is and is not, the applet table (where an app can appear), the data table, the capability tests. Then `libs/extensions/glossary.md` and `docs/guides/entitlements/concepts.md`. List the existing apps from the folders under `apps/extensions/` and read the `manifest.json` of each app the ask touches, for its name and declared capabilities.
+4. For each area the ask touches outside apps (waiting room, call, account settings, plans and billing, patient side, notifications), find the code that implements what the person describes and note what exists today. Read the rule files in the `.cursor/rules/` folder nearest that code when there is one.
 
 **Premises.** These are the boundaries; crossing one is a boundary hit (step 2). Apps: everything `AGENTS.md` states, in particular that an app lives in its iframe and never draws on or reads a host surface such as the waiting room, the patient card or the control bar, and that a capability is a mechanism for every app and never one product's or vendor's feature. Host: tenant data never mixes, so nobody reads or acts on another account's patients, users or records. This list is short on purpose; add a premise here when an engineer names one the skill missed.
 
@@ -35,7 +37,7 @@ Something the code has no concept of yet is a gap, and a gap is ordinary work. O
 
 ## 1 — Interview, in rounds
 
-Open with one request: describe the feature as you would to a colleague.
+Open with one request: describe the feature as you would to a colleague. Send it even when the opening message names the feature; skip it only when that message already says what the feature does, for whom, and where they meet it.
 
 **Prior work, on its own, before anything else.** When the search in step 0 kept candidates, send one message: "I found these tickets that look similar. Can I use any of them for context? If you know of others, paste them." Then the candidates, lettered, at most a handful, each with one line on what it is, what it decided, and why it looks like the same thing, plus "none of these". Never the raw search results. Stop and wait. Nothing is inherited until the person picks it; then read the picked tickets in full, their user stories and acceptance criteria first. When nothing cleared the bar, say so in one line and ask for any they know of, so an engineer later knows it was looked for.
 
