@@ -166,7 +166,7 @@ A spike with no comments, or comments that do not give a clear yes or no, blocks
 - Only the capabilities the manifest declares, through the toolkit, as `03-communication-patterns.mdc` describes. Shared helpers from `@doxyme/apps-common` as `05-apps-common.mdc` describes.
 - No new dependency unless nothing in the workspace does the job; each one added is listed in the merge request with the reason.
 - No file outside the app folder. No design or plan documents in the repository.
-- Tests: the generator's test setup, a component test per screen for what the user sees, a test per rule of behaviour. Everything green before a push.
+- Tests: the generator's test setup, a component test per screen for what the user sees, a test per rule of behaviour. GitLab runs them (step 9).
 - Commits atomic, each `feat(<app>): <KEY> - <what it adds>`, following `docs/guides/commit-strategy.md`.
 
 **Merge request 3** only for a distinct concern that reviews on its own: cross-participant behaviour, a second applet, the app's backend. At most three merge requests; when the work does not split cleanly, two.
@@ -186,15 +186,15 @@ Run against the full diff of each branch against its target, and fix everything 
 7. One name: folder, package name, manifest name and title, dock label, merge request titles, commit scopes.
 8. No `docs/plans/` or other documents; no `.env` with values; no files the person did not ask for.
 9. Lockfile changes only for the app's own packages. A lockfile diff touching other apps' entries means a stale `pnpm install`; redo it on a fresh `master`.
-10. `NX_DAEMON=false pnpm nx lint <project>`, `NX_DAEMON=false pnpm nx test <project>` and `NX_DAEMON=false pnpm nx build <project>` all pass.
+10. Every acceptance criterion in the debrief has a test, or the merge request says why not; the pipeline (step 9) is what runs them.
 11. Every screen in the debrief's Screens list is built, with every state the design shows; layout and copy follow the design frame.
 12. Nothing in the diff is a workaround for a boundary hit: no host change, no reading another app, no postMessage, no registry call.
 
 Report the checklist result to the person in one line per item that needed a fix.
 
-## 9 — Verify before the push
+## 9 — GitLab is the check
 
-Nothing is pushed that has not been run. `NX_DAEMON=false pnpm nx lint|test|build extensions-<app>` all green, and every acceptance criterion in the debrief matched against the tests that cover it: a criterion with no test gets one, or the merge request says why not. The person's own look at the app happens on the ephemeral environment (step 11), never on this Mac; the skill never asks them to run or open anything locally.
+Nothing is linted, tested or built on this Mac; GitLab runs all of it on every push, and reading that result is this skill's job. Tests are still written, per screen and per rule of behaviour, so the pipeline checks the requirements and not only that the code compiles. After each push (step 10), poll the merge request's pipeline until it finishes. Green: go on. Red: read the failing job's log, fix the cause on the same branch, push again, and tell the person in one line what was wrong in product words ("a test for the pass notice failed; fixed"). Never ask the person to read a pipeline, and never mark anything done while the pipeline is red. The person's own look at the app is the ephemeral link (step 11).
 
 ## 10 — Push and open the merge requests
 

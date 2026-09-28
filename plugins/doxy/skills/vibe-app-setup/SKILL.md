@@ -56,11 +56,11 @@ cd ~/doxyme-core && nvm install && nvm use && nvm alias default "$(cat .nvmrc)"
 pnpm install
 ```
 
-`pnpm install` takes several minutes the first time; say so. A `401` naming `@doxyme` means the token is not reaching the registry: check `echo $GITLAB_NPM_TOKEN` is non-empty in this shell, and that the token has `read_api`.
+`pnpm install` takes several minutes the first time; say so. A `401` naming `@doxyme` means the token is not reaching the registry: check `echo $GITLAB_NPM_TOKEN` is non-empty in this shell, and that the token has `read_api`. This install is what the generator and the lockfile need later; nothing on this Mac ever runs the app.
 
 ## 5 — The proof
 
-This step checks the machine, not an app. `NX_DAEMON=false pnpm nx build extensions-notepad` builds one production app, Notepad, and in doing so uses everything the setup put in place: the complete checkout, the pinned Node and pnpm, the registry token (the build pulls doxy.me's own packages), and the build tooling. Green means the app skill's own lint, test and build will run on the person's app. Which app is built does not matter; Notepad is small and shipped. If it fails, read the error, name the cause in plain words and fix it; never ask the person to interpret it.
+`pnpm install` finishing without an error is the proof: it means the checkout is complete, Node and pnpm are the right versions, and the registry token works, since the install pulls doxy.me's own packages. Nothing is built or tested on this Mac; the app skill leaves that to GitLab, which checks every change after it is sent. If the install fails, read the error, name the cause in plain words and fix it; never ask the person to interpret it.
 
 ## 6 — Connectors, then hand over
 
