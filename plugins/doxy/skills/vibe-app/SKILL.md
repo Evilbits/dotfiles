@@ -69,7 +69,7 @@ The first rounds are built from these axes, each checked against the map so that
 | Ask, in product words | Resolves |
 | --- | --- |
 | Is this part of an existing app or a new app? | Owner, and whether a boilerplate merge request exists |
-| For an existing app, always: should the change go behind a feature flag, so it can be switched on for some accounts first? Recommend yes for anything a provider or patient can see. | The flag; on a yes, name it `feat_prod_<epic number>_<short name>` and record it |
+| For an existing app, always: should the change go behind a feature flag, so it can be switched on for some accounts first? Recommend yes for anything a provider or patient can see. | The flag; on a yes, name it `feat_prod_<epic number>_<short name>`, or the vibe ticket's number when there is no epic, and record it |
 | Where does the provider meet this: in the call, a dialog, a full page, the waiting room, account settings, after the call, with no screen at all? | The surface, and the applet kind |
 | What does the patient, or the other people in the call, see at the same moment? | Cross-participant behaviour |
 | What should it remember after the call, and who can look at that later? | Where data lives |
