@@ -60,7 +60,7 @@ pnpm install
 
 ## 5 — The proof
 
-`NX_DAEMON=false pnpm nx build extensions-timer` builds one existing app. Green means the code, the tools and the registry access are all right; that is the same build the app skill runs on their own app before sending it. If it fails, read the error, name the cause in plain words and fix it; never ask the person to interpret it.
+This step checks the machine, not an app. `NX_DAEMON=false pnpm nx build extensions-notepad` builds one production app, Notepad, and in doing so uses everything the setup put in place: the complete checkout, the pinned Node and pnpm, the registry token (the build pulls doxy.me's own packages), and the build tooling. Green means the app skill's own lint, test and build will run on the person's app. Which app is built does not matter; Notepad is small and shipped. If it fails, read the error, name the cause in plain words and fix it; never ask the person to interpret it.
 
 ## 6 — Connectors, then hand over
 
