@@ -78,7 +78,7 @@ A spike with no comments, or comments that do not give a clear yes or no, blocks
 
 **One name.** The product name from the ticket, once, in kebab case for the folder and package, as the manifest title and dock label, in the merge request titles. If the name in the ticket differs from a name the person used, ask once before generating; renaming after generation is what produced `breath` versus Mindfulness.
 
-**Merge request 1, the boilerplate, always.** Exactly what the generator produces and its next-steps list asks for, and nothing else:
+**Merge request 1, the boilerplate, always for a new app.** Exactly what the generator produces and its next-steps list asks for, and nothing else:
 
 - `NX_DAEMON=false pnpm nx generate @doxyme/extensions:extension <name> --port <free port from docs/guides/ports.md>`, then `pnpm install`.
 - The ports row.
@@ -87,7 +87,7 @@ A spike with no comments, or comments that do not give a clear yes or no, blocks
 - The manifest's capabilities trimmed to the applet kind the interview settled, from the applet table; the generator assumes a call panel for provider and patient.
 - One commit: `feat(<app>): <KEY> - create boilerplate app`. The precedent is the `thankful-terrarium` boilerplate commit: about a hundred files, reviewable in minutes.
 
-**Merge request 2, the app.** The behaviour and the screens, on top of merge request 1's branch. Rules:
+**Merge request 2, the app.** The behaviour and the screens, on top of merge request 1's branch. When the change extends an existing app there is no boilerplate, and the stack is the app's backend module first when the app side depends on its published shape, then the app. Rules:
 
 - Screens from the design frames, built from `@doxyme/ui-foundation` primitives with Emotion object styles and theme tokens. When the design shows something the foundation has no primitive for, compose it from primitives and say so in the merge request; never hand-roll a primitive, never add a component or styling library.
 - Icons one per file from `@doxyme/icons/<name>`.
