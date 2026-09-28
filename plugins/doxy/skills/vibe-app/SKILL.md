@@ -23,7 +23,7 @@ The failure this prevents: [MR 16420](https://gitlab.com/doxyme/code/doxyme-core
 
 **Facts are yours to find, decisions are theirs to make.** Anything the code, the design or the ticket can answer is looked up, never asked. What the app should do is put to the person and waited for.
 
-**Never the platform.** This skill never writes in the host (`apps/frontend`, `apps/api-core`), the bridge, a capability, the SDK (`libs/extensions/*`), or another app, whatever the reason. A need for that is a boundary hit (step 2) and goes to engineering as a spike. The shared places an app is expected to touch are not boundaries: the app's own module under `apps/api-extensions/src/<module>/` and its entries in that backend's configuration, the label sources under `libs/locale/`, the generated app types, the three CI registration files and the row in `docs/guides/ports.md`. The test is the precedent: whatever the last change of the same kind touched (the previous note type, the previous app), this one may touch too, and the self-review lists every file outside the app folder with the precedent that justifies it. Only a file with no precedent of that kind is a question for step 2.
+**Never the platform.** This skill writes in two places only: the app's own frontend under `apps/extensions/<app>/` and the app's own backend module under `apps/api-extensions/`. The core frontend (`apps/frontend`), the core API (`apps/api-core`), the bridge, a capability, the SDK (`libs/extensions/*`) and every other app are never touched, whatever the reason; a need for that is a boundary hit (step 2) and goes to engineering as a spike. Translation files under `libs/locale/` are always allowed. Also allowed: the app's entries in the backend's configuration, generated app types, the three CI registration files and the row in `docs/guides/ports.md`, and any file the precedent for the same kind of change touched, each listed in the self-review with its justification.
 
 ## 0 — Load the map before the first question
 
@@ -45,7 +45,7 @@ Something the code has no concept of yet is a gap, and a gap is ordinary work in
 
 **A ticket exists.** Read it in full; its user stories are settled and are not re-asked.
 
-**Then the build questions**, in the feature skill's own format, rounds of at most four, numbered on from where the interview stopped, each with a recommended answer. Only what the ticket left open and a build needs: which applet kind, in the applet table's words (a panel in the call, a dialog, a full page, after the call, the dashboard, settings); what each participant sees and does at the same moment; what the app remembers and for how long; what happens when it cannot do its job. Any answer is checked against the map like every other, and a premise crossed is a boundary hit as in the feature skill. A question whose options differ only in how it is built is not asked.
+**Then the build questions**, in the feature skill's own format, rounds of at most four, numbered on from where the interview stopped, each with a recommended answer. When the change is to an existing app, the first build question is always whether the change goes behind a feature flag, with the recommendation being yes for anything a provider or patient can see; on a yes, name the flag `feat_prod_<ticket number>_<short name>` and record it as a decision. Then only what the ticket left open and a build needs: which applet kind, in the applet table's words (a panel in the call, a dialog, a full page, after the call, the dashboard, settings); what each participant sees and does at the same moment; what the app remembers and for how long; what happens when it cannot do its job. Any answer is checked against the map like every other, and a premise crossed is a boundary hit as in the feature skill. A question whose options differ only in how it is built is not asked.
 
 **The design**, asked once, at the start of the build questions. A Figma link is read through the Figma connector (design context and a screenshot per screen); otherwise images or an HTML export. The design is the source for layout, copy and states. What the design does not show is asked, never invented. When there is no design and the app has a screen, say that the app will use the design system's defaults and ask the person to confirm that before building; never build a screen from imagination without saying so.
 
@@ -58,11 +58,13 @@ After the debrief is agreed, list every `assumed` decision from the interview in
 - **Find another solution.** Reopen the interview on that branch only, with the in-bounds option as the recommendation, then the debrief again in full. The item leaves the list.
 - **Ask engineering.** Draft a spike as `/doxy:feature` does: Jira type Technical Spike, title `[Engineering review] <the assumption in one line>`, priority Critical, no assignee, under the ticket's epic, blocking the ticket. Body: what is assumed, the boundary it crosses, why the experience needs it, the option rejected, the yes-or-no question, and what changes on a no. Show the drafts, ask which team, create on approval.
 
-When the list is empty, go to step 4. Otherwise stop with one line: the build starts when every spike below has an answer from a developer, and the keys to share with the team.
+**The feature flag is a blocker too.** When the build questions decided on a flag, the list carries one more item, in the same shape: a ticket for engineering to create the flag, Jira type Story, title `[Feature flag] Create <flag name>`, priority Critical, no assignee, under the ticket's epic, blocking the ticket, body: the flag name, what it gates in product words, and that it must exist in every environment including production before the build starts. It is cleared when the ticket is Done, never by a comment.
+
+When the list is empty, go to step 4. Otherwise stop with one line: the build starts when every spike below has an answer from a developer and every flag ticket is done, and the keys to share with the team.
 
 ## 3 — Resuming after engineering answered
 
-The person returns with the ticket key. Fetch every spike under it and read all comments on each one; the comments are the answer. Quote them back in product words before acting. Three outcomes per spike:
+The person returns with the ticket key. Fetch every flag ticket under it first: one not Done still blocks, and the skill says so and stops. Then fetch every spike and read all comments on each one; the comments are the answer. Quote them back in product words before acting. Three outcomes per spike:
 
 - **Yes, with what exists today.** The comments name the mechanism. Record it as the decision, cite the spike in the merge request, and build with it.
 - **Yes, after host work.** The comments name a ticket for that work. The spike stays a blocker until that ticket is done. Say so and stop.
@@ -87,7 +89,7 @@ A spike with no comments, or comments that do not give a clear yes or no, blocks
 - The manifest's capabilities trimmed to the applet kind the interview settled, from the applet table; the generator assumes a call panel for provider and patient.
 - One commit: `feat(<app>): <KEY> - create boilerplate app`. The precedent is the `thankful-terrarium` boilerplate commit: about a hundred files, reviewable in minutes.
 
-**Merge request 2, the app.** The behaviour and the screens, on top of merge request 1's branch. When the change extends an existing app there is no boilerplate, and the stack is the app's backend module first when the app side depends on its published shape, then the app. Rules:
+**Merge request 2, the app.** The behaviour and the screens, on top of merge request 1's branch. When the change extends an existing app there is no boilerplate. When the change touches the app's backend module at all, that backend change is always the first merge request of the stack and holds everything the app's frontend needs from it, since engineers may reject the backend change and that changes how the frontend is built; the frontend merge request comes on top of it. Rules:
 
 - Screens from the design frames, built from `@doxyme/ui-foundation` primitives with Emotion object styles and theme tokens. When the design shows something the foundation has no primitive for, compose it from primitives and say so in the merge request; never hand-roll a primitive, never add a component or styling library.
 - Icons one per file from `@doxyme/icons/<name>`.
