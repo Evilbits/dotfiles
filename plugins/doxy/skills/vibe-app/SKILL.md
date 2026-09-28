@@ -39,15 +39,17 @@ Read, locally, in the checkout (this skill needs one; if the working directory i
 
 Something the code has no concept of yet is a gap, and a gap is ordinary work inside the app. Only a premise crossed is a boundary hit.
 
-## 1 — Inputs and interview
+## 1 — The ticket, the interview, the design
 
-**The ticket.** When a `/doxy:feature` ticket exists, read it in full; its user stories are settled and are not re-asked. When none exists, run `/doxy:feature` first (read `${CLAUDE_PLUGIN_ROOT}/skills/feature/SKILL.md` and follow it to the end, including creating the tickets in Jira). The ticket must exist before any code, because the review spikes hang under it, the branches carry its key, and the merge requests link to it.
+**No ticket yet: run `/doxy:feature`, unchanged.** Read `${CLAUDE_PLUGIN_ROOT}/skills/feature/SKILL.md` and follow it word for word from its opening request through the prior-work pick, the restatement, the rounds, the boundary hits, the debrief loop, the ticket drafts and their creation in Jira. Nothing from this skill is added to or removed from that interview, and no question about the build is asked during it. The ticket must exist before any code, because the review spikes hang under it, the branches carry its key and the merge requests link to it.
 
-**The design.** Ask for it once, in the opening message. A Figma link is read through the Figma connector (design context and a screenshot per screen); otherwise images or an HTML export. The design is the source for layout, copy and states. What the design does not show is asked, never invented. When there is no design and the app has a screen, say that the app will use the design system's defaults and ask the person to confirm that before building; never build a screen from imagination without saying so.
+**A ticket exists.** Read it in full; its user stories are settled and are not re-asked.
 
-**The interview** follows `/doxy:feature` steps 1 to 3 exactly: prior work on its own, restatement, rounds of at most four questions numbered continuously with a recommended answer, boundary hits as a choice, debrief until agreed. Only the questions a build still needs are asked, the ones the ticket and the design left open: which applet kind, in the applet table's words (a panel in the call, a dialog, a full page, after the call, the dashboard, settings); what each participant sees and does at the same moment; what the app remembers and for how long; what happens when it cannot do its job; what is not part of this. A question whose options differ only in how it is built is not asked.
+**Then the build questions**, in the feature skill's own format, rounds of at most four, numbered on from where the interview stopped, each with a recommended answer. Only what the ticket left open and a build needs: which applet kind, in the applet table's words (a panel in the call, a dialog, a full page, after the call, the dashboard, settings); what each participant sees and does at the same moment; what the app remembers and for how long; what happens when it cannot do its job. Any answer is checked against the map like every other, and a premise crossed is a boundary hit as in the feature skill. A question whose options differ only in how it is built is not asked.
 
-The debrief for this skill adds one section, **Screens**, one line per screen naming the design frame it comes from.
+**The design**, asked once, at the start of the build questions. A Figma link is read through the Figma connector (design context and a screenshot per screen); otherwise images or an HTML export. The design is the source for layout, copy and states. What the design does not show is asked, never invented. When there is no design and the app has a screen, say that the app will use the design system's defaults and ask the person to confirm that before building; never build a screen from imagination without saying so.
+
+The build questions end with a short debrief addendum: the **Screens** list, one line per screen naming the design frame it comes from, and any decision the build questions added, in the same user-story form. The person confirms it before step 2.
 
 ## 2 — Blockers, before any code
 
