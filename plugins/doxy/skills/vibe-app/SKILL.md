@@ -187,14 +187,14 @@ Run against the full diff of each branch against its target, and fix everything 
 8. No `docs/plans/` or other documents; no `.env` with values; no files the person did not ask for.
 9. Lockfile changes only for the app's own packages. A lockfile diff touching other apps' entries means a stale `pnpm install`; redo it on a fresh `master`.
 10. `NX_DAEMON=false pnpm nx lint <project>`, `NX_DAEMON=false pnpm nx test <project>` and `NX_DAEMON=false pnpm nx build <project>` all pass.
-11. Every screen matches its design frame in layout and copy; every state the design shows exists.
+11. Every screen in the debrief's Screens list is built, with every state the design shows; layout and copy follow the design frame.
 12. Nothing in the diff is a workaround for a boundary hit: no host change, no reading another app, no postMessage, no registry call.
 
 Report the checklist result to the person in one line per item that needed a fix.
 
-## 9 — Verify against staging
+## 9 — Verify before the push
 
-Run the app from this Mac against the deployed staging environment: `NX_DAEMON=false pnpm nx serve-sideload extensions-<app>` serves the app locally and opens the staging dashboard with it sideloaded (in the background, since it keeps running). The person signs in there with their staging account. Walk every screen from the debrief's Screens section, as provider and as patient when both have a view (the patient joins the same room in a second browser window, signed out), and take a screenshot of each next to its design frame. Anything that differs from the design or the debrief is fixed before pushing. The screenshots go in the merge requests. Stop the serve when done.
+Nothing is pushed that has not been run. `NX_DAEMON=false pnpm nx lint|test|build extensions-<app>` all green, and every acceptance criterion in the debrief matched against the tests that cover it: a criterion with no test gets one, or the merge request says why not. The person's own look at the app happens on the ephemeral environment (step 11), never on this Mac; the skill never asks them to run or open anything locally.
 
 ## 10 — Push and open the merge requests
 
@@ -202,7 +202,7 @@ Push each branch with `git push -u origin <branch>`. Open one draft merge reques
 
 The description follows the repo template, every section kept. "Description of change" says what was built and why in product words, links the ticket, links the other merge requests in the stack and says which order to merge, cites every spike the build rests on with the developer's answer, and lists what the design showed that could not be built as drawn and how it was built instead. "How to test" is the staging walk from step 9. "Screenshots" carries the step 9 screenshots. Then two sections the template does not have: **Dependencies added**, with reasons, or "None"; and **Engineer steps that remain**, from step 7.
 
-Report the merge request links. The person marks them ready once the screenshots look right to them, and shares the links with the Apps team.
+Report the merge request links. The person marks them ready once they have seen the app on the ephemeral environment (step 11), and shares the links with the Apps team.
 
 **Follow-up tickets for engineers**, created now, from a fixed template, one Story each, priority Medium, no assignee, under the epic when there is one and otherwise linked "relates to" the vibe ticket, each saying which merge request it follows:
 

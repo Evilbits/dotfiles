@@ -2,8 +2,8 @@
 name: vibe-app-setup
 description: >-
     Set up a Mac so someone outside engineering can build a doxy.me app with
-    Claude: the code, the tools, the GitLab access and a way to run an app
-    against staging, with the person never typing a command. Use when someone
+    Claude: the code, the tools and the GitLab access, with the person never
+    typing a command. Use when someone
     types /doxy:vibe-app-setup, says they want to get set up to vibe code an
     app, or when /doxy:vibe-app finds no doxyme-core checkout on the machine.
 ---
@@ -12,14 +12,13 @@ description: >-
 
 The person has never used a terminal and does not know what any of these tools are. They are in the Claude Desktop app's Code tab, in a local session started in any folder (their home folder is fine). You run every command; they only do things in a browser and paste what they are asked for. Say what each step is for in one plain sentence before doing it, never ask them to type anything, and never explain a tool beyond what it does for them. Check before installing: nothing is assumed present, and nothing present is installed twice.
 
-What the setup gives them, in their words: a copy of doxy.me's code on this Mac, the programs that build it, permission to read and change that code, and a way to see an app running in doxy.me's test environment. No local doxy.me is run; apps are tried out against staging.
+What the setup gives them, in their words: a copy of doxy.me's code on this Mac, the programs that build it, and permission to read and change that code. No doxy.me runs on this Mac; when they build an app later, the app skill sends the change to GitLab and gives them a link to a test environment where they see it running.
 
 ## 1 — What only they can do, asked first
 
-Two things need someone else at doxy.me, so ask about both before touching the machine and stop until they are there:
+One thing needs someone else at doxy.me, so ask about it before touching the machine and stop until it is there:
 
 - **A GitLab account in the doxyme group** with access to the code. Ask: "Can you sign in at gitlab.com and open this page: https://gitlab.com/doxyme/code/doxyme-core ?" If they cannot sign in or the page says 404, an admin at doxy.me must add them; nothing else can start. Note their GitLab username for step 3.
-- **A doxy.me test account on staging**, to see apps running: https://doxy-staging2.me. They can sign up there themselves like any provider; ask them to do it now and keep the login.
 
 Also needed, checked at the end: the GitLab and Atlassian connectors switched on in their claude.ai account (Settings → Connectors), since the app skill reads Jira and opens merge requests through them.
 
@@ -59,12 +58,9 @@ pnpm install
 
 `pnpm install` takes several minutes the first time; say so. A `401` naming `@doxyme` means the token is not reaching the registry: check `echo $GITLAB_NPM_TOKEN` is non-empty in this shell, and that the token has `read_api`.
 
-## 5 — The proof, both halves
+## 5 — The proof
 
-1. **It builds.** `NX_DAEMON=false pnpm nx build extensions-timer`. Green means the tools are right.
-2. **An app runs in staging.** `NX_DAEMON=false pnpm nx serve-sideload extensions-timer` starts the Timer app on this Mac and opens the staging dashboard with it loaded in. Tell the person: sign in there with the staging account from step 1, open the Apps menu, and confirm Timer is listed. Then stop the command. This is exactly how they will see their own app later.
-
-If either fails, read the error, name the cause in plain words and fix it; never ask the person to interpret it.
+`NX_DAEMON=false pnpm nx build extensions-timer` builds one existing app. Green means the code, the tools and the registry access are all right; that is the same build the app skill runs on their own app before sending it. If it fails, read the error, name the cause in plain words and fix it; never ask the person to interpret it.
 
 ## 6 — Connectors, then hand over
 
