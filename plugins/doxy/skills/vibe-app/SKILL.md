@@ -107,28 +107,30 @@ Before any ticket, send the debrief as one message:
 
 Then ask: is this the feature, and is anything missing or wrong? The person may read it and ideate further; that is the point of the step. New ideas or changes reopen the interview: rounds on the new branch only, through the boundary check like anything else, then the debrief again in full. Only when the person says the debrief is right do tickets get written. The debrief is the source the tickets and the build are written from.
 
-## 4 — The tickets
+## 4 — The ticket
 
-The ticket must exist before any code: the review spikes and the flag ticket hang under it, the branches carry its key and the merge requests link to it. When a ticket came in as input, it is the ticket; otherwise one is written from the debrief.
+The ticket must exist before any code: the review spikes and the flag ticket hang off it, the branches carry its key and the merge requests link to it. When a ticket came in as input, it is the ticket; otherwise one is written from the debrief.
 
-"Ticket" means an epic with tickets under it, or one ticket. Epic when the debrief has more than one user story that can ship on its own, or more than one owner; otherwise one ticket. The shape follows the epics the product team writes today:
+**One ticket, for the person building it.** Whoever is vibe coding does not benefit from a set of implementation tickets, so the vibe work is always one Story, assigned to the person themselves, priority Medium. Its shape:
 
-**Epic.** Title `<Area> | <what it adds>`. Then: the one-paragraph overview from the debrief; **Why** (one or two sentences on the need); **Scope** as bullets; **User Stories**, every story from the debrief in full with its acceptance criteria under it; **Out of scope**; **Open questions** with owners; **Dependencies** when there are any. When assumed decisions exist, a section **Needs an engineering decision first** goes at the top, one line per item naming the user story and its spike key, closing with: implementation does not start until each item here is approved or disproved by an engineer.
+- Title `<Area> | <what it adds>`.
+- The one-paragraph overview from the debrief; **Why** (one or two sentences on the need); **User Stories**, every story from the debrief in full with its acceptance criteria under it; **Screens**; **Feature flag**, when one was decided, with its name; **Out of scope**; **Open questions** with owners. When assumed decisions exist, a section **Needs an engineering decision first** goes at the top, one line per item naming the user story and its spike key, closing with: implementation does not start until each item here is approved or disproved by an engineer, and the feature flag exists.
+- **Context**: what the product does there today, in product words, with the design and input links, and **Checked against the code**: the facts the criteria rely on, in product words, dated.
 
-**Story ticket.** One user story from the debrief, or a few that only ship together: the story as the first line, then **Context** (what the product does there today, in product words, with the design and input links), **Acceptance criteria** from the debrief, **Out of scope**, **Open questions**, and **Checked against the code** (the facts the criteria rely on, in product words, dated). A story resting on an assumed decision carries **Needs an engineering decision first** at the top, as the epic does.
+**What the ticket carries, and what it never carries.** Product requirements and the context needed to start: what the product does there today, what it should do after, for whom, and what must not change. Never the approach: no file paths, no component or service names, no "edit X to do Y", no data model. No decision ids, no ledger, no sources from the interview. A reader who was not in the session must be able to follow every line.
 
-**What a ticket carries, and what it never carries.** A ticket carries product requirements and the context an engineer needs to start: what the product does there today, what it should do after, for whom, and what must not change. It never carries the approach: no file paths, no component or service names, no "edit X to do Y", no data model. No decision ids, no ledger, no sources from the interview. A reader who was not in the session must be able to follow every line.
+**Engineer tickets around it** are of three kinds and no other: engineering-review spikes (step 5), the feature flag ticket (step 5), and follow-up work (step 10). None of them is assigned. They hang under the epic the person names; when there is no epic, they link to the vibe ticket with "blocks" or "relates to" and nothing else.
 
-Show every draft in full. Ask which team the tickets belong to. Nothing is created until the person approves the set. On approval, create in the PROD project through the Atlassian MCP: read `getContentFormatGuide` first; types Epic and Story; priority Medium; set the team, never an assignee; set the epic as parent. Report the keys as links.
+Show the draft in full. Ask which team it belongs to and which epic, if any, it and its engineer tickets go under. Nothing is created until the person approves. On approval, create in the PROD project through the Atlassian MCP: read `getContentFormatGuide` first; type Story; priority Medium; set the team; assign the vibe ticket to the person (their Atlassian account, looked up, never guessed); set the epic as parent when there is one. Report the key as a link.
 
 ## 5 — Blockers, before any code
 
 After the debrief is agreed, list every `assumed` decision from the interview in one message, each with the boundary it crosses and the in-bounds option that was rejected. No merge request is opened while this list has an open item. For each item the person chooses:
 
 - **Find another solution.** Reopen the interview on that branch only, with the in-bounds option as the recommendation, then the debrief again in full. The item leaves the list.
-- **Ask engineering.** Draft a spike: Jira type Technical Spike, title `[Engineering review] <the assumption in one line>`, priority Critical, no assignee, under the ticket's epic, blocking the ticket. Body: what is assumed, the boundary it crosses, why the experience needs it, the option rejected, the yes-or-no question, and what changes on a no. Show the drafts, ask which team, create on approval.
+- **Ask engineering.** Draft a spike: Jira type Technical Spike, title `[Engineering review] <the assumption in one line>`, priority Critical, no assignee, under the epic the person named, or linked to the vibe ticket, blocking it. Body: what is assumed, the boundary it crosses, why the experience needs it, the option rejected, the yes-or-no question, and what changes on a no. Show the drafts, ask which team, create on approval.
 
-**The feature flag is a blocker too.** When the interview decided on a flag, the list carries one more item, in the same shape: a ticket for engineering to create the flag, Jira type Story, title `[Feature flag] Create <flag name>`, priority Critical, no assignee, under the ticket's epic, blocking the ticket, body: the flag name, what it gates in product words, and that it must exist in every environment including production before the build starts. It is cleared when the ticket is Done, never by a comment.
+**The feature flag is a blocker too.** When the interview decided on a flag, the list carries one more item, in the same shape: a ticket for engineering to create the flag, Jira type Story, title `[Feature flag] Create <flag name>`, priority Critical, no assignee, under the epic the person named, or linked to the vibe ticket, blocking it, body: the flag name, what it gates in product words, and that it must exist in every environment including production before the build starts. It is cleared when the ticket is Done, never by a comment.
 
 When the list is empty, go to step 7. Otherwise stop with one line: the build starts when every spike below has an answer from a developer and every flag ticket is done, and the keys to share with the team.
 
@@ -204,6 +206,14 @@ The description follows the repo template, every section kept. "Description of c
 
 Report the merge request links. The person marks them ready once the screenshots look right to them, and shares the links with the Apps team.
 
+**Follow-up tickets for engineers**, created now, from a fixed template, one Story each, priority Medium, no assignee, under the same epic as the vibe ticket or linked "relates to" it, each saying which merge request it follows:
+
+- `[Follow-up] Re-register the <app> manifest` when the manifest changed: the app store copy, icon and card were written in the merge request from the ticket, so this is the registry step only. When the copy could not be written (no wording or no artwork), the ticket says what is still missing.
+- `[Follow-up] Tracking for <feature>`: the events the app should record, in product words, taken from the user stories; the person is not asked about tracking.
+- `[Follow-up] Clean up after <feature> rollout`: remove the feature flag once it is on for everyone, and anything the merge request descriptions marked as temporary.
+
+Show the drafts, create on approval, report the keys as links.
+
 ## 11 — A link the person can open
 
 The top merge request of the stack carries the `deploy-full-ephemeral-env` label from the moment it is created, since the label must be present before the first pipeline runs. CI then deploys a whole doxy.me for that merge request, with the app registered in that environment's app store, and the bot comment carries the sign-up and sign-in links. To see the app there, the person's account needs the `Apps Beta Access Full` plan attached in the ephemeral Frontegg workspace, which an engineer does; say so in the same message as the link.
@@ -216,4 +226,4 @@ When engineers have commented, the person returns with a merge request link. Rea
 
 ## Hand-off
 
-The merge requests are the output. Engineers review and merge them. This skill writes the ticket, the spikes and the flag ticket, never platform code, and never marks a merge request ready.
+The merge requests are the output. Engineers review and merge them. This skill writes one vibe ticket for the person, the spikes, the flag ticket and the follow-up tickets, never platform code, and never marks a merge request ready.
