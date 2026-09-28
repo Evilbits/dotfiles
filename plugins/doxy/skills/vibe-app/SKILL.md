@@ -23,7 +23,7 @@ The failure this prevents: [MR 16420](https://gitlab.com/doxyme/code/doxyme-core
 
 **Facts are yours to find, decisions are theirs to make.** Anything the code, the design or the ticket can answer is looked up, never asked. What the app should do is put to the person and waited for.
 
-**Never outside the app.** Everything this skill writes lives under `apps/extensions/<app>/`, plus that app's backend under `apps/api-extensions/<app>/` when it has one, plus the three files the generator's next-steps list names for CI registration and the one row in `docs/guides/ports.md`. Nothing in the host, the bridge, a capability, the SDK, another app, or anywhere else, whatever the reason. A need for that is a boundary hit (step 2) and goes to engineering as a spike.
+**Never the platform.** This skill never writes in the host (`apps/frontend`, `apps/api-core`), the bridge, a capability, the SDK (`libs/extensions/*`), or another app, whatever the reason. A need for that is a boundary hit (step 2) and goes to engineering as a spike. The shared places an app is expected to touch are not boundaries: the app's own module under `apps/api-extensions/src/<module>/` and its entries in that backend's configuration, the label sources under `libs/locale/`, the generated app types, the three CI registration files and the row in `docs/guides/ports.md`. The test is the precedent: whatever the last change of the same kind touched (the previous note type, the previous app), this one may touch too, and the self-review lists every file outside the app folder with the precedent that justifies it. Only a file with no precedent of that kind is a question for step 2.
 
 ## 0 — Load the map before the first question
 
@@ -105,7 +105,7 @@ A spike with no comments, or comments that do not give a clear yes or no, blocks
 
 Run against the full diff of each branch against its target, and fix everything found before pushing. Every item is one of the comments on [MR 16420](https://gitlab.com/doxyme/code/doxyme-core/-/merge_requests/16420) or a rule from step 0:
 
-1. No file outside `apps/extensions/<app>/`, `apps/api-extensions/<app>/`, the three CI registration files, `docs/guides/ports.md` and `pnpm-lock.yaml`. Under `.gitlab/`, only the app's own registration lines.
+1. Every file outside `apps/extensions/<app>/` is listed with its justification: the app's `api-extensions` module and config entries, `libs/locale` sources, generated types, the three CI registration files, `docs/guides/ports.md`, `pnpm-lock.yaml`, or a file the precedent for the same kind of change also touched. A file with none of those is removed, or goes to step 2 if the feature needs it. Never a host, bridge, capability, SDK or other-app file. Under `.gitlab/`, only the app's own registration lines.
 2. `package.json` adds no styling, component, icon or class-name library: no tailwind, postcss, shadcn, radix, cva, clsx, tailwind-merge, lucide, styled-components, or anything of that kind, and no config file for one (`components.json`, `tailwind.config.*`, `postcss.config.*`). Every added dependency is named in the merge request with its reason.
 3. No hex or rgb colour literal in any non-test `.tsx` or `.ts`, data files included; colours come from the theme. A palette the design defines, such as gradient stops per pattern, is declared once through theme tokens, never as literals in data.
 4. Every icon import is `@doxyme/icons/<name>`; none from `@doxyme/icons` itself.
@@ -132,7 +132,13 @@ The description follows the repo template, every section kept. "Description of c
 
 Report the merge request links. The person marks them ready once the screenshots look right to them, and shares the links with the Apps team.
 
-## 8 — After review
+## 8 — A link the person can open
+
+The top merge request of the stack carries the `deploy-full-ephemeral-env` label from the moment it is created, since the label must be present before the first pipeline runs. CI then deploys a whole doxy.me for that merge request, with the app registered in that environment's app store, and the bot comment carries the sign-up and sign-in links. To see the app there, the person's account needs the `Apps Beta Access Full` plan attached in the ephemeral Frontegg workspace, which an engineer does; say so in the same message as the link.
+
+After the push, poll the merge request's notes until `merge-request-commenter(bot)` has posted the deployment comment, checking every few minutes for up to an hour. Send that comment to the person verbatim, as the last message. If nothing arrives in an hour, say so, give the merge request link, and stop; never guess the URL. This is documented in `docs/guides/ephemeral-environments.md` and `apps/extensions/docs/04_deploy_web_apps.md`.
+
+## 9 — After review
 
 When engineers have commented, the person returns with a merge request link. Read every discussion. A finding that stays inside the app and the rules is applied as a further commit on that branch, and the thread gets a one-line answer saying what changed. A finding that says an approach is wrong is applied the way the engineer says, never argued with. A finding that reopens a product decision goes back to the person as an interview question, not to the code. A finding that asks for something outside the app is a boundary hit and goes to step 2.
 
