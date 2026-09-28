@@ -27,7 +27,7 @@ The failure this prevents: [MR 16420](https://gitlab.com/doxyme/code/doxyme-core
 
 ## 0 — Load the map before the first question
 
-Read, locally, in the checkout. If the working directory is not a doxyme-core checkout (no `apps/extensions/AGENTS.md`), go to **Set up** below first and come back here in the workstream it made.
+Read, locally, in the checkout. If the working directory is not a doxyme-core checkout (no `apps/extensions/AGENTS.md`), stop with one message: this skill needs the code on this Mac; run `/doxy:vibe-app-setup` first, then start a new session in the folder it names and type this command again.
 
 1. Every input the person gave: the epic and any ticket under it, the design link or files, a Slack thread, a doc. All of it, in full. An epic's or ticket's user stories are settled and are not re-asked.
 2. **Prior work.** Search Jira for epics and tickets on the same app or area, and on the feature's own words. Keep a hit only if it built or is building the same thing this feature extends: the same app, screen, note type or object, so that its decisions would carry into this one. When in doubt, leave it out. The person picks in step 1 before anything is read in full. When the picked prior work is in the code, read that too: the ticket says what was decided, the code says what was built, and the code wins for what the product does today.
@@ -39,34 +39,6 @@ Read, locally, in the checkout. If the working directory is not a doxyme-core ch
 **Premises.** Crossing one is a boundary hit (step 2). Product premises: an app lives in its iframe and never draws on or reads a host surface (waiting room, patient card, control bar); an app never talks to another app; a capability is a mechanism for every app, never one product's feature; tenant data never mixes. Build premises, from the rules above: an app is styled with `@doxyme/ui-foundation` primitives, Emotion object styles and theme tokens, and nothing else; icons come from `@doxyme/icons/<name>` one file each; the generator's Vite config, including the fonts plugin, stays as generated; an app has one name used everywhere.
 
 Something the code has no concept of yet is a gap, and a gap is ordinary work inside the app. Only a premise crossed is a boundary hit.
-
-## Set up — a machine with the code, when there is none
-
-The person may have nothing: no code, no tools, no accounts. Everything here runs in the Claude Desktop app's Code tab in a local session, started in any folder (their home folder is fine), with the usual permission prompts. Never assume any of it is there; check, and do what the machine can do itself. The tool is blitz, doxy.me's own: it mirrors doxyme-core, installs the right Node and the dependencies, and runs a whole doxy.me on the machine. Ask nothing the machine can answer.
-
-**Two things only the person can do**, and both need someone else at doxy.me, so say so up front in product words and wait if they are missing:
-
-- A GitLab account in the doxyme group with access to `doxyme/code/doxyme-core`. Check: `ssh -T git@gitlab.com` answers `Welcome to GitLab, @<name>`. No account or no access: an admin adds them first; nothing else can start. `Permission denied (publickey)`: make a key (`ssh-keygen -t ed25519`) and have them add its public part at gitlab.com/-/user_settings/ssh_keys.
-- A GitLab personal access token with `read_api` (gitlab.com/-/user_settings/personal_access_tokens?name=doxyme-npm&scopes=read_api), which the person creates in the browser and pastes once. Write it into `~/.npmrc` as `@doxyme:registry=https://gitlab.com/api/v4/packages/npm/`, `//gitlab.com/api/v4/packages/npm/:_authToken=<token>` and `//gitlab.com/api/v4/projects/:_authToken=<token>`, mode 600, and never print it back.
-
-**The tools**, checked then installed, each with the command that installs it: the command line tools (`git --version`; `xcode-select --install`), Homebrew (`brew --version`; the install line at brew.sh), nvm (`ls ~/.nvm/nvm.sh` or `brew --prefix nvm`; `brew install nvm` plus the two profile lines it prints, and a new shell), bun (`bun --version`; `curl -fsSL https://bun.sh/install | bash`). Blitz runs on an Apple Silicon Mac; anything else is untested and the person is told so.
-
-**The order**, each command's output read before the next:
-
-```
-bun install -g @doxyme/blitz
-blitz setup --json            # downloads what it needs, installs core's Node, ends with a doctor report; relay its "left" lines verbatim
-blitz new <name>              # a workstream under ~/doxyme/workstreams/<name>: doxyme-core mirrored and checked out on a branch off master, dependencies installed
-blitz doctor --json           # every row ok, apart from "agent credentials" until the secrets are in
-```
-
-**The secrets**, so the stack can run: the person will not have AWS access, so a teammate who has blitz runs `blitz secrets export` and sends the file; `blitz secrets import <file>` here, then delete the file. If they paste it into the conversation instead, write it verbatim to `~/blitz-secrets.env` with mode 600, import, delete, and never read it back. Never invent or edit a value. `blitz secrets status --json` says what is in.
-
-**The proof**: `blitz <name> up`, then `blitz <name> status --json` until `ready: true`, and the person opens the URL it prints and signs in. Then `blitz <name> down`. If any step fails, the failing row's `detail` or `left` names the fix; relay it, never guess.
-
-**Then the session moves.** Tell the person, in one message: quit this session, start a new local session in the Code tab with the folder `~/doxyme/workstreams/<name>/core`, and type the skill's command again. That folder is the checkout every later step reads and writes, and the stack in step 9 is this workstream.
-
-A doxy.me cloud box is the alternative when the person should not set up a machine at all: it comes with the code and the secrets already in place. Whether one can be provisioned for them is a question for the Apps team, and this skill does not provision one; on a box (`/srv/blitz/.blitz-box/box-name` exists) skip this section entirely.
 
 ## 1 — Interview, in rounds
 
@@ -220,15 +192,15 @@ Run against the full diff of each branch against its target, and fix everything 
 
 Report the checklist result to the person in one line per item that needed a fix.
 
-## 9 — Verify on a running stack
+## 9 — Verify against staging
 
-Run the app on a local stack through `/blitz:blitz` and sideload it, as that skill describes. Walk every screen from the debrief's Screens section, as provider and as patient when both have a view, and take a screenshot of each next to its design frame. Anything that differs from the design or the debrief is fixed before pushing. The screenshots go in the merge requests.
+Run the app from this Mac against the deployed staging environment: `NX_DAEMON=false pnpm nx serve-sideload extensions-<app>` serves the app locally and opens the staging dashboard with it sideloaded (in the background, since it keeps running). The person signs in there with their staging account. Walk every screen from the debrief's Screens section, as provider and as patient when both have a view (the patient joins the same room in a second browser window, signed out), and take a screenshot of each next to its design frame. Anything that differs from the design or the debrief is fixed before pushing. The screenshots go in the merge requests. Stop the serve when done.
 
 ## 10 — Push and open the merge requests
 
 Push each branch with `git push -u origin <branch>`. Open one draft merge request per branch through the GitLab MCP as `.cursor/skills/gitlab-merge-request/SKILL.md` describes: merge request 1 targets `master`, merge request 2 targets merge request 1's branch, merge request 3 targets merge request 2's. Titles `Draft: feat(<app>): <KEY> - <summary>`.
 
-The description follows the repo template, every section kept. "Description of change" says what was built and why in product words, links the ticket, links the other merge requests in the stack and says which order to merge, cites every spike the build rests on with the developer's answer, and lists what the design showed that could not be built as drawn and how it was built instead. "How to test" is the sideload walk from step 9. "Screenshots" carries the step 9 screenshots. Then two sections the template does not have: **Dependencies added**, with reasons, or "None"; and **Engineer steps that remain**, from step 7.
+The description follows the repo template, every section kept. "Description of change" says what was built and why in product words, links the ticket, links the other merge requests in the stack and says which order to merge, cites every spike the build rests on with the developer's answer, and lists what the design showed that could not be built as drawn and how it was built instead. "How to test" is the staging walk from step 9. "Screenshots" carries the step 9 screenshots. Then two sections the template does not have: **Dependencies added**, with reasons, or "None"; and **Engineer steps that remain**, from step 7.
 
 Report the merge request links. The person marks them ready once the screenshots look right to them, and shares the links with the Apps team.
 
