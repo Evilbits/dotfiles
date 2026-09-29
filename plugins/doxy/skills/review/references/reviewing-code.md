@@ -67,7 +67,7 @@ Give each finding an ID and a severity, for example `[C1 — Critical]`. Order C
 
 Two prefixes: **`A`** for shape (layer placement, capability genericity, published surface, vocabulary, decision points, arrangement) and **`C`** for a defect. A defect whose fix is a restructure stays one `C` finding with its own two-way costing, never an `A` and a `C` cross-referencing each other.
 
-Each finding uses the layout in `SKILL.md`, What reaches the MR: header with ID, level, anchor and claim, then **Consequence**, **Cause**, **Fix** on their own labelled lines. Cause is the mechanism, never the symptom restated. In a posted GitLab comment the labels are dropped and the same three parts become the sentences of the comment, consequence first.
+Each finding uses the layout in `SKILL.md`, What reaches the MR: header with ID, level, anchor and claim, then **Consequence**, **Cause**, **Fix** on their own labelled lines. Cause is the mechanism, never the symptom restated. In a posted GitLab comment the labels are dropped and the three parts become its paragraphs, consequence first (layout in section 6).
 
 ### Costing a rewrite
 
@@ -91,6 +91,8 @@ When the review is settled, output where each comment goes.
 **Inline, attached to code.** Anything naming a change to specific lines, and any architectural point about one service, class or file. Give `file:line` and text short enough for a diff thread.
 
 **Unattached MR comment.** Anything about the shape of the change across files. Draft in full in the reviewer's voice: first person, question-led where the answer is open, hedged where uncertain, no lists, no em dashes, no AI cadence. Pipe each draft to the clipboard.
+
+**Comment layout.** A posted comment is short paragraphs with a blank line between them, one idea each: what happens (the consequence, or the observation it rests on), then why (the cause), then the ask on its own at the end. Any comment longer than three sentences has at least two paragraphs. A hedge ("I might be wrong here") or a request to verify belongs with the ask, never folded into the cause. The body passed to GitLab carries the blank lines as real newlines.
 
 Out-of-scope findings become ticket suggestions: the epic, a title and the reasoning, so the MR stays as scoped. Never ask an MR to absorb work that belongs in its own ticket.
 
