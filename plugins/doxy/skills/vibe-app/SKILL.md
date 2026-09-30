@@ -192,6 +192,15 @@ Run against the full diff of each branch against its target, and fix everything 
 
 Report the checklist result to the person in one line per item that needed a fix.
 
+**Then an independent review, per branch, before the first push.** Spawn one general-purpose subagent per branch whose only inputs are the branch, its target, the vibe ticket text and the debrief, with the instruction to invoke the `doxy:review` skill with the Skill tool and run its implementer mode over `<target>..<branch>`. It gets nothing else from this session. Check each finding against the code before acting on it. The person never decides anything the review raises: they cannot judge it, so every outcome is settled here or by engineering.
+
+- **Holds, and the fix stays inside the app and the rules:** apply it the way the reviewer proposes, as a further commit on that branch, and run the checklist again.
+- **Holds, but the fix needs anything outside the app:** a boundary hit. It goes to engineering as a spike (step 5), and the build waits for it like any other.
+- **Holds, but the fix would change what the debrief agreed a provider or patient sees or does:** do not change it. List it in the merge request under **Review findings for engineering**, with the reviewer's reasoning, so the engineer who reviews decides.
+- **Does not hold:** drop it, with one line in the same merge request section saying why.
+
+Tell the person only the result, in product words and one line: "An independent review found two things to tidy up; both are fixed", or "It raised one question for the engineers; it is in the merge request."
+
 ## 9 — GitLab is the check
 
 Nothing is linted, tested or built on this Mac; GitLab runs all of it on every push, and reading that result is this skill's job. Tests are still written, per screen and per rule of behaviour, so the pipeline checks the requirements and not only that the code compiles. After each push (step 10), poll the merge request's pipeline until it finishes. Green: go on. Red: read the failing job's log, fix the cause on the same branch, push again, and tell the person in one line what was wrong in product words ("a test for the pass notice failed; fixed"). Never ask the person to read a pipeline, and never mark anything done while the pipeline is red. The person's own look at the app is the ephemeral link (step 11).
@@ -200,7 +209,7 @@ Nothing is linted, tested or built on this Mac; GitLab runs all of it on every p
 
 Push each branch with `git push -u origin <branch>`. Open one draft merge request per branch through the GitLab MCP as `.cursor/skills/gitlab-merge-request/SKILL.md` describes: merge request 1 targets `master`, merge request 2 targets merge request 1's branch, merge request 3 targets merge request 2's. Titles `Draft: feat(<app>): <KEY> - <summary>`.
 
-The description follows the repo template, every section kept. "Description of change" says what was built and why in product words, links the ticket, links the other merge requests in the stack and says which order to merge, cites every spike the build rests on with the developer's answer, and lists what the design showed that could not be built as drawn and how it was built instead. "How to test" is the staging walk from step 9. "Screenshots" carries the step 9 screenshots. Then two sections the template does not have: **Dependencies added**, with reasons, or "None"; and **Engineer steps that remain**, from step 7.
+The description follows the repo template, every section kept. "Description of change" says what was built and why in product words, links the ticket, links the other merge requests in the stack and says which order to merge, cites every spike the build rests on with the developer's answer, and lists what the design showed that could not be built as drawn and how it was built instead. "How to test" is the staging walk from step 9. "Screenshots" carries the step 9 screenshots. Then three sections the template does not have: **Dependencies added**, with reasons, or "None"; **Review findings for engineering**, from step 8, or "None"; and **Engineer steps that remain**, from step 7.
 
 Report the merge request links. The person marks them ready once they have seen the app on the ephemeral environment (step 11), and shares the links with the Apps team.
 
