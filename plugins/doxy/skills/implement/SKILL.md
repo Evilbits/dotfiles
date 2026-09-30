@@ -25,15 +25,16 @@ Fetching the ticket is in scope by definition; do it without asking.
 - **The colocated rules for the paths involved.** Rules live next to the projects they describe, not only at the root. Glob `**/.cursor/rules/*.mdc` (excluding `node_modules/` and `.worktrees/`). For anything under `apps/extensions/**` or `libs/extensions/**`, or about the SDK, a capability, the bridge or Hotpot data, read `apps/extensions/AGENTS.md` in full for the boundaries, vocabulary and decision tables (`00-sdk-guidelines.mdc` on branches from before it merged), then any nested rule whose `globs` or `description` match the ticket. Entitlements: `docs/guides/entitlements/concepts.md`. Hotpot: `libs/extensions/hotpot/docs/schema-decisions.md` and the hotpot repo's `ARCHITECTURE.md`. This prevents the "you are confusing two different concepts" round trip.
 - A doxyme concept the user corrects during the ticket is a gap in one of those repo files. Note it, and at the end propose the addition to the file that should carry it, as its own small MR. Never record it privately.
 
-## 2 — Branch
+## 2 — Branch, in a worktree
 
-Run `git branch --show-current` **first**. The session-start git snapshot is a point-in-time capture and has been stale before, producing a redundant branch and a cleanup detour.
+Run `git branch --show-current` and `git worktree list` **first**. The session-start git snapshot is a point-in-time capture and has been stale before, producing a redundant branch and a cleanup detour.
 
-- Already on the ticket's branch (or a `-N` variant): stay there.
-- Otherwise: `git checkout master && git pull`, then create a branch named **exactly the ticket ID**. If that name exists locally (`git branch --list '<ID>*'`) or on origin (`git branch -r --list 'origin/<ID>*'`), append `-1`, `-2`, … taking the next free number.
-- Another ticket is in flight in this checkout: offer a worktree under `.worktrees/<ID>` with the repo's worktree setup instead of switching branches under it.
+- Already on the ticket's branch (or a `-N` variant), or it already has a worktree: work there.
+- Otherwise the branch is named **exactly the ticket ID**. If that name exists locally (`git branch --list '<ID>*'`) or on origin (`git branch -r --list 'origin/<ID>*'`), append `-1`, `-2`, … taking the next free number.
+- **Always a worktree unless the user says otherwise.** `git fetch origin master`, then `git worktree add -b <branch> .worktrees/<branch> origin/master --no-track`, then the repo's worktree setup inside it (doxyme-core: `.claude/rules/worktree-setup.md`, the setup script then `pnpm install`). Basing on `origin/master` leaves the main checkout, its branch and its uncommitted changes untouched; a `git pull` there has failed on a dirty lockfile.
+- The user asked for the main checkout: `git checkout master && git pull`, then create the branch there.
 
-Confirm with `git branch --show-current` and state it in one line.
+Confirm with `git branch --show-current` and state the branch and its path in one line.
 
 ## 3 — Understand and ask
 
