@@ -1,8 +1,8 @@
 # dotfiles
 
-My macOS setup: zsh, tmux, Neovim, and a set of Claude Code tooling for working across several sessions at once.
+My macOS setup: zsh, tmux, Neovim, and Claude Code tooling for working across several sessions at once.
 
-Everything under `home/` mirrors `~`. The linker symlinks each entry into place, files directly and directories one level deep, so `~/.config/nvim` points at `home/.config/nvim` while anything else in `~/.config` is left alone. It asks before replacing a file that differs.
+Everything under `home/` mirrors `~`. The linker symlinks each entry into place: files directly, directories one level deep. So `~/.config/nvim` points at `home/.config/nvim`, and anything else in `~/.config` is left alone. It asks before replacing a file that differs.
 
 ```sh
 git clone git@github.com:Evilbits/dotfiles.git ~/dotfiles
@@ -21,61 +21,115 @@ fnm install 24 && fnm default 24
 ./linker.sh
 ```
 
-Afterwards: `prefix + I` inside tmux installs its plugins, the first `nvim` start installs the Neovim plugins, `skhd --start-service` turns on the app hotkeys, and the two Claude Code steps at the end of this file finish the job.
+Then:
+
+1. Inside tmux, `prefix + I` installs its plugins.
+2. The first `nvim` start installs the Neovim plugins.
+3. `skhd --start-service` turns on the app hotkeys.
+4. Install the Claude Code plugins from the [Claude Code](#claude-code) section.
 
 ## Tooling
 
-**zsh** (`home/.zshrc`). oh-my-zsh with autosuggestions and syntax highlighting. Node comes from fnm and switches version on `cd`. Aliases for git and kubectl, `vim` for `nvim`, `nx` for `pnpm nx`. Custom fzf widgets live in `home/.config/fzf`.
+**zsh** (`home/.zshrc`)
 
-**tmux** (`home/.tmux.conf`). Prefix is `C-a`. Panes move with `hjkl`, split with `x` and `v`, and `c` opens a window in the current path. Three fzf pickers: `prefix t` for tmux sessions, `prefix r` for Claude sessions, `prefix b` for git branches. Plugins through tpm: tmux-fzf and tmux-mode-indicator. The status bar shows memory use via `home/.config/tmux/mem-percentage.sh`.
+- oh-my-zsh with autosuggestions and syntax highlighting.
+- Node comes from fnm and switches version on `cd`.
+- Aliases for git and kubectl, `vim` for `nvim`, `nx` for `pnpm nx`.
+- Custom fzf widgets live in `home/.config/fzf`.
 
-**Neovim** (`home/.config/nvim`). lazy.nvim with one file per plugin under `lua/plugins/`: LSP, blink completion, treesitter, telescope, nvim-tree, git, Copilot, claudecode.nvim, lualine, zen mode. General keymaps are in `lua/config.lua`; each plugin keeps its own.
+**tmux** (`home/.tmux.conf`)
+
+- Prefix is `C-a`.
+- Panes move with `hjkl` and split with `x` and `v`; `c` opens a window in the current path.
+- Closing a window renumbers the rest, so new windows always open at the end.
+- Three fzf pickers: `prefix t` for tmux sessions, `prefix r` for Claude sessions, `prefix b` for git branches.
+- Plugins through tpm: tmux-fzf and tmux-mode-indicator.
+- The status bar shows memory use via `home/.config/tmux/mem-percentage.sh`.
+
+**Neovim** (`home/.config/nvim`)
+
+- lazy.nvim with one file per plugin under `lua/plugins/`: LSP, blink completion, treesitter, telescope, nvim-tree, git, Copilot, claudecode.nvim, lualine, zen mode.
+- General keymaps are in `lua/config.lua`; each plugin file keeps its own.
 
 **Theme.** Catppuccin Macchiato throughout: `home/catppuccin-macchiato.toml` for Alacritty, and the same palette in tmux, Neovim and the Claude status line.
 
-**skhd** (`home/.config/skhd`). `cmd-1`, `cmd-2`, `cmd-3` focus or cycle Zen, Slack and Alacritty.
+**skhd** (`home/.config/skhd`). `cmd-1`, `cmd-2` and `cmd-3` focus or cycle Zen, Slack and Alacritty.
 
 **git** (`home/.config/git/ignore`). The global ignore list.
 
-**Specs** (`home/.config/claude/specs`). Design briefs and implementation plans written with Claude. They live here so they never end up in a work repository.
-
 ## Claude Code
 
-`home/.claude` holds the global instructions, the settings with their hooks, and `specs`, the folder every doxy skill writes its briefs and post mortems to. Its `.gitignore` tracks only those; everything Claude writes at runtime stays out of the repo.
+`home/.claude` holds the global instructions, the settings with their hooks, and `specs`. Its `.gitignore` tracks only those, so nothing Claude writes at runtime reaches the repo.
 
 ### Workflow skills
 
-`plugins/doxy` is one plugin with eight skills, one step of the development flow each: `/doxy:feature` interviews a product manager or designer about a feature in product words and writes Jira tickets already checked against the code, with every point that crosses a platform boundary gated by an engineering-review spike, `/doxy:vibe-app` takes that ticket and a design to stacked app merge requests, boilerplate first, self-reviewed against the rules the Apps team reviews by and blocked until engineering has answered every spike, `/doxy:vibe-app-setup` gets a non-engineer's Mac ready for that with the code, the tools and GitLab access and no terminal typing, `/doxy:design` takes an idea to a brief the team can discuss, `/doxy:ticket` turns the brief into Jira tickets, `/doxy:implement` takes a ticket to a draft MR with a fresh-context review, `/doxy:review` reviews a change or a proposal from the Apps/SDK architecture frame, and `/doxy:debug` takes a bug report through Datadog, Slack and the code to a short post mortem. They trigger on natural requests too; the slash names are for invoking one on purpose.
+`plugins/doxy` is one plugin with eight skills. Each is one step of the development flow:
 
-```
-/plugin marketplace add https://github.com/Evilbits/dotfiles
-/plugin install doxy@rasmus
-```
+- `/doxy:feature` interviews a product manager or designer about a feature in product words. It writes Jira tickets checked against the code, with an engineering-review spike on every point that crosses a platform boundary.
+- `/doxy:vibe-app` takes such a ticket and a design to stacked app merge requests, boilerplate first. It self-reviews them against the Apps team's rules and stays blocked until engineering has answered every spike.
+- `/doxy:vibe-app-setup` gets a non-engineer's Mac ready for that: the code, the tools and GitLab access, with no terminal typing.
+- `/doxy:design` takes an idea to a brief the team can discuss.
+- `/doxy:ticket` turns the brief into Jira tickets.
+- `/doxy:implement` takes a ticket to a draft MR, with a review in a fresh context.
+- `/doxy:review` reviews a change or a proposal from the Apps/SDK architecture frame.
+- `/doxy:debug` takes a bug report through Datadog, Slack and the code to a short post mortem.
 
-Then turn on auto-update, since Claude Code leaves it off for marketplaces outside Anthropic's: run `/plugin`, open the **Marketplaces** tab, select `rasmus` and choose **Enable auto-update**. Every session start then fetches new versions of the skills; without it they stay on the version first installed until `/plugin update doxy@rasmus` is run by hand. Restart Claude Code after installing so the skills load.
+The skills also trigger on ordinary requests; the slash names are for invoking one on purpose. Briefs and post mortems go to `~/.claude/specs`, which here points at `home/.config/claude/specs` and on other machines is created on first use.
 
-Briefs and post mortems land in `~/.claude/specs`, which the linker points at `home/.config/claude/specs` here. On another machine that folder is created on first use.
+To install:
+
+1. Add the marketplace and the plugin:
+
+   ```
+   /plugin marketplace add https://github.com/Evilbits/dotfiles
+   /plugin install doxy@rasmus
+   ```
+
+2. Turn on auto-update. Claude Code leaves it off for marketplaces outside Anthropic's, so without it the skills stay on the version first installed. Run `/plugin`, open the **Marketplaces** tab, select `rasmus` and choose **Enable auto-update**. Every session start then fetches new versions.
+3. Restart Claude Code so the skills load.
 
 ### Hooks
 
-A guard on Bash denies bypassing git hooks, `npx nx` and `git add .`, and asks before anything that rewrites history or deletes. Edited files are formatted with the nearest `oxfmt`. A banner at session start lists the doxyme skills.
+- A guard on Bash denies bypassing git hooks, `npx nx` and `git add .`, and asks before anything that rewrites history or deletes.
+- Edited files are formatted with the nearest `oxfmt`.
+- A banner at session start lists the doxy skills.
+- The session renamer titles each new session after its first exchange.
 
 ### Session picker, snoozing and status line
 
-These live in the `cockpit` plugin in the company marketplace (`doxyme/cooks/claude-plugins`, `plugins/cockpit`), installed with `/plugin install cockpit@doxyme` and wired in by `/cockpit:setup`. A copy of the plugin sits in `plugins/cockpit` here, with a redacted screenshot, refreshed by `scripts/sync-cockpit.sh`. This repo is a marketplace of its own (`.claude-plugin/marketplace.json`), so the copy installs without the company one: `/plugin marketplace add https://github.com/Evilbits/dotfiles` then `/plugin install cockpit@rasmus`.
+These live in the `cockpit` plugin in the company marketplace (`doxyme/cooks/claude-plugins`). It is installed with `/plugin install cockpit@doxyme` and wired in by `/cockpit:setup`.
+
+A copy sits in `plugins/cockpit` here, with a redacted screenshot, refreshed by `scripts/sync-cockpit.sh`. It installs without the company marketplace:
+
+```
+/plugin marketplace add https://github.com/Evilbits/dotfiles
+/plugin install cockpit@rasmus
+```
 
 ### Menu bar app
 
 ![the menu bar app](plugins/cockpit-bar/docs/menu.png)
 
-`plugins/cockpit-bar` is a macOS menu bar app over cockpit, forked from [claude-status-bar](https://github.com/m1ckc3s/claude-status-bar). The menu bar shows a spinning splat while any Claude session works, with what it is doing ("Running command", "Editing", a thinking word) and an amber dot when one waits for permission. The dropdown lists sessions as `ticket · title` in four sections: due snoozes, running sessions with their activity and timer, snoozed sessions with what they wait for, and the recent closed ones. A click jumps to the session's tmux pane or resumes it; the flyout on each row has its repository and branch, start and last prompt times, its snooze, its merge requests grouped by repository with title and state, and the snooze actions.
+`plugins/cockpit-bar` is a macOS menu bar app over cockpit, forked from [claude-status-bar](https://github.com/m1ckc3s/claude-status-bar).
+
+- **Menu bar.** A spinning splat while any Claude session works, with what it is doing ("Running command", "Editing", a thinking word). An amber dot means a session waits for permission.
+- **Dropdown.** Sessions in four sections: due snoozes, running, snoozed, and recent closed ones. Each row shows the kind of work as a pill and what the session is about.
+- **Click.** Jumps to the session's tmux pane, or resumes it.
+- **Flyout.** Repository and branch, start and last prompt times, the snooze, the ticket, the merge requests grouped by repository, and the snooze actions.
 
 It builds from source, so it needs the Xcode Command Line Tools (`xcode-select --install`), Node and the cockpit plugin:
 
-```
-/plugin marketplace add https://github.com/Evilbits/dotfiles
-/plugin install cockpit-bar@rasmus
-/cockpit-bar:setup
-```
+1. Install and build:
 
-Setup compiles the app into `~/Applications/Cockpit Bar.app`, installs a LaunchAgent so it starts at login, and launches it. With auto-update on for the `rasmus` marketplace (see Workflow skills) new versions arrive by themselves; run `/cockpit-bar:setup` again after one so the app is rebuilt from it. The plugin README has the details.
+   ```
+   /plugin marketplace add https://github.com/Evilbits/dotfiles
+   /plugin install cockpit-bar@rasmus
+   /cockpit-bar:setup
+   ```
+
+   Setup compiles the app into `~/Applications/Cockpit Bar.app`, adds a LaunchAgent so it starts at login, and launches it.
+
+2. Turn on auto-update for the `rasmus` marketplace, as in [Workflow skills](#workflow-skills).
+3. After an update, run `/cockpit-bar:setup` again so the app is rebuilt from the new version.
+
+The plugin README has the details.
