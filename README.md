@@ -52,6 +52,8 @@ Afterwards: `prefix + I` inside tmux installs its plugins, the first `nvim` star
 /plugin install doxy@rasmus
 ```
 
+Then turn on auto-update, since Claude Code leaves it off for marketplaces outside Anthropic's: run `/plugin`, open the **Marketplaces** tab, select `rasmus` and choose **Enable auto-update**. Every session start then fetches new versions of the skills; without it they stay on the version first installed until `/plugin update doxy@rasmus` is run by hand. Restart Claude Code after installing so the skills load.
+
 Briefs and post mortems land in `~/.claude/specs`, which the linker points at `home/.config/claude/specs` here. On another machine that folder is created on first use.
 
 ### Hooks
@@ -76,4 +78,4 @@ It builds from source, so it needs the Xcode Command Line Tools (`xcode-select -
 /cockpit-bar:setup
 ```
 
-Setup compiles the app into `~/Applications/Cockpit Bar.app`, installs a LaunchAgent so it starts at login, and launches it. Run `/cockpit-bar:setup` again after a plugin update. The plugin README has the details.
+Setup compiles the app into `~/Applications/Cockpit Bar.app`, installs a LaunchAgent so it starts at login, and launches it. With auto-update on for the `rasmus` marketplace (see Workflow skills) new versions arrive by themselves; run `/cockpit-bar:setup` again after one so the app is rebuilt from it. The plugin README has the details.

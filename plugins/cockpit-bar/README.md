@@ -22,7 +22,7 @@ Needs the cockpit plugin, Node, and the Xcode Command Line Tools for the Swift c
 /cockpit-bar:setup
 ```
 
-Setup runs `build.sh`, which compiles the app into `~/Applications/Cockpit Bar.app`, adds a LaunchAgent so it starts at login, and launches it. The plugin's hooks also relaunch it whenever a session is active, unless it was quit from its menu. Run `/cockpit-bar:setup` again after a plugin update.
+Setup runs `build.sh`, which compiles the app into `~/Applications/Cockpit Bar.app`, adds a LaunchAgent so it starts at login, and launches it. The plugin's hooks also relaunch it whenever a session is active, unless it was quit from its menu. Turn on auto-update for the `rasmus` marketplace in `/plugin` › **Marketplaces** so new versions arrive by themselves, and run `/cockpit-bar:setup` again after one so the app is rebuilt from it.
 
 ## How it works
 
