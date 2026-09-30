@@ -30,6 +30,7 @@ export function buildTitlePrompt(userMessages, options = {}) {
     replyInstruction = "Reply with ONLY the title, nothing else",
     includeQuotesNote = false,
     assistantMessages = [],
+    ticket = null,
   } = options;
 
   // The first exchange, not only the first message: a session opened with a skill and a link
@@ -38,7 +39,11 @@ export function buildTitlePrompt(userMessages, options = {}) {
   // The first replies are often only an announcement ("Using /doxy-debug…"); the facts arrive a
   // reply or two later, so the first three are shown, each clipped.
   const replies = assistantMessages.slice(0, 3).map((r) => r.slice(0, 500)).join("\n…\n");
-  const userContext = replies ? `${first}\n\nFirst assistant replies:\n${replies}` : first;
+  const withReplies = replies ? `${first}\n\nFirst assistant replies:\n${replies}` : first;
+  // The ticket's own title says what the session is about when the opening is only a skill and a link.
+  const userContext = ticket?.summary
+    ? `${withReplies}\n\nTicket ${ticket.key} is titled: ${ticket.summary}\nThe recap describes this ticket's subject, never the skill that was run on it.`
+    : withReplies;
 
   const replyLine = includeQuotesNote
     ? `${replyInstruction} — no explanation, no quotes`

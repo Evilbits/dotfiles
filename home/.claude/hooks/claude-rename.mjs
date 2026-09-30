@@ -30,9 +30,10 @@ import { join } from "path";
 import { homedir } from "os";
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
-import { buildTitlePrompt, generateTitleViaCLI } from "./title-prompt.mjs";
+import { buildTitlePrompt, generateTitleViaCLI, normalizeGeneratedTitle } from "./title-prompt.mjs";
 
 const MARKER_DIR = join(homedir(), ".claude", ".session-namer-named");
+const MAX_ATTEMPTS = 3;
 const LOG_FILE = join(homedir(), ".claude-rename.log");
 
 // ─── Background Worker Mode ─────────────────────────────────────────────────
@@ -125,8 +126,13 @@ async function main() {
       return;
     }
 
-    // Worker already running, or previously failed — don't spawn again.
-    if (marker.status === "naming" || marker.status === "failed") {
+    // Worker already running, or previously failed — don't spawn again. A title that said nothing
+    // leaves "retry-N" and is tried again on a later Stop, when the transcript knows more.
+    if (
+      marker.status === "naming" ||
+      marker.status === "failed" ||
+      (marker.status === "retry" && marker.attempts >= MAX_ATTEMPTS)
+    ) {
       output();
       return;
     }
@@ -139,7 +145,7 @@ async function main() {
 
     // ── Spawn background AI naming worker ──
     mkdirSync(MARKER_DIR, { recursive: true });
-    writeFileSync(markerPath, "naming");
+    writeFileSync(markerPath, `naming-${(marker.attempts || 0) + 1}`);
     log(`Spawning background namer for ${sessionId}`);
 
     const child = spawn(
@@ -160,11 +166,18 @@ async function main() {
 async function nameSessionAI(sessionId, jsonlPath) {
   if (isMarkerDone(join(MARKER_DIR, sessionId))) return;
 
+  const markerPath = join(MARKER_DIR, sessionId);
+  const attempts = readMarkerContent(markerPath).attempts || 1;
   const { userMessages, assistantMessages } = extractMessages(jsonlPath);
   if (userMessages.length === 0) return;
 
+  const ticket = findTicket(jsonlPath, userMessages[0]);
   const model = getConfigModel();
-  const title = await generateTitleViaClaude(userMessages, model, assistantMessages);
+  let title = await generateTitleViaClaude(userMessages, model, assistantMessages, ticket);
+  if (title && saysNothing(title)) {
+    log(`Rejected empty title for ${sessionId}: "${title}"`);
+    title = null;
+  }
   // The user may have /rename'd while the worker ran; their name wins, and it must stay the last
   // custom-title record, so never append a generated one over it.
   const userRename = findLatestRename(jsonlPath);
@@ -178,6 +191,22 @@ async function nameSessionAI(sessionId, jsonlPath) {
     writeTitle(jsonlPath, sessionId, title);
     markDone(join(MARKER_DIR, sessionId), title);
     log(`Named (${model}): ${sessionId} → "${title}"`);
+    return;
+  }
+
+  if (ticket?.summary) {
+    const fromTicket = normalizeGeneratedTitle(`${ticket.key}: ${ticket.summary.replace(/^\[[^\]]*\]\s*/, "")}`);
+    if (fromTicket) {
+      writeTitle(jsonlPath, sessionId, fromTicket);
+      markDone(markerPath, fromTicket);
+      log(`Named (ticket): ${sessionId} → "${fromTicket}"`);
+      return;
+    }
+  }
+
+  if (attempts < MAX_ATTEMPTS) {
+    markRetry(markerPath, attempts);
+    log(`Retry later for ${sessionId} (attempt ${attempts})`);
     return;
   }
 
@@ -215,10 +244,62 @@ export function getConfigModel() {
   }
 }
 
-function generateTitleViaClaude(userMessages, model, assistantMessages = []) {
+/**
+ * The Jira ticket the session opened on, with its summary when a Jira tool result in the transcript
+ * carries it. A session started as "/doxy:implement <ticket URL>" says nothing else about its
+ * subject, and the worker has no network, so the ticket's own title is read from what the session
+ * already fetched.
+ */
+function findTicket(jsonlPath, firstMessage) {
+  const key = (firstMessage || "").match(/\b[A-Z][A-Z0-9]+-\d+\b/)?.[0];
+  if (!key) return null;
+  try {
+    const lines = readFileSync(jsonlPath, "utf-8").split("\n");
+    for (const line of lines) {
+      if (!line.includes("tool_result") || !line.includes(key)) continue;
+      let entry;
+      try { entry = JSON.parse(line); } catch { continue; }
+      const content = entry.message?.content;
+      if (!Array.isArray(content)) continue;
+      for (const part of content) {
+        if (part.type !== "tool_result") continue;
+        const text = typeof part.content === "string"
+          ? part.content
+          : Array.isArray(part.content) ? part.content.map((c) => c.text || "").join("") : "";
+        const summary = findIssueSummary(text, key);
+        if (summary) return { key, summary };
+      }
+    }
+  } catch {}
+  return { key, summary: null };
+}
+
+function findIssueSummary(text, key) {
+  if (!text.includes(`"${key}"`)) return null;
+  let data;
+  try { data = JSON.parse(text); } catch { return null; }
+  const stack = [data];
+  while (stack.length) {
+    const node = stack.pop();
+    if (!node || typeof node !== "object") continue;
+    if (node.key === key && typeof node.fields?.summary === "string") return node.fields.summary;
+    stack.push(...Object.values(node));
+  }
+  return null;
+}
+
+// A title that is only the ticket and the skill's verb ("PROD-11674: Implement") names nothing;
+// cockpit strips the ID and shows the verb as a pill already.
+function saysNothing(title) {
+  const recap = title.replace(/^[A-Z][A-Z0-9]+-\d+:\s*/, "").trim().toLowerCase();
+  return /^(doxy[: -])?(implement|review|design|debug|ticket|feature|vibe[- ]app|snooze)( ticket)?$/.test(recap);
+}
+
+function generateTitleViaClaude(userMessages, model, assistantMessages = [], ticket = null) {
   const prompt = buildTitlePrompt(userMessages, {
     replyInstruction: "Reply with ONLY the title, nothing else",
     assistantMessages,
+    ticket,
   });
   return generateTitleViaCLI(prompt, model, ({ reason, stdout, stderr, code }) => {
     log(
@@ -284,6 +365,8 @@ function readMarkerContent(markerPath) {
   try {
     const content = readFileSync(markerPath, "utf-8").trim();
     if (!content || content === "naming") return { status: "naming" };
+    const pending = content.match(/^(naming|retry)-(\d+)$/);
+    if (pending) return { status: pending[1], attempts: Number(pending[2]) };
     if (content === "failed") return { status: "failed" };
     if (content === "done") return { status: "stale" }; // legacy marker, regenerate
     return { status: "named", title: content };
@@ -300,6 +383,13 @@ function markDone(markerPath, title) {
   try {
     mkdirSync(MARKER_DIR, { recursive: true });
     writeFileSync(markerPath, title);
+  } catch {}
+}
+
+function markRetry(markerPath, attempts) {
+  try {
+    mkdirSync(MARKER_DIR, { recursive: true });
+    writeFileSync(markerPath, `retry-${attempts}`);
   } catch {}
 }
 
