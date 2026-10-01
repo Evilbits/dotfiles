@@ -43,13 +43,14 @@ Then stop. The user corrects it once, in one place, instead of in questions four
 
 ## 2 — Brainstorm
 
-Read and follow `.cursor/skills/brainstorming/SKILL.md`. Do not call the `superpowers:brainstorming` Skill tool. Five overrides, stated before starting:
+Read and follow `.cursor/skills/brainstorming/SKILL.md`. Do not call the `superpowers:brainstorming` Skill tool. Six overrides, stated before starting:
 
 1. **The document it writes is the brief in step 3**, at `~/.claude/specs/YYYY-MM-DD-<ticket-id-lowercase-or-topic>-design.md`. Ignore its `docs/plans/` path. **Never commit it**; skip any step that says to.
 2. **Its terminal step does not run.** Brainstorming ends by invoking writing-plans; here it ends with the document. Plans and tickets are `/doxy:implement` and `/doxy:ticket`, invoked only if asked.
 3. **Every option is phrased in doxyme vocabulary** as loaded in step 0, with a one-line consequence each. Options are lettered; replies read "Let's go with A".
 4. **Track three lists as the conversation runs**, since they become sections of the brief: decisions taken; alternatives considered and rejected, with the reason; facts verified against code or a source, with where and as of when.
 5. **No question is skipped.** Questions are numbered, and one stays open until the user answers it. When the user answers a different question, or moves the discussion elsewhere, answer that, then ask the open question again before asking the next one.
+6. **Walk every rule through every consumer.** Before the brief, take each rule of the proposal and each consumer it names (the app, a library inside the app such as the Hotpot SDK, the host, another participant) and check that the rule holds for each. A rule that exempts a case ("X has already finished, so…", "only the host does Y") states a premise; name the premise and check it for every consumer. A premise that fails for one consumer is a contradiction to resolve in the design, never in a later MR.
 
 ## 3 — The brief
 
