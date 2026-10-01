@@ -24,9 +24,6 @@
 - Be concise and write as if authored by a human.
 - Output in markdown.
 
-## Environment
-- I am running inside Neovim via the claudecode.nvim plugin, not a standalone terminal.
-
 ## Known File Locations
 - Neovim config: `~/dotfiles/home/.config/nvim/`
   - General keymaps: `lua/config.lua`
