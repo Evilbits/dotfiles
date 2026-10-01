@@ -14,7 +14,7 @@ description: >-
 
 Input is the ticket URL plus whatever framing comes with it, or, for NOJIRA work, a brief in the spec folder whose Shape is Ticket; then the branch is `NOJIRA-<topic>` and the brief plays the ticket's part below. **The framing outranks the ticket text.** "We do not need to strictly follow the ticket", "implement it exactly like MR 1234", "the most important thing is…" are the instructions; the ticket is context. When they conflict, say so before acting.
 
-Each step below prevents a failure that has happened: a redundant branch from a stale snapshot, a plan lost when the session closed, a full planning chain on a five-file change, per-task approval prompts inside an approved plan.
+Each step below prevents a failure that has happened: a redundant branch from a stale snapshot, a plan lost when the session closed, a plan executed before anyone checked it against the code, per-task approval prompts inside an approved plan.
 
 ## 1 — Fetch and read
 
@@ -52,7 +52,7 @@ Invoke `.cursor/skills/brainstorming/SKILL.md` (read and follow it; do **not** c
 
 1. **Documents go to the spec folder, never the repo.** Design: `~/.claude/specs/YYYY-MM-DD-<ticket-id-lowercase>-<topic>-design.md`. Plan: same path with `-plan.md`. Ignore both skills' `docs/plans/` paths. **Never commit either**, and skip any step that says to.
 2. **Execution returns here.** Ignore writing-plans' handoff to `subagent-driven-development` or `executing-plans`. When the plan is approved, control returns to step 5. Omit the "Recommended dispatch" line writing-plans would insert; nothing dispatches.
-3. **Ask once before the plan.** Where brainstorming would invoke writing-plans, stop and ask one question: write a full plan, or execute from the approved design. Recommend based on the design as it turned out: a full plan when the change crosses systems or touches more than a handful of files, direct execution otherwise. Then do what was chosen. The design conversation runs on every ticket; the plan is the part behind the question.
+3. **Always a full plan, reviewed by a subagent, then execute.** Let brainstorming invoke writing-plans on every ticket. When the plan is written, spawn one general-purpose subagent, read-only, with the design and plan paths, the worktree, the ticket text with its Acceptance Criteria, and the rules for the touched paths. It checks the plan against the code: every stated fact, callers and mocks the plan misses, ordering and lifecycle, edge cases, and whether each test is feasible under the testing rules and breaks when its assumption does. Fix the plan for each finding that holds; a finding that reopens a design decision goes to the user. Then go straight to step 5 without asking for plan approval: the reviewed plan is the approval.
 4. **Check the assumptions the design rests on.** Before approval, name what the design assumes about identity, keys, ordering and lifecycle (what something is keyed by, whether that survives the object being re-created, which step runs first), check each in the code, and give each a test that breaks it on purpose: a re-created instance, not only a reopened one.
 
 ## 5 — Execute
@@ -60,7 +60,7 @@ Invoke `.cursor/skills/brainstorming/SKILL.md` (read and follow it; do **not** c
 In this session, sequentially, without subagents unless asked.
 
 - **On Fable, stop and ask before the first edit.** Fable is for planning; implementation on it needs explicit confirmation, unless the user has granted an exception.
-- **An approved plan or design is the approval.** Do not show a diff and ask "go ahead with task N?" before each task; that reads as regression. The checkpoints are the TDD cycle: failing test and its RED output, implementation, GREEN output, commit.
+- **The reviewed plan is the approval.** Do not show a diff and ask "go ahead with task N?" before each task; that reads as regression. The checkpoints are the TDD cycle: failing test and its RED output, implementation, GREEN output, commit.
 - **Stop and ask only when a task needs a decision the plan did not make.** Summarise deviations as you go instead of requesting permission for them.
 - **Commit at every atomic boundary**, format `type(scope): <TICKET-ID> - description`, scope the Nx project, subject under 50 characters, staged by file and never `git add .`. Do not let two logical units pile up uncommitted.
 - Type-check with `tsc --noEmit` or the project's typecheck target, never `nx build frontend`.
