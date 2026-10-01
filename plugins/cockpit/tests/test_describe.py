@@ -15,6 +15,12 @@ def skill(name, args):
     body = "<command-message>%s</command-message>\n<command-name>/%s</command-name>\n<command-args>%s</command-args>" % (name, name, args)
     return [user(body), json.dumps({"type": "user", "isMeta": True, "message": {"role": "user", "content": "Base directory for this skill: /x"}}, separators=(",", ":"))]
 
+def skill_call(name, sidechain=False):
+    rec = {"type": "assistant", "message": {"role": "assistant", "content": [{"type": "tool_use", "id": "t1", "name": "Skill", "input": {"skill": name}}]}}
+    if sidechain:
+        rec["isSidechain"] = True
+    return json.dumps(rec, separators=(",", ":"))
+
 def custom(title):
     return json.dumps({"type": "custom-title", "customTitle": title}, separators=(",", ":"))
 
@@ -37,6 +43,38 @@ class Describe(unittest.TestCase):
         st = self.absorb(*skill("doxy-review", MR_URL))
         self.assertEqual(index.verb_of(st), "Review")
         self.assertEqual(index.verb_of(self.absorb(user("hello"))), "")
+
+    def test_verb_follows_the_latest_skill(self):
+        st = self.absorb(*skill("doxy-implement", "PROD-1"), *skill("doxy-review", MR_URL))
+        self.assertEqual(index.verb_of(st), "Review")
+        st = self.absorb(*skill("doxy-implement", "PROD-1"), *skill("doxy-review", MR_URL), *skill("doxy-implement", "PROD-1"))
+        self.assertEqual(index.verb_of(st), "Implement")
+
+    def test_a_skill_without_a_verb_keeps_the_last_one(self):
+        st = self.absorb(*skill("doxy-implement", "PROD-1"), *skill("grilling", "x"))
+        self.assertEqual(index.verb_of(st), "Implement")
+
+    def test_a_plugin_skill_counts_as_its_standalone_name(self):
+        st = self.absorb(*skill("doxy:implement", "PROD-1"), *skill("doxy:blitz-test", "PROD-1"))
+        self.assertEqual(index.verb_of(st), "Test")
+
+    def test_a_skill_claude_starts_itself_counts(self):
+        st = self.absorb(*skill("doxy:implement", "PROD-1"), skill_call("doxy:review"))
+        self.assertEqual(index.verb_of(st), "Review")
+
+    def test_a_subagent_skill_does_not_count(self):
+        st = self.absorb(*skill("doxy:implement", "PROD-1"), skill_call("doxy:review", sidechain=True))
+        self.assertEqual(index.verb_of(st), "Implement")
+
+    def test_configured_verbs_add_to_the_defaults(self):
+        import tempfile
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump({"skill_verbs": {"doxy-review": "Look"}}, f)
+        self.addCleanup(os.unlink, f.name)
+        with mock.patch.object(config, "CONFIG", f.name), mock.patch.object(config, "_cfg", None):
+            verbs = config.cfg()["skill_verbs"]
+        self.assertEqual(verbs["doxy-review"], "Look")
+        self.assertEqual(verbs["doxy-blitz-test"], "Test")
 
     def test_review_is_named_after_its_mr_without_commit_prefix_or_key(self):
         st = self.absorb(*skill("doxy-review", MR_URL))

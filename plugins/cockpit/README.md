@@ -36,7 +36,7 @@ Without tmux, setup skips the key binding and tells you to run `cockpit` in a ta
 
 `prefix r` in tmux opens it, or `cockpit` in any shell. Each row is one session: its state, age, repository, the kind of work, what it is about and the MRs it mentioned; a `z` marks a snoozed one, and the footer lists every snooze with its remaining time and reason. Running sessions show `●` when busy and `○` when idle. The order is due, running, snoozed, then closed by age, and typing a ticket number filters without reordering, since the ticket sits dimmed at the end of every row.
 
-The kind of work is the skill the session started with, `Review`, `Implement`, `Design`, `Ticket` or `Epic` by default (`skill_verbs` in the config). The subject is what the session is about without identifiers: a name you gave it with `/rename`, else for a review the title of the MR it was given, else Claude's title, with a leading ticket key or commit type removed. A session started without a skill shows its title as before.
+The kind of work is the latest skill the session ran, whether you typed it or Claude started it: `Review`, `Implement`, `Design`, `Ticket`, `Epic`, `Debug`, `Test`, `Feature` or `App` by default (`skill_verbs` in the config, where `doxy:review` counts as `doxy-review`). The subject is what the session is about without identifiers: a name you gave it with `/rename`, else for a review the title of the MR it was given, else Claude's title, with a leading ticket key or commit type removed. A session started without a skill shows its title as before.
 
 The ticket is worked out from the session itself: a key you pinned with `/ticket`, then the key you typed most in your prompts, then a key in the title, then one in Claude's replies, then the branch. A review session you opened by pasting an MR link still lists under the ticket that MR was about.
 
@@ -98,7 +98,7 @@ Claude redraws a session's status line when that session does something; the ref
 | `reopen_on_wake` | `true` | Reopen a closed session in tmux when its snooze fires. |
 | `tmux_window_marks` | `true` | Prefix a snoozed session's tmux window name with ⏾, a due one with ⏰. |
 | `tmux_window_names` | `true` | Name every tmux window running a session after the session's subject; off touches snoozed windows only. |
-| `skill_verbs` | `{"doxy-review": "Review", …}` | The kind of work a session is, from the skill it started with. |
+| `skill_verbs` | `{"doxy-review": "Review", …}` | The kind of work a session is, from the latest skill it ran. Entries add to the defaults. |
 | `jira_host` | `""` | Host for ticket links in the status line; empty uses the host of the first Jira link a session was given. |
 | `colour_accent`, `colour_branch` | `183`, `116` | 256-colour indexes for the status line. |
 

@@ -30,6 +30,78 @@ class LaunchCommand(unittest.TestCase):
         r = subprocess.run(tmux.shell_command(["/usr/bin/true"]), shell=True, stdin=subprocess.DEVNULL, capture_output=True, text=True)
         self.assertEqual((r.returncode, r.stdout), (0, ""))
 
+@unittest.skipUnless(os.path.exists("/bin/zsh"), "needs zsh")
+class LoginShell(unittest.TestCase):
+    """A launchd job starts with a bare PATH, so the resumed claude must get the user's shell setup."""
+
+    def run_in(self, rc):
+        import tempfile
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, ".zshrc"), "w") as f:
+                f.write(rc)
+            env = {"PATH": "/usr/bin:/bin", "HOME": d, "ZDOTDIR": d}
+            with mock.patch.object(tmux, "login_shell", return_value="/bin/zsh"):
+                cmd = tmux.shell_command(["/bin/sh", "-c", "echo $COCKPIT_RC"])
+            return subprocess.run(cmd, shell=True, env=env, stdin=subprocess.DEVNULL, capture_output=True, text=True)
+
+    def test_shell_command_loads_the_users_shell_setup(self):
+        self.assertEqual(self.run_in("export COCKPIT_RC=loaded\n").stdout.strip(), "loaded")
+
+    def test_terminal_launch_file_loads_the_users_shell_setup_and_removes_itself(self):
+        import tempfile
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, ".zshrc"), "w") as f:
+                f.write("export COCKPIT_RC=loaded\n")
+            env = {"PATH": "/usr/bin:/bin", "HOME": d, "ZDOTDIR": d}
+            with mock.patch.object(tmux, "login_shell", return_value="/bin/zsh"), mock.patch.object(tmux, "STATE_DIR", d):
+                path = tmux.terminal_launch_file(tmux.shell_command(["/bin/sh", "-c", "echo $COCKPIT_RC"]), "/tmp")
+            r = subprocess.run(["/bin/sh", path], env=env, stdin=subprocess.DEVNULL, capture_output=True, text=True)
+            self.assertEqual((r.stdout.strip(), os.path.exists(path)), ("loaded", False))
+
+FAKE_FISH = """#!/usr/bin/env python3
+import os, shlex, sys
+words = shlex.split(sys.argv[-1])
+if "||" in words or "{" in words:
+    sys.exit("fake-fish: cannot parse POSIX syntax")
+if words[0] == "exec":
+    os.execv(words[1], words[1:])
+"""
+
+class NonPosixLoginShell(unittest.TestCase):
+    """A fish or csh login shell must still resume: it loads the environment, /bin/sh runs the command."""
+
+    def run_with(self, argv):
+        import tempfile
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            shell = os.path.join(d, "fish")
+            with open(shell, "w") as f:
+                f.write(FAKE_FISH)
+            os.chmod(shell, 0o755)
+            with mock.patch.object(tmux, "login_shell", return_value=shell):
+                cmd = tmux.shell_command(argv)
+            return subprocess.run(cmd, shell=True, stdin=subprocess.DEVNULL, capture_output=True, text=True)
+
+    def test_resume_runs_under_a_non_posix_login_shell(self):
+        r = self.run_with(["/bin/echo", "resumed"])
+        self.assertEqual((r.returncode, r.stdout.strip()), (0, "resumed"))
+
+    def test_pane_still_holds_on_failure_under_a_non_posix_login_shell(self):
+        self.assertIn("press Enter to close", self.run_with(["/usr/bin/false"]).stdout)
+
+class TerminalAppReopen(unittest.TestCase):
+    """Without tmux or a terminal of its own, cockpit opens a Terminal or iTerm window."""
+
+    def test_terminal_app_gets_the_login_shell_command(self):
+        from unittest import mock
+        with mock.patch.object(tmux, "live_sessions", return_value={}), mock.patch.object(tmux, "available", return_value=False), \
+                mock.patch.object(tmux.sys.stdin, "isatty", return_value=False), mock.patch.object(tmux, "open_in_terminal_app") as opened:
+            tmux.open_session(ST)
+        argv = tmux.launch_argv(ST, None)
+        opened.assert_called_once_with(tmux.shell_command(argv), "/tmp")
+
 class RememberedPane(unittest.TestCase):
     """opened.json remembers the pane a session was launched in; a pane can since have been reused."""
 

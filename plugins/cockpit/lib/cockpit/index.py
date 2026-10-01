@@ -22,6 +22,8 @@ REMINDER_RE = re.compile(r"<system-reminder>[\s\S]*?</system-reminder>")
 PASTE_RE = re.compile(r"<pasted_content\b[^>]*>[\s\S]*?</pasted_content\b[^>]*>")  # the closing tag repeats the id
 JUNK_TITLE_RE = re.compile(r"^(please |i need|alternatively|base directory|review this pasted|want you to|then i)", re.I)
 SKIP_DIRS = ("claude-rename-worker",)
+# Bumped when a session's state gains a field that only a full read of its transcript fills.
+SCHEMA = 2
 PROMPT_KEEP = 8
 PROMPT_CHARS = 400
 
@@ -29,7 +31,7 @@ def new_state(session_id, project_dir):
     return {
         "id": session_id, "project_dir": project_dir, "cwd": "", "branch": "",
         "custom_title": "", "ai_title": "", "first_prompt": "", "prompts": [],
-        "tickets": {}, "tickets_assistant": {}, "mrs": [], "mr_urls": [], "skills": [],
+        "tickets": {}, "tickets_assistant": {}, "mrs": [], "mr_urls": [], "skills": [], "skill_runs": [],
         "first_ts": "", "last_ts": "", "turns": 0, "continued_in": "", "jira_host": "", "_pending_cmd": None,
     }
 
@@ -48,6 +50,7 @@ def absorb_line(state, line):
         # meta record, so it is recognised before the meta filter below.
         if state["_pending_cmd"] not in state["skills"]:
             state["skills"].append(state["_pending_cmd"])
+        _note_skill(state, state["_pending_cmd"])
         state["_pending_cmd"] = None
         return
     if '"type":"continued-in"' in line:
@@ -97,6 +100,8 @@ def absorb_line(state, line):
         del state["prompts"][:-PROMPT_KEEP]
         return
     if '"type":"assistant"' in line:
+        if '"name":"Skill"' in line and '"isSidechain":true' not in line:
+            _note_skill_calls(state, line)
         for t in tre.findall(line):
             if t not in deny:
                 state["tickets_assistant"][t] = state["tickets_assistant"].get(t, 0) + 1
@@ -113,6 +118,26 @@ def absorb_line(state, line):
             state["ai_title"] = json.loads(line).get("aiTitle") or state["ai_title"]
         except Exception:
             pass
+
+def _note_skill(state, name):
+    """Keep the skills a session has run, latest last: a slash command, or a skill Claude started
+    itself, as when one skill hands over to the next."""
+    runs = state.setdefault("skill_runs", [])
+    if name in runs:
+        runs.remove(name)
+    runs.append(name)
+    del runs[:-8]
+
+def _note_skill_calls(state, line):
+    try:
+        content = (json.loads(line).get("message") or {}).get("content")
+    except Exception:
+        return
+    for c in content if isinstance(content, list) else []:
+        if isinstance(c, dict) and c.get("type") == "tool_use" and c.get("name") == "Skill":
+            name = (c.get("input") or {}).get("skill")
+            if isinstance(name, str) and name:
+                _note_skill(state, name)
 
 def _note_mr_urls(state, text):
     """Keep the MR links a session has dealt with, latest last, so the status line can name the
@@ -147,6 +172,9 @@ def refresh_entry(cache, path):
 def index_sessions(force=False):
     """All sessions: list of states plus id -> transcript mtime."""
     cache = {} if force else load_json(CACHE)
+    if cache.get("_schema") != SCHEMA:
+        cache = {"_schema": SCHEMA}
+        force = True
     seen = set()
     changed = force
     for project_dir in sorted(os.listdir(PROJECTS)) if os.path.isdir(PROJECTS) else []:
@@ -182,6 +210,8 @@ def index_sessions(force=False):
 def one_session(session_id):
     """Cheap path for the status line: refresh only this session's entry."""
     cache = load_json(CACHE)
+    if cache.get("_schema") != SCHEMA:
+        cache = {"_schema": SCHEMA}
     paths = glob.glob(os.path.join(PROJECTS, "*", canonical(session_id) + ".jsonl"))
     if not paths:
         return None
@@ -253,9 +283,14 @@ def title_of(state):
     return custom or state["ai_title"] or _shaped_prompt(state)
 
 def verb_of(state):
-    """The kind of work, from the first skill the session started with that the config names."""
+    """The kind of work, from the latest skill the session ran that the config names. A plugin
+    skill (`doxy:review`) counts as its old standalone name (`doxy-review`)."""
     verbs = cfg()["skill_verbs"]
-    return next((verbs[s] for s in state["skills"] if s in verbs), "")
+    for s in reversed(state.get("skill_runs") or state["skills"]):
+        verb = verbs.get(s) or verbs.get(s.replace(":", "-"))
+        if verb:
+            return verb
+    return ""
 
 def subject_of(state, live_name=""):
     """What the session is about, without identifiers. A name the user gave the running session
@@ -270,7 +305,7 @@ def subject_of(state, live_name=""):
     subject = subject or title_of(state)
     subject = KEY_PREFIX_RE.sub("", CONVENTIONAL_RE.sub("", subject)).strip()
     verb = verb_of(state)
-    if verb and subject.lower().startswith(("doxy-" + verb.lower() + " ", verb.lower() + " ")):
+    if verb and subject.lower().startswith(("doxy-" + verb.lower() + " ", "doxy:" + verb.lower() + " ", verb.lower() + " ")):
         subject = subject.split(" ", 1)[1]
     subject = subject[:1].upper() + subject[1:]
     return subject or primary_ticket(state) or "(untitled)"

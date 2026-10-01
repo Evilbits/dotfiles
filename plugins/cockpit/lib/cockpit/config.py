@@ -28,10 +28,11 @@ DEFAULTS = {
     "ticket_deny": [],
     # Slash-command skills worth a column; empty means any command the session invoked.
     "skill_prefix": "",
-    # The kind of work a session is, from the skill it started with: shown before its subject in the
-    # picker and the menu bar. Skills not listed here give no verb.
+    # The kind of work a session is, from the latest skill it ran: shown before its subject in the
+    # picker and the menu bar. Skills not listed here give no verb; `doxy:x` counts as `doxy-x`.
     "skill_verbs": {"doxy-review": "Review", "doxy-implement": "Implement", "doxy-design": "Design",
-                    "doxy-ticket": "Ticket", "doxy-epic": "Epic"},
+                    "doxy-ticket": "Ticket", "doxy-epic": "Epic", "doxy-debug": "Debug",
+                    "doxy-blitz-test": "Test", "doxy-feature": "Feature", "doxy-vibe-app": "App"},
     # Host for ticket links in the status line; empty means the host of the first Jira link a
     # session was given, and no link when it never saw one.
     "jira_host": "",
@@ -66,7 +67,11 @@ def cfg():
         data = dict(DEFAULTS)
         try:
             with open(CONFIG) as f:
-                data.update(json.load(f))
+                user = json.load(f)
+            data.update(user)
+            # Verbs add to the defaults, so a verb added here reaches a config that names its own.
+            if isinstance(user.get("skill_verbs"), dict):
+                data["skill_verbs"] = {**DEFAULTS["skill_verbs"], **user["skill_verbs"]}
         except Exception:
             pass
         _cfg = data

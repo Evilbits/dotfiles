@@ -1,8 +1,10 @@
 """Getting the user to a session: a jump to a running tmux pane, a resume in a new tmux window, or,
 without tmux, a resume in this terminal or in a new Terminal/iTerm window."""
 import os
+import pwd
 import shlex
 import subprocess
+import tempfile
 import time
 
 from .config import CLAUDE_BIN, HOME, OPENED, STATE_DIR, cfg, load_json, save_json
@@ -53,15 +55,24 @@ def jump(target):
     for _, tty in clients:
         tmux("refresh-client", "-t", tty)
 
+def terminal_launch_file(cmd, cwd):
+    """A one-shot script that removes itself, then runs cmd in cwd. The terminal app runs this file,
+    so cmd's own quoting never passes through AppleScript and the app's command parsing."""
+    os.makedirs(STATE_DIR, exist_ok=True)
+    fd, path = tempfile.mkstemp(prefix="launch-", suffix=".sh", dir=STATE_DIR)
+    with os.fdopen(fd, "w") as f:
+        f.write('rm -f -- "$0"\ncd %s && %s\n' % (shlex.quote(cwd), cmd))
+    return path
+
 def open_in_terminal_app(cmd, cwd):
     """Without tmux and without a terminal of our own (a notification click), open a new window in
     the user's terminal app. iTerm2 when it is running, else Terminal."""
-    script = "cd %s && %s" % (shlex.quote(cwd), cmd)
+    run = "/bin/sh %s" % shlex.quote(terminal_launch_file(cmd, cwd))
     running = subprocess.run(["osascript", "-e", 'tell application "System Events" to (name of processes) contains "iTerm2"'], capture_output=True, text=True).stdout.strip()
     if running == "true":
-        osa = 'tell application "iTerm" to create window with default profile command "/bin/zsh -lc \\"%s\\""' % script.replace('"', '\\"')
+        osa = 'tell application "iTerm" to create window with default profile command "%s"' % run
     else:
-        osa = 'tell application "Terminal" to do script "%s"' % script.replace('"', '\\"')
+        osa = 'tell application "Terminal" to do script "%s"' % run
     subprocess.run(["osascript", "-e", osa], capture_output=True)
 
 def pane_exists(target):
@@ -94,10 +105,26 @@ def launch_argv(st, live):
 
 HOLD = ' || { echo; echo "press Enter to close"; read -r _; }'
 
+def login_shell():
+    """The user's login shell from the passwd database: a launchd job need not set $SHELL."""
+    try:
+        return pwd.getpwuid(os.getuid()).pw_shell or "/bin/sh"
+    except KeyError:
+        return "/bin/sh"
+
+def shell_argv(argv):
+    """argv run from the user's interactive login shell, so claude gets the PATH and tools their shell
+    setup provides (the wake job runs with a bare one). The login shell only execs /bin/sh, which runs
+    argv and keeps the pane open when claude exits non-zero, so the error stays readable; a fish or
+    csh login shell parses that one line too. csh and tcsh take -l only on its own."""
+    shell = login_shell()
+    flags = "-c" if os.path.basename(shell) in ("csh", "tcsh") else "-lic"
+    script = " ".join(shlex.quote(a) for a in argv) + HOLD
+    return [shell, flags, "exec /bin/sh -c " + shlex.quote(script)]
+
 def shell_command(argv):
-    """argv as one shell command that keeps the pane when claude exits non-zero, so the error stays
-    readable instead of the pane closing with it."""
-    return "sh -c %s" % shlex.quote(" ".join(shlex.quote(a) for a in argv) + HOLD)
+    """shell_argv as one command string, for tmux."""
+    return " ".join(shlex.quote(a) for a in shell_argv(argv))
 
 def remembered_target(sid, prev, live, exists=None):
     """The pane opened.json remembers for a session, if it can still be trusted: the pane must exist
@@ -141,8 +168,8 @@ def open_session(st, origin=None):
     if not in_tmux:
         if sys.stdin.isatty():
             os.chdir(cwd)
-            os.execvp("sh", ["sh", "-c", " ".join(shlex.quote(a) for a in argv) + HOLD])
-        open_in_terminal_app(" ".join(shlex.quote(a) for a in argv), cwd)
+            os.execvp(login_shell(), shell_argv(argv))
+        open_in_terminal_app(cmd, cwd)
         return verb + " in a new terminal window"
     # A window this tool opened may still be starting and not yet registered; a second
     # resume or attach there would start a copy or a second view, so jump to that window.
@@ -155,7 +182,7 @@ def open_session(st, origin=None):
         tmux("rename-window", "-t", origin, window_name(st, user_names().get(st["id"], "")))
         if origin == os.environ.get("TMUX_PANE"):
             os.chdir(cwd)
-            os.execvp("sh", ["sh", "-c", " ".join(shlex.quote(a) for a in argv) + HOLD])
+            os.execvp(login_shell(), shell_argv(argv))
         if tmux("respawn-pane", "-k", "-t", origin, "-c", cwd, cmd).returncode == 0:
             target = tmux("display-message", "-p", "-t", origin, "#{session_name}:#{window_id}.#{pane_id}").stdout.strip()
             remember(opened, st["id"], target)
