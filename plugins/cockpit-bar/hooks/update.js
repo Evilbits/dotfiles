@@ -24,6 +24,27 @@ const TOOL_LABELS = {
   TodoWrite: "Planning", AskUserQuestion: "Asking you", Skill: "Loading a skill",
 };
 
+// True when the transcript's last conversation entry closes a turn (the Stop hook summary or the
+// turn duration Claude Code writes after it).
+function turnEnded(transcript) {
+  try {
+    const fd = fs.openSync(transcript, "r");
+    const size = fs.fstatSync(fd).size;
+    const len = Math.min(size, 65536);
+    const buf = Buffer.alloc(len);
+    fs.readSync(fd, buf, 0, len, size - len);
+    fs.closeSync(fd);
+    const lines = buf.toString("utf8").split("\n").filter(Boolean).reverse();
+    for (const line of lines) {
+      let e;
+      try { e = JSON.parse(line); } catch { continue; }
+      if (e.type === "system") return e.subtype === "turn_duration" || e.subtype === "stop_hook_summary";
+      if (e.type === "user" || e.type === "assistant") return false;
+    }
+  } catch {}
+  return false;
+}
+
 const safeId = (s) => String(s || "").replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 64) || "unknown";
 
 let raw = "";
@@ -44,6 +65,16 @@ process.stdin.on("end", () => {
   const cwd = p.cwd || prev.cwd || "";
   const ts = Math.floor(Date.now() / 1000);
   let state = "idle", label = "", startedAt = prev.startedAt || 0;
+
+  // A tool event after the turn ended, with nothing new in the transcript, comes from outside the
+  // conversation and would leave the row spinning on "Running command" until the next prompt. Every
+  // real turn writes a prompt, a notification or a tool_use line before its first tool event.
+  if ((event === "pre" || event === "post") && prev.state === "done" && turnEnded(p.transcript_path || prev.transcript)) {
+    try {
+      fs.appendFileSync(path.join(dir, "ignored.log"), JSON.stringify({ at: new Date().toISOString(), event, session: p.session_id, tool: p.tool_name, agent: p.agent_id || p.agent_type || "", input: JSON.stringify(p.tool_input || {}).slice(0, 200) }) + "\n");
+    } catch {}
+    return;
+  }
 
   switch (event) {
     case "prompt":
