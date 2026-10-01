@@ -94,6 +94,11 @@ Act as each person in their own browser: `doxy-provider` for the provider, clini
 
 A console error or failed request that appears only on this branch counts as caused by this change.
 
+**A stacked MR needs one more step.** Its target is a parent branch, which is unmerged work too. So a failure that also shows on the baseline is either the parent's doing or older. Settle it before calling it already there:
+
+- **The parent MR has a `doxy:blitz-test` summary comment for its current head, with an outcome of ready.** Compare the commit the comment names with the parent branch's head. That run would have caught a defect the parent introduced, so the failure is already there, with no extra stack.
+- **There is no such comment, or the parent has commits after it.** Run the scenario on one more fresh stack, `<name>-master`, cut from master. If it passes there, the parent caused it: that's blocking, and the fix belongs on the parent's branch. If it fails there too, it's already there.
+
 ## 5 — The testing overview
 
 Written for the user, short, with every result backed by its evidence. Sections, in this order:
