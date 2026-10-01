@@ -11,7 +11,18 @@ description: >-
 
 Input is a ticket, an MR or a branch, usually right after `/doxy:implement`. Output is a testing overview the user reads first: what was tested, what was found, with evidence, and the links to the stack, which stays up for more testing.
 
-Each step below prevents a failure that has happened: a test run that reused a stale stack, scenarios taken only from the spec while the edge cases agreed in the implementation conversation were lost, a "not covered" list where the new edge cases should have been, timings reported with no question behind them, and an overview with no links, so the user had to ask for them.
+Each step below prevents a failure that has happened: a browser that needed the user's screen and blocked their work, a test run that reused a stale stack, scenarios taken only from the spec while the edge cases agreed in the implementation conversation were lost, a "not covered" list where the new edge cases should have been, timings reported with no question behind them, and an overview with no links, so the user had to ask for them.
+
+## 0 — Check the setup
+
+Before anything else, check each of these, fix what is missing, and report one line per item: ready, or fixed and how.
+
+1. **Blitz.** Run the setup check and doctor the way the `blitz:blitz` skill (loaded with the Skill tool) says. When either fails, it hands over to `/blitz:setup`.
+2. **Two headless browsers**, as the Playwright MCP servers `doxy-provider` and `doxy-patient`. Each keeps its own in-memory profile, so the two people never share a sign-in, and neither needs a window or the user's Chrome. Check with ToolSearch `select:mcp__doxy-provider__browser_navigate,mcp__doxy-patient__browser_navigate`. If they are missing:
+   - When `claude mcp list` does not show them, set them up. Copy `playwright-mcp.json` from this skill's base directory to `~/.claude/doxy/`. Then run `claude mcp add -s user doxy-<role> -- npx -y @playwright/mcp@latest --config $HOME/.claude/doxy/playwright-mcp.json --output-dir $HOME/.claude/doxy/playwright/<role>` once with `provider` and once with `patient`, and `npx -y @playwright/mcp@latest install-browser chromium`.
+   - Either way, MCP tools load only when a session starts. Tell the user to restart Claude Code and run `/doxy:blitz-test` again, then stop.
+   - A first navigation that fails with `Browser "chromium" is not installed` needs the `install-browser` command above, and no restart.
+3. **Jira and GitLab.** Step 1 reads both. When a call needs authentication, ask the user to sign in through `/mcp` before going on.
 
 ## 1 — Gather what was agreed
 
@@ -32,10 +43,10 @@ Write it down before starting the stack. It has two parts, and both are required
 **New edge cases.** At least five that no source above names, each with the reason it could break. Look for them along these axes, in order:
 
 1. **Identity and lifecycle**: the object re-created rather than reopened, a reload mid-action, a second tab, the provider and the patient in a different order.
-2. **Timing**: double clicks, two actions in quick succession, the action during a load or a reconnect, a slow or dropped network (Playwright's `context.setOffline`, `page.route` with a delay).
+2. **Timing**: double clicks, two actions in quick succession, the action during a load or a reconnect, a slow or dropped network.
 3. **Who**: Free and Premium, clinic owner and Member, the patient side, a second patient, the waiting room.
 4. **What else is running**: other apps open, none open, a headless or overlay app, a paused call, the feature flag off.
-5. **Platform**: WebKit (`browserName: 'webkit'`) and a mobile viewport, when the change touches the call or a layout.
+5. **Platform**: WebKit and a mobile viewport, when the change touches the call or a layout (`browser_resize`, or a script with WebKit).
 
 A source's "out of scope" items are tested when they are cheap. The result then says whether they fail and how, since out of scope does not mean safe.
 
@@ -61,14 +72,15 @@ Load the `blitz:blitz` skill with the Skill tool and follow it, and Blitz's own 
 
 ## 4 — Test in real browsers
 
-Use Playwright, headless, from the workstream's own e2e install. Never the user's Chrome.
+Act as each person in their own browser: `doxy-provider` for the provider, clinic owner or the first account, and `doxy-patient` for the patient or the second account. Look at each page's snapshot, act, and look again, the way a person would. A third person, such as a second patient, gets a script (below).
 
-- Put the scripts in the workstream folder, outside its worktrees, so nothing lands in the branch. Write them as `.cjs` and run them with `NODE_PATH=<core worktree>/e2e/v2/node_modules node <script>.cjs`, so they resolve that install's Playwright.
-- Use one browser context per person. Run Chromium with fake camera and microphone (`--use-fake-ui-for-media-stream`, `--use-fake-device-for-media-stream`) and grant both permissions.
-- Sign in and check in the way Blitz documents. The page objects in `e2e/v2/pages/` show the selectors.
-- For each scenario, note its start and end time, and record the console output, the failed requests, and the lines of the stack's log files (their paths are in `status --json`) between those times.
-- When the change writes data, read the rows back from where they land, Postgres through the database link or Hotpot through its Convex dashboard, and quote them as evidence. Take a screenshot at the moment that proves the result, and always on a failure, and keep them next to the scripts.
-- Then run the existing e2e suites for the touched areas through `blitz <name> e2e`. They are the regression net, never the main test.
+- Sign in and check in the way Blitz documents. The page objects in `e2e/v2/pages/` name the screens and controls.
+- **Run the scenarios first:** the agreed ones, then the new edge cases. For each one, note its start and end time. Record the browsers' console messages and failed requests (`browser_console_messages`, `browser_network_requests`), and the lines of the stack's log files between those times (their paths are in `status --json`). Drop the network with `browser_run_code_unsafe` and `context.setOffline`.
+- **Then poke around.** Use the changed screens and the ones next to them the way each person would: other paths to the same action, going back, reloading, resizing, waiting, switching between the two browsers mid-action. Note anything odd, even when no scenario predicted it: a console error, a failed request, a layout jump, wrong or missing copy, a slow response, a state the other person does not see, or something that looks unfinished. Each oddity becomes a finding with its evidence, or a new edge case that is then tested.
+- When the change writes data, read the rows back from where they land, Postgres through the database link or Hotpot through its Convex dashboard, and quote them as evidence.
+- Take a screenshot (`browser_take_screenshot`) at the moment that proves a result, and always on a failure.
+- **Scripts are for repetition:** the timing runs, a retry, a third person. Write them as `.cjs` in the workstream folder, outside its worktrees, so nothing lands in the branch. Run them with `NODE_PATH=<core worktree>/e2e/v2/node_modules node <script>.cjs`, headless, with the fake media flags from `playwright-mcp.json`.
+- Last, run the existing e2e suites for the touched areas through `blitz <name> e2e`. They are the regression net, never the main test.
 
 A failure is retried once, to tell a flaky one from a real one. When a finding is a bug, write it down and keep testing. This skill never fixes code.
 
@@ -82,7 +94,7 @@ Written for the user, short, with every result backed by its evidence. Sections,
    - Separately, the MR's ephemeral environment (`https://core-<mr-number>.doxy-ephemeral.me`) when the MR carries a deploy label. It is closer to prod and is where other people test, so the overview never treats it as this run's stack.
 3. **Findings**, the most severe first. Each one has its consequence, its steps to reproduce, the evidence (a log line, a screenshot path or a request) and the suspected cause as `file:line` when it is known.
 4. **Agreed scenarios**: a table with the scenario, its source, the result and the evidence.
-5. **New edge cases**: the same table, with the reason each could break in place of the source.
+5. **New edge cases**: the same table, with the reason each could break in place of the source. The oddities found while poking around are here too, marked as found that way.
 6. **Performance**: the numbers with the runs and what they were compared against, or the one line saying why it was skipped.
 7. **e2e suites**: each with its result.
 8. **Not tested**, and why.
