@@ -103,7 +103,12 @@ Show the screenshots that prove a finding by reading them into the conversation.
 
 ## 6 — The MR comment
 
-After the overview, ask in one line whether to post a summary of it to the MR as a new comment. On a yes, write it to a file, post it with `glab mr note <iid> -m "$(cat <file>)"`, and link the comment.
+After the overview, write the comment below to a file, show the whole draft in the session, and ask in one line whether to post it to the MR as a new comment. On a yes:
+
+1. Upload each screenshot it names with `glab api --method POST projects/<url-encoded project path>/uploads -F file=@<path>`, and swap its placeholder for the `markdown` the upload returns.
+2. Post the comment with `glab mr note <iid> -m "$(cat <file>)"`, and link it.
+
+**Screenshots** go in only when they show what a sentence cannot: a finding the user can see, such as wrong copy or a broken layout, or the screen a UI ticket changes. That means at most three, and on most runs none. The user cannot see images in the terminal, so the draft names each one. Read each chosen screenshot first and confirm it shows the claim. Then put it under the finding or scenario it proves, as `![<what it shows, in one line>](screenshot: <file name>)`, a placeholder that the upload replaces.
 
 Its reader is a reviewer who wasn't in this session. It never names a local URL, an account, a file path on this machine, a scenario ID or where a scenario came from. It carries only the sections this run produced: a section with nothing in it is left out, as is a performance section when performance was skipped. In this order:
 
