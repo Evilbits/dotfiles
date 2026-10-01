@@ -8,6 +8,7 @@ const TAGLINES = {
   design: 'an idea → a brief the team can discuss; ends with the doc and a Shape verdict',
   ticket: 'brief → epic + tickets, a single ticket, or a spike; or reevaluate an existing ticket',
   implement: 'ticket URL → branch, scope, plan, in-session code with tests and atomic commits',
+  'blitz-test': 'a draft MR → a fresh blitz stack, real browsers, a testing overview with the links',
   review: 'an MR or a proposal → architecture-first findings, then comment placement',
   debug: 'a bug report → evidence from Datadog, Slack and the code, a facts checkpoint, a post mortem',
 };

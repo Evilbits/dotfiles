@@ -63,7 +63,7 @@ Then:
 
 ### Workflow skills
 
-`plugins/doxy` is one plugin with eight skills. Each is one step of the development flow:
+`plugins/doxy` is one plugin with nine skills. Each is one step of the development flow:
 
 - `/doxy:feature` interviews a product manager or designer about a feature in product words. It writes Jira tickets checked against the code, with an engineering-review spike on every point that crosses a platform boundary.
 - `/doxy:vibe-app` takes such a ticket and a design to stacked app merge requests, boilerplate first. It self-reviews them against the Apps team's rules and stays blocked until engineering has answered every spike.
@@ -71,6 +71,7 @@ Then:
 - `/doxy:design` takes an idea to a brief the team can discuss.
 - `/doxy:ticket` turns the brief into Jira tickets.
 - `/doxy:implement` takes a ticket to a draft MR, with a review in a fresh context.
+- `/doxy:blitz-test` tests a draft MR on a fresh blitz stack in real browsers, with the scenarios agreed during the work plus new edge cases, and leaves the stack up for more.
 - `/doxy:review` reviews a change or a proposal from the Apps/SDK architecture frame.
 - `/doxy:debug` takes a bug report through Datadog, Slack and the code to a short post mortem.
 
