@@ -11,7 +11,7 @@ description: >-
 
 Input is a ticket, an MR or a branch, usually right after `/doxy:implement`. Output is a testing overview the user reads first: what was tested, what was found, with evidence, and the links to the stack, which stays up for more testing.
 
-Each step below prevents a failure that has happened: a browser that needed the user's screen and blocked their work, a test run that reused a stale stack, scenarios taken only from the spec while the edge cases agreed in the implementation conversation were lost, a "not covered" list where the new edge cases should have been, timings reported with no question behind them, and an overview with no links, so the user had to ask for them.
+Each step below prevents a failure that has happened: a browser that needed the user's screen and blocked their work, a test run that reused a stale stack, scenarios taken only from the spec while the edge cases agreed in the implementation conversation were lost, a "not covered" list where the new edge cases should have been, timings reported with no question behind them, and an overview with no links, so the user had to ask for them, and an MR left with no record of the testing.
 
 ## 0 — Check the setup
 
@@ -100,6 +100,20 @@ Written for the user, short, with every result backed by its evidence. Sections,
 8. **Not tested**, and why.
 
 Show the screenshots that prove a finding by reading them into the conversation. Name the rest by path.
+
+## 6 — The MR comment
+
+After the overview, ask in one line whether to post a summary of it to the MR as a new comment. On a yes, write it to a file, post it with `glab mr note <iid> -m "$(cat <file>)"`, and link the comment.
+
+Its reader is a reviewer who wasn't in this session. It never names a local URL, an account, a file path on this machine, a scenario ID or where a scenario came from. It carries only the sections this run produced: a section with nothing in it is left out, as is a performance section when performance was skipped. In this order:
+
+1. The heading `` ## `doxy:blitz-test` summary ``, then one paragraph: the commit tested, that it ran on a local Blitz stack, who was in the browsers, and that the scenarios came from the ticket, the design and the reviews plus new edge cases. The comment condenses the overview and never copies it.
+2. **Outcome**, in one line.
+3. **Scenarios**: one table with the columns Scenario and Result, holding the agreed scenarios and the new edge cases together. Each result starts with Pass, Fail, As designed, Can't be reached (the UI never allows it) or Not applicable (it couldn't run as planned), then the one number or fact that shows it. Oddities found while poking around are findings, so they get no row here.
+4. **Performance**: a table of what was measured against what, then at most two sentences on what explains the numbers.
+5. **Findings**: a numbered list, the most severe first. Each one is at most three sentences: what happens, the evidence in words, and the suspected cause as `file:line` when known. Severity labels are left out. Findings that happened once and didn't reproduce are grouped as the last item, one line each.
+6. **e2e suites**: a table with the columns Suite and Result, each result the count plus at most a short clause on a failure.
+7. **Not tested**, in one line.
 
 ## Afterwards
 
