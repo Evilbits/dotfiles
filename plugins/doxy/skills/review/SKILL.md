@@ -36,6 +36,18 @@ Then one mechanics file:
 
 When a proposal arrives with an implementation in flight, review the proposal first and say which of its claims the implementation has settled.
 
+## Two reviewers, one judgement
+
+On code, the review is gathered by two subagents with different briefs and judged here. Each sees the artefact and the contract: the diff against the right base, the commit trail, the callers and consumers, the ticket, the rules for the touched paths. Neither sees the author's claims as claims to trust (the description is handed over as "what the author says it does, to be checked"), the other's output, or anything this session has concluded. A reviewer handed a conclusion reads for confirmation.
+
+**The architecture reviewer** runs `references/brief-architecture.md`: the rules and precedent check, layer placement, published surface, vocabulary, decision points, arrangement, version skew. It is allowed to come back with nothing; on most changes it should.
+
+**The code reviewer** runs `references/brief-code.md`: defects with their trigger sequence, failure paths, lifecycle and timing, the contract with the other side quoted from that side's code or merged MR, performance, and tests that cannot catch the regression they claim to cover. It gets no doctrine and no architecture questions.
+
+**The gate.** The architecture reviewer runs only when the diff carries a decision. Step 0 of `references/reviewing-code.md` lists the signals (a Dockerfile, CI, Terraform or root config; a new runtime dependency or system binary; a new top-level folder or module in an app; a new cross-project import; a published lib's exports, a changeset, a capability or manifest schema, a GraphQL schema, an entity or a migration; more than one project touched; anything under `apps/extensions/**` or `libs/extensions/**`). Any one of them turns the lane on. Print the decision and its reasons before spawning: "Architecture lane on: Dockerfile, new runtime dependency" or "Architecture lane off: one component under `apps/frontend`". The user can turn it on with "with architecture" in the request. The code reviewer always runs.
+
+Spawn both in parallel with the Agent tool, general-purpose, read-only. Each brief says what to read and where to stop reading, and returns raw findings in the layout below, each marked **walked** (every step traced in the code) or **suspected** (a step assumed, named). Nothing a child returns is a verdict; this session rates, verifies and presents.
+
 ## The altitude rule
 
 Architecture is judged first and decides which other findings survive.
@@ -48,6 +60,10 @@ A local finding inside something an architectural finding would restructure or d
 
 **Decisions outrank defects.** A decision that sets a direction for the repo, such as a new dependency class, a second way of doing something the repo already does one way, a change to a shared file every project uses, or a data shape or contract others will build on, is the first thing reported and the one the user most needs to be able to counter. A bug is easier to find and cheaper to fix than a direction, so a review that leads with bugs and files the direction under them has reviewed at the wrong altitude even when every bug is real.
 
+**A walked defect is never held.** A defect whose trigger sequence has been traced step by step is reported at its own level however rare the sequence and whatever architecture finding is open; it is marked as surviving or dying with the restructure, as step 3 of `references/reviewing-code.md` says. Only Low findings and Medium findings about code an open Critical or High finding would restructure are held.
+
+**A thread already covering a point lowers nothing.** When a human or a bot has raised the same thing, the finding keeps its level and its place in the ranking and carries "already raised by X" in its header. Agreement with that thread is worth saying when the review adds evidence; the posting filter decides whether that is a reply, a new comment or nothing.
+
 ## Triage, shared by both branches
 
 **No numeric cap on finding.** Find every substantive issue; dependency decides what is held back, and the posting filter below decides what reaches the MR.
@@ -55,6 +71,8 @@ A local finding inside something an architectural finding would restructure or d
 **Severity answers one question: should this merge as it stands?** Two things make the answer no, and each finding says which applies. *Consequence*: what a user, a patient's data or an operator would feel in production if it shipped. *Reversal cost*: who would have to change what, in which repos, to undo it later. Fix size decides nothing; a one-line fix for a defect users would feel is still Critical.
 
 **Write the deciding line before picking the label.** For a `C` finding, the consequence in production and how sure the failure path is. For an `A` finding, the reversal cost and which rule it breaks. The label follows from that line, never the other way round.
+
+**A decision the diff lands is this change's decision.** A Dockerfile, a dependency, infrastructure, a schema or a published export in the diff ships when the MR merges, whatever the description says will move later. It is graded as landed, with its reversal-cost line, and "it will be moved in the batch ticket" is recorded as a claim next to it, never as a reason to defer. The reference miss: a folder placement was ranked above system Chromium added to a shared service's image, because the description said the batch would run elsewhere later; the deciding lines ("move files" against "a release of its own") would have ordered them the other way.
 
 - **Critical** — cannot merge as it stands. A real defect with a concrete failure path users or data would feel, a security or data-loss risk, an implementation that does not do what the change claims, or an architecture that breaks a rule in the repo's own `.mdc` files or `AGENTS.md`. Also a decision that costs more than one coordinated release in repos this team owns to undo: a contract apps outside the team will import, a data shape written into undeletable or PHI rows, a decision other work builds on with no later review point.
 - **High** — an important bug or design fault that should be fixed before merge but does not fail the change outright: a defect with a real but narrow failure path, a published surface that will be awkward to live with, a rule bent rather than broken.
@@ -73,7 +91,7 @@ Triage produces the full list; posting is a second filter. The MR thread is for 
 
 The expected comment count follows the risk and the architectural reach of the change, not its line count. A large MR with one defect and sound shape gets one substantive comment and a short summary. A re-review posts only what the revision changed or what was held, and says which earlier points are settled.
 
-The full list, including what was filtered, is always given to the user before drafting, so they can pull anything back in. Every finding shown to the user, posted or held, uses the same layout, one labelled line each, consequence first because that is what the user gates on:
+The full list, including what was filtered, is always given to the user before drafting, so they can pull anything back in. It has two sections, **Architecture** and **Code**, each ranked Critical to Low, defects first within a level, so the two angles stay visible; the altitude rule applies across both. Every finding shown to the user, posted or held, uses the same layout, one labelled line each, consequence first because that is what the user gates on:
 
 ```
 **[C1 — Critical]** `file:line` — the claim in one sentence. *Posts* / *Held: reason*.
@@ -94,7 +112,7 @@ Close the session view with two lines: `**Low, held:**` naming each Low item in 
 
 **Holding Low findings.** While any Critical or High architectural finding is open, hold every Low finding and give one closing line with the count and categories, deferred until the shape is settled. Enumerate only if asked.
 
-**When the architecture pass finds nothing**, say so, then report the smaller findings and list the Low findings, since no pending decision invalidates them. A clean architecture pass is a result, not a gap.
+**When the architecture reviewer finds nothing, or did not run**, say so, then report the Code findings and list the Low findings, since no pending decision invalidates them. A clean architecture pass is a result, not a gap.
 
 **On a re-review, raise what was held** and say which earlier points the revision settled.
 
@@ -108,7 +126,7 @@ Say plainly when the net is near neutral and the gain is readability or one conc
 
 ## Implementer mode
 
-Used when `/doxy:implement`'s hand-off runs this skill in a subagent. Inputs are the MR URL, its description and the Jira ticket, and nothing from the authoring session. Run the code mechanics over `master..<branch>` with the description and ticket as the change's stated goal. Skip the placement plan and draft no comments; the reader is the implementer, not GitLab. Return each finding in the layout from What reaches the MR, consequence first, then the checks that passed, then held Low findings in one line. Mark any finding that would reopen a design decision, so the implementer routes it to the user instead of acting on it.
+Used when `/doxy:implement`'s hand-off runs this skill at the end of a ticket, in the implementing session. The two reviewers are the fresh contexts: their briefs get the MR URL, the description as written, the Jira ticket and the diff over `master..<branch>`, and nothing from the session, no plan, no design doc, no conversation. Skip the placement plan and draft no comments; the reader is the implementer, not GitLab. Return each finding in the layout from What reaches the MR, in its two sections, then the checks that passed, then held Low findings in one line. Mark any finding that would reopen a design decision, so the implementer routes it to the user instead of acting on it.
 
 ## Discussion
 

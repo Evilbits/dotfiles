@@ -8,6 +8,19 @@ Diff against the MR's target branch, never master by default. A title ending `(n
 
 **Split the diff by blast radius before reading it.** List every changed path outside the change's own directory: `.gitlab/`, root configs, the lockfile beyond the change's own dependencies, shared libs, docs that describe other things. Each of those is reviewed as its own change with its own goal, consequence line and severity, because it lands on every project in the repo whatever the feature does. A repo-wide change riding in a feature MR is reported on its own even when it is correct.
 
+**Decide the architecture gate from the same list.** The architecture reviewer runs when the diff carries any of these, and the decision is printed with its reasons before anything is spawned:
+
+- A `Dockerfile`, anything under `.gitlab/`, Terraform, or a root config file.
+- A new entry in a `dependencies` block, or a new system binary or native dependency.
+- A new top-level folder or module in an app or service, or a new import across projects.
+- A published lib's exports, a `.changeset/` file, a capability or manifest schema, a GraphQL schema, an entity or a migration.
+- Changed paths in more than one project.
+- Any path under `apps/extensions/**` or `libs/extensions/**`.
+
+None of them present means the code reviewer runs alone: a fix inside one hook, a copy change or a component tweak does not pay for the architecture pass. "With architecture" in the request turns it on regardless.
+
+**Read the existing threads** on the MR, human and bot, before spawning, and hand them to both reviewers so a point already raised is marked rather than rediscovered.
+
 ## 1 — Establish the change's own goal
 
 State in one or two sentences what the change sets out to achieve and what it defers. Every finding is judged against that goal; one that asks the change to solve a different problem is out of scope.
@@ -16,25 +29,17 @@ State in one or two sentences what the change sets out to achieve and what it de
 
 Note what the author says is deliberate, then set it aside; `SKILL.md` says why the author's framing carries no weight in severity. A deliberate choice can still be wrong, and "this is deliberate, and here is why it is still wrong" is a stronger finding than one that reads as an oversight.
 
-## 2 — Architecture pass
+## 2 — Spawn the reviewers
 
-Before reading for bugs. Answer each question for yourself and record a pass in one word; only a failed check becomes a finding. Where a question finds something a Critical or High finding would later suppress, record it inside the answer and mark it held.
+Two general-purpose subagents, read-only, in parallel, each with its brief read from this skill's directory: `brief-architecture.md` when the gate is on, `brief-code.md` always. Each prompt carries the diff command and base, the commit trail, the worktree or checkout path, the ticket text, the MR description labelled as the author's claims, the existing threads, and for the code reviewer the mock policy section of the testing rule for the touched paths. It carries nothing this session has concluded about the change, and neither reviewer sees the other's output.
 
-0. **Rules and precedent, before the platform checks.** Two mechanical steps, run on every change, that catch the decisions the user most needs to see.
-   - *Rules.* For every `.mdc` under any `.cursor/rules/` whose `globs` match a changed path, or whose `description` matches the change, read its imperative sentences against the diff and record each as pass or broken. A broken sentence is Critical by the severity table, whatever the author says about it, and a bent one is High. Read the rule's globs literally: a rule that lives under `libs/ui` still applies to `apps/extensions` if its glob says so.
-   - *Precedent.* For every dependency, styling or state system, build plugin, folder layout, config file, CI pattern, data store or protocol the change introduces, grep the siblings (`apps/extensions/*/package.json`, `apps/*/`, `.gitlab/ci/`) and record how many already use it. Zero siblings means a first-of-its-kind decision for the repo. That is an architecture finding at Critical or High on its own, because the next change will cite this one as precedent and there is no later review point; the reviewer presents the choice, the rule or convention it departs from, the measured footprint and both ways out (converge, or change the rule first in its own MR) so the user can decide. A choice one sibling already made is judged on whether that sibling is the standard or the exception the rules name.
-1. **Layer placement.** Does every piece live in the layer that owns it? Run the ownership tests in `apps/extensions/AGENTS.md`: Where data lives, Where code lives, Capability or app feature.
-2. **Capability genericity.** If a capability is added or extended, run the five tests in `apps/extensions/.cursor/rules/02-capability-rules.mdc`. **Most capabilities pass them**; `interpreter` and `transcription` are the named exceptions and not precedent. Record the verdict on each test, and if they pass, say so and move on.
-3. **App-facing surface.** Is the public surface the thinnest that supports the use case? Two things fail: an export a consumer must never call, and an export no consumer uses today, type-only exports included, since a published type is permanent once an app imports it. Challenge hardest the types that describe the library's internal storage or wire model; hiding those is the library's purpose.
-4. **Vocabulary.** Does every consumer-facing name match the consumer's existing mental model? A new term the consumer must learn needs to earn itself.
-5. **One decision point.** Is each rule decided in one place? A rule enforced in three places drifts.
-6. **Arrangement versus volume.** If the diff is large for what it achieves, ask whether the arrangement is the cause. **Measure before making this finding.** Volume alone is not evidence, and "this feels like a lot of code" is an impression. Count the non-comment lines of the thing called overgrown, or diff the two files called duplicates and count the lines that differ. If the number is unremarkable, drop the finding. The recurring cause is an abstraction organised by concept that handles several directions of flow at once, such as a store doing both read and write; splitting by direction shrinks it.
-7. **Cross-participant and version skew.** Can two participants be on different versions, and does this behave when they are?
-8. **Test coverage as a signal.** Not a coverage review, which `.cursor/skills/review-coverage` does. Here it is architectural evidence: a new file with no spec, or a component with far less coverage than the sibling it was copied from, says what the author considered load-bearing. Report the asymmetry, not a list of missing cases.
+The architecture brief holds the checks that used to be the architecture pass here: rules and precedent, the landed-decision rule, layer placement, capability genericity, app-facing surface, vocabulary, one decision point, arrangement, version skew, coverage as a signal. The code brief holds the correctness questions: during the wait, twice, re-created, never answers, which failure, contract, input shapes, performance, tests that cannot catch a regression. Read a brief when a finding comes back that needs its context to judge; do not run its checks here.
 
-## 3 — Correctness pass
+## 3 — Rate what came back
 
-Read for defects. A correctness finding is reportable only when concrete: the inputs or sequence, and the wrong result. Deterministic failures outrank races. Say "this is a bug rather than a style preference" so it is not filed with the architecture discussion.
+Both lists arrive raw with a deciding line or a trigger each. Rate every finding here by the severity table in `SKILL.md`, in one scale across both lists, and apply the altitude rule: an open Critical or High architecture finding holds the Medium and Low findings inside what it would restructure, and holds every Low. A walked defect is never held. A finding marked "already raised by X" keeps its level.
+
+A correctness finding is reportable only when concrete: the inputs or sequence, and the wrong result. Deterministic failures outrank races. Say "this is a bug rather than a style preference" so it is not filed with the architecture discussion.
 
 **A real bug is always reported, including one inside code an architectural finding would restructure.** State the relationship:
 
@@ -63,7 +68,7 @@ Drop any finding that does not survive. A confident wrong finding costs more tru
 
 ## 5 — Present the review
 
-Give each finding an ID and a severity, for example `[C1 — Critical]`. Order Critical, High, Medium, Low, defects first within a level. A `C` finding never appears below an `A` finding of the same level.
+Two sections, **Architecture** and **Code**, so the two angles stay visible. Within each, give every finding an ID and a severity, for example `[C1 — Critical]`, and order Critical, High, Medium, Low. When the architecture lane did not run, say so and why in one line in its place; when it ran and found nothing, record that as the result it is.
 
 Two prefixes: **`A`** for shape (layer placement, capability genericity, published surface, vocabulary, decision points, arrangement) and **`C`** for a defect. A defect whose fix is a restructure stays one `C` finding with its own two-way costing, never an `A` and a `C` cross-referencing each other.
 
