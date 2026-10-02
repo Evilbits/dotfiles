@@ -186,7 +186,7 @@ Run against the full diff of each branch against its target, and fix everything 
 7. One name: folder, package name, manifest name and title, dock label, merge request titles, commit scopes.
 8. No `docs/plans/` or other documents; no `.env` with values; no files the person did not ask for.
 9. Lockfile changes only for the app's own packages. A lockfile diff touching other apps' entries means a stale `pnpm install`; redo it on a fresh `master`.
-10. Every acceptance criterion in the debrief has a test, or the merge request says why not; the pipeline (step 9) is what runs them.
+10. Every acceptance criterion in the debrief has a test, or the merge request says why not; the pipeline (step 10) is what runs them.
 11. Every screen in the debrief's Screens list is built, with every state the design shows; layout and copy follow the design frame.
 12. Nothing in the diff is a workaround for a boundary hit: no host change, no reading another app, no postMessage, no registry call.
 
@@ -201,17 +201,29 @@ Report the checklist result to the person in one line per item that needed a fix
 
 Tell the person only the result, in product words and one line: "An independent review found two things to tidy up; both are fixed", or "It raised one question for the engineers; it is in the merge request."
 
-## 9 — GitLab is the check
+## 9 — Try it before anything is pushed
 
-Nothing is linted, tested or built on this Mac; GitLab runs all of it on every push, and reading that result is this skill's job. Tests are still written, per screen and per rule of behaviour, so the pipeline checks the requirements and not only that the code compiles. After each push (step 10), poll the merge request's pipeline until it finishes. Green: go on. Red: read the failing job's log, fix the cause on the same branch, push again, and tell the person in one line what was wrong in product words ("a test for the pass notice failed; fixed"). Never ask the person to read a pipeline, and never mark anything done while the pipeline is red. The person's own look at the app is the ephemeral link (step 11).
+Nothing leaves this Mac until the person has used the app and said it is good enough. Two parts, in order.
 
-## 10 — Push and open the merge requests
+**The tester runs first.** Invoke the `doxy:blitz-test` skill with the Skill tool on the top branch of the stack, without a merge request: hand it the vibe ticket, the debrief (its user stories and acceptance criteria are the agreed scenarios) and the branch names in order, and tell it that findings come back here. It brings up a fresh stack with the app on it, tests the scenarios and its own edge cases in real browsers, and returns its overview. A finding it classes as caused by this change is fixed here, on the branch it belongs to, through the step 8 loop (checklist, then the fix), and the tester reruns what failed. A finding that needs anything outside the app is a boundary hit (step 5). Tell the person the result in product words and one line, as step 8 does.
+
+**Then the person tries it.** From the overview, send them the links in product words and nothing else: the provider sign-in with the seeded account and its password, the patient's check-in link, and the control page where they can sign in as anyone. Say in one line what the stack is ("a doxy.me running on your Mac, with your app installed; nobody else can see it") and ask them to use the app as a provider and, when the app has a patient side, as a patient. Then wait.
+
+What comes back is handled the same way the interview was: a change to what the app does or shows is a product decision, so restate it, ask the one question it opens if any, build it on the branch it belongs to, run the step 8 checklist and review again, have the tester rerun the affected scenarios, and send the links again. "It's broken" with no detail: ask what they did and what they saw, in those words, and treat the answer as a scenario for the tester. Repeat until they are done.
+
+**The gate.** Merge requests are opened only when the person has said, in their own words, that the implementation is good enough to send to the team. A question answered, a "looks fine" in passing, or silence is not that; when the reply could be read either way, ask once, plainly: "Shall I send this to the Apps team for review now, or is there more you want changed?" Record the answer in the vibe ticket as a comment ("Tried on <date>, sent for review") so the team can see the person signed it off.
+
+## 10 — GitLab is the check
+
+Nothing is linted, tested or built on this Mac; GitLab runs all of it on every push, and reading that result is this skill's job. Tests are still written, per screen and per rule of behaviour, so the pipeline checks the requirements and not only that the code compiles. After each push (step 11), poll the merge request's pipeline until it finishes. Green: go on. Red: read the failing job's log, fix the cause on the same branch, push again, and tell the person in one line what was wrong in product words ("a test for the pass notice failed; fixed"). Never ask the person to read a pipeline, and never mark anything done while the pipeline is red. The person has already used the app on their own Mac (step 9); the ephemeral link (step 12) is where the team sees it.
+
+## 11 — Push and open the merge requests
 
 Push each branch with `git push -u origin <branch>`. Open one draft merge request per branch through the GitLab MCP as `.cursor/skills/gitlab-merge-request/SKILL.md` describes: merge request 1 targets `master`, merge request 2 targets merge request 1's branch, merge request 3 targets merge request 2's. Titles `Draft: feat(<app>): <KEY> - <summary>`.
 
-The description follows the repo template, every section kept. "Description of change" says what was built and why in product words, links the ticket, links the other merge requests in the stack and says which order to merge, cites every spike the build rests on with the developer's answer, and lists what the design showed that could not be built as drawn and how it was built instead. "How to test" is the staging walk from step 9. "Screenshots" carries the step 9 screenshots. Then three sections the template does not have: **Dependencies added**, with reasons, or "None"; **Review findings for engineering**, from step 8, or "None"; and **Engineer steps that remain**, from step 7.
+The description follows the repo template, every section kept. "Description of change" says what was built and why in product words, links the ticket, links the other merge requests in the stack and says which order to merge, cites every spike the build rests on with the developer's answer, and lists what the design showed that could not be built as drawn and how it was built instead. "How to test" is the walk the person took on the test stack in step 9, written as steps on the ephemeral environment. "Screenshots" carries the tester's screenshots from step 9 when they show a screen the design changed. Then three sections the template does not have: **Dependencies added**, with reasons, or "None"; **Review findings for engineering**, from step 8, or "None"; and **Engineer steps that remain**, from step 7; and a line saying the person tried the app on a local stack and signed it off (step 9).
 
-Report the merge request links. The person marks them ready once they have seen the app on the ephemeral environment (step 11), and shares the links with the Apps team.
+Report the merge request links. The person marks them ready once they have seen the app on the ephemeral environment (step 12), and shares the links with the Apps team.
 
 **Follow-up tickets for engineers**, created now, from a fixed template, one Story each, priority Medium, no assignee, under the epic when there is one and otherwise linked "relates to" the vibe ticket, each saying which merge request it follows:
 
@@ -221,13 +233,13 @@ Report the merge request links. The person marks them ready once they have seen 
 
 Show the drafts, create on approval, report the keys as links.
 
-## 11 — A link the person can open
+## 12 — A link the person can open
 
 The top merge request of the stack carries the `deploy-full-ephemeral-env` label from the moment it is created, since the label must be present before the first pipeline runs. CI then deploys a whole doxy.me for that merge request, with the app registered in that environment's app store, and the bot comment carries the sign-up and sign-in links. To see the app there, the person's account needs the `Apps Beta Access Full` plan attached in the ephemeral Frontegg workspace, which an engineer does; say so in the same message as the link.
 
 After the push, poll the merge request's notes until `merge-request-commenter(bot)` has posted the deployment comment, checking every few minutes for up to an hour. Send that comment to the person verbatim, as the last message. If nothing arrives in an hour, say so, give the merge request link, and stop; never guess the URL. This is documented in `docs/guides/ephemeral-environments.md` and `apps/extensions/docs/04_deploy_web_apps.md`.
 
-## 12 — After review
+## 13 — After review
 
 When engineers have commented, the person returns with a merge request link. Read every discussion. A finding that stays inside the app and the rules is applied as a further commit on that branch, and the thread gets a one-line answer saying what changed. A finding that says an approach is wrong is applied the way the engineer says, never argued with. A finding that reopens a product decision goes back to the person as an interview question, not to the code. A finding that asks for something outside the app is a boundary hit and goes to step 5.
 

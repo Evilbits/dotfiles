@@ -12,7 +12,7 @@ description: >-
 
 The person has never used a terminal and does not know what any of these tools are. They are in the Claude Desktop app's Code tab, in a local session started in any folder (their home folder is fine). You run every command; they only do things in a browser and paste what they are asked for. Say what each step is for in one plain sentence before doing it, never ask them to type anything, and never explain a tool beyond what it does for them. Check before installing: nothing is assumed present, and nothing present is installed twice.
 
-What the setup gives them, in their words: a copy of doxy.me's code on this Mac, the programs that build it, and permission to read and change that code. No doxy.me runs on this Mac; when they build an app later, the app skill sends the change to GitLab and gives them a link to a test environment where they see it running.
+What the setup gives them, in their words: a copy of doxy.me's code on this Mac, the programs that build it, permission to read and change that code, and a private doxy.me that runs on this Mac for trying an app out before anyone else sees it. When they build an app later, the app skill tests it on that private doxy.me, gives them links to try it themselves, and only then sends the change to GitLab.
 
 ## 1 — What only they can do, asked first
 
@@ -41,7 +41,7 @@ After any install that changes the shell profile, run the next commands in a fre
 
 One token does everything; no SSH keys. Tell the person: "GitLab needs to know it is you when this Mac reads or sends code. It does that with a token, a long password you create once and paste here."
 
-1. Send them this link: https://gitlab.com/-/user_settings/personal_access_tokens?name=doxyme-vibe&scopes=read_api,read_repository,write_repository . Tell them to press "Create personal access token" and paste the value that appears, once, into this conversation.
+1. Send them this link, with `<date>` replaced by the day three months from today as `YYYY-MM-DD` (`date -v+3m +%F`): `https://gitlab.com/-/user_settings/personal_access_tokens?name=doxyme-vibe&scopes=read_api,read_repository,write_repository&expires_at=<date>`. GitLab's own default is one month, which has run out on people mid-project; if the form shows a month anyway, ask them to set the expiry to that date before pressing "Create personal access token". Then they paste the value that appears, once, into this conversation.
 2. Store it three ways, then never print it again:
    - Git, so clone and push work: `git config --global credential.helper osxkeychain`, then feed the keychain with `printf 'protocol=https\nhost=gitlab.com\nusername=<gitlab username>\npassword=<token>\n' | git credential-osxkeychain store`.
    - The package registry, so `pnpm install` can fetch doxy.me's own packages: append `export GITLAB_NPM_TOKEN=<token>` to `~/.zshrc`, and `chmod 600 ~/.zshrc`. The repo's own `.npmrc` reads that variable.
@@ -58,11 +58,22 @@ pnpm install
 
 `pnpm install` takes several minutes the first time; say so. A `401` naming `@doxyme` means the token is not reaching the registry: check `echo $GITLAB_NPM_TOKEN` is non-empty in this shell, and that the token has `read_api`. This install is what the generator and the lockfile need later; nothing on this Mac ever runs the app.
 
-## 5 — The proof
+## 5 — The proof of the code
 
-`pnpm install` finishing without an error is the proof: it means the checkout is complete, Node and pnpm are the right versions, and the registry token works, since the install pulls doxy.me's own packages. Nothing is built or tested on this Mac; the app skill leaves that to GitLab, which checks every change after it is sent. If the install fails, read the error, name the cause in plain words and fix it; never ask the person to interpret it.
+`pnpm install` finishing without an error is the proof: it means the checkout is complete, Node and pnpm are the right versions, and the registry token works, since the install pulls doxy.me's own packages. Nothing is built or tested here; the app skill leaves that to GitLab, which checks every change after it is sent. If the install fails, read the error, name the cause in plain words and fix it; never ask the person to interpret it.
 
-## 6 — Connectors, then hand over
+## 6 — The private doxy.me
+
+Tell the person: "Next is a private doxy.me that runs only on this Mac. When you build an app, it is tested there first, and you get links to try it yourself before anything is sent to the team." The tool is Blitz, doxy.me's own; its setup walk is the `blitz:setup` skill (loaded with the Skill tool) when this machine has the blitz plugin, and the README of the `@doxyme/blitz` package otherwise. Follow that walk; it checks before it installs and says what is left at every step. Four things about this person's machine that the walk does not know:
+
+- **The registry.** Installing Blitz needs the `@doxyme` scope in `~/.npmrc` with the token from step 3 on its lines, as the walk's prerequisites table spells out. The token already has `read_api`; write those lines, never a second token.
+- **GitLab over HTTPS, no SSH key.** The walk expects an SSH key; this person has the token in the keychain instead. Point Blitz at the HTTPS URLs through the environment variables the walk names for that case, in `~/.zshrc`. If `blitz doctor` still fails its `gitlab` row, make an SSH key for them (`ssh-keygen -t ed25519`), send them the public key to paste at gitlab.com/-/user_settings/ssh_keys, and check again. The account also needs access to `doxyme/cooks/hotpot`; a 404 there goes back to the admin from step 1.
+- **The secrets come from a teammate.** The walk's first option, `blitz secrets sync`, needs AWS access the person does not have. Ask a teammate who runs Blitz to run `blitz secrets export` and send the file (a chat message to the engineer who set this up is fine). Save what arrives with mode 600, `blitz secrets import <file>`, delete the file, and never print a value. Until the file arrives, stop at this point; everything before it stands.
+- **Two headless browsers**, which the app skill's tester uses so that it never needs the person's screen: the two Playwright MCP servers that `/doxy:blitz-test` step 0 sets up (copy its `playwright-mcp.json` to `~/.claude/doxy/`, `claude mcp add -s user doxy-provider …` and `doxy-patient …`, then `install-browser chromium`). They load on the next session, which step 7 starts anyway.
+
+The proof is the walk's own: `blitz doctor` green, then a first stack that answers in the browser (`blitz first up`, the URL from its status). Open that URL for them so they see a doxy.me on their Mac, then `blitz first drop`; the app skill makes its own stack per app.
+
+## 7 — Connectors, then hand over
 
 Ask them to open claude.ai → Settings → Connectors and switch on GitLab and Atlassian, signing in to each. Without them the app skill cannot read the epic or open merge requests. Figma is optional and worth switching on if they use it.
 
@@ -70,4 +81,4 @@ Then, in one message: quit this session, start a new local session in the Code t
 
 ## When it is already done
 
-Every step checks before it acts, so running this again on a set-up machine changes nothing and ends at step 6. When only one thing is broken (a token expired, Node gone after an update), the failing check names it; fix that alone.
+Every step checks before it acts, so running this again on a set-up machine changes nothing and ends at step 7. When only one thing is broken (a token expired, Node gone after an update, `blitz doctor` red after a Blitz update), the failing check names it; fix that alone.

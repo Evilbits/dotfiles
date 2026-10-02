@@ -11,6 +11,8 @@ description: >-
 
 Input is a ticket, an MR or a branch, usually right after `/doxy:implement`. Output is a testing overview the user reads first: what was tested, what was found, with evidence, and the links to the stack, which stays up for more testing.
 
+**Without a merge request.** Another skill (`/doxy:vibe-app` before its first push) can run this one on a branch that has no MR yet. Then the caller hands over the ticket, the agreed requirements and the branch, the diff is against `master`, nothing in step 1 reads an MR, step 5 has no ephemeral link, findings in step 6 go back to the caller instead of to `doxy:implement`, and step 7 does not run: the overview is the output, and the caller decides what happens next.
+
 Each step below prevents a failure that has happened: a finding left as "cause not known" because nothing said whether the change caused it, a browser that needed the user's screen and blocked their work, a test run that reused a stale stack, scenarios taken only from the spec while the edge cases agreed in the implementation conversation were lost, a "not covered" list where the new edge cases should have been, timings reported with no question behind them, and an overview with no links, so the user had to ask for them, and an MR left with no record of the testing.
 
 ## 0 — Check the setup
@@ -118,7 +120,7 @@ Show the screenshots that prove a finding by reading them into the conversation.
 
 ## 6 — Fix, or comment
 
-**Not ready:** don't offer the MR comment. Ask in one line whether to fix the blocking findings. On a yes, hand them to the `doxy:implement` skill (loaded with the Skill tool) as the work: a failing test that reproduces each finding first, then the fix, committed in the implementation worktree under its execute rules. Then bring the fix into the test stack the way Blitz's docs say. Rerun the failed scenarios, and the passed ones that touch the same code, and update the overview. Repeat until the verdict is ready or the user stops.
+**Not ready:** don't offer the MR comment. Ask in one line whether to fix the blocking findings. When another skill called this one, return the findings to it and stop; it owns the code. Otherwise, on a yes, hand them to the `doxy:implement` skill (loaded with the Skill tool) as the work: a failing test that reproduces each finding first, then the fix, committed in the implementation worktree under its execute rules. Then bring the fix into the test stack the way Blitz's docs say. Rerun the failed scenarios, and the passed ones that touch the same code, and update the overview. Repeat until the verdict is ready or the user stops.
 
 **Ready:** the MR comment follows. Findings fixed during this run go in it as found and fixed, each with its fix commit.
 
