@@ -91,18 +91,32 @@ Triage produces the full list; posting is a second filter. The MR thread is for 
 
 The expected comment count follows the risk and the architectural reach of the change, not its line count. A large MR with one defect and sound shape gets one substantive comment and a short summary. A re-review posts only what the revision changed or what was held, and says which earlier points are settled.
 
-The full list, including what was filtered, is always given to the user before drafting, so they can pull anything back in. It has two sections, **Architecture** and **Code**, each ranked Critical to Low, defects first within a level, so the two angles stay visible; the altitude rule applies across both. Every finding shown to the user, posted or held, uses the same layout, one labelled line each, consequence first because that is what the user gates on:
+The full list, including what was filtered, is always given to the user before drafting, so they can pull anything back in. The reader is a human scanning a terminal, so the view gives the overview before any detail, and no part of it is a dense paragraph. The layout, in this order:
 
 ```
-**[C1 — Critical]** `file:line` — the claim in one sentence. *Posts* / *Held: reason*.
-**Consequence:** what a user, the data, an app author or the next reader experiences if this ships as is.
-**Cause:** the mechanism behind it, in enough detail that a reader without the reviewer's context can follow it.
-**Fix:** the concrete change, with its cost when it is a restructure.
+**!<iid> at `<sha>`** · architecture lane on (<reasons>) / off (<reason>)
+
+**Verdict:** one sentence: merge as it stands, or not, and the one reason.
+
+| | Level | Where | Finding | |
+|---|---|---|---|---|
+| A1 | Critical | `file:line` | the claim in one line | posts |
+| C2 | High | `file:line` | the claim in one line | posts |
+| L3 | Low | `file` | the claim in one line | held |
+
+A: a decision about the shape of the change · C: a defect in the code · L: low, held until the shape is settled
+
+### A1 — Critical · the claim, as in the table
+
+- **Breaks:** what a user, the data, an app author or the next reader experiences if this ships as is. Deterministic or not. One or two sentences.
+- **Why:** the mechanism, in one or two sentences a reader without the reviewer's context can follow.
+- **Fix:** the concrete change and the test that pins it, with the cost when it is a restructure. One or two sentences.
+- **Evidence:** the `file:line`s, quoted contracts, library internals and spec names behind the finding, as a list of references, skippable.
+
+**Held:** the IDs given to the user only. **Would post:** the IDs going to the MR.
 ```
 
-The user does not have the reviewer's context, so a label or a file name on its own is never a finding, and the labels are never folded into one paragraph; the filter decides where a finding goes, never how much of it is written.
-
-Close the session view with two lines: `**Low, held:**` naming each Low item in a clause, and `**Would post:**` listing the IDs going to the MR so the user can add or remove before drafting.
+IDs are assigned in table order, with the prefix saying what kind of finding it is, and every finding in the table has a section below it, posted or held. The passes are not in the view; the reviewer records them and gives them when asked. The quotes and internals that justify a finding live only on its Evidence line, never in Breaks or Why. A finding whose Breaks or Why runs past two sentences is cut, and the cut material goes to Evidence or is dropped.
 
 **Dependency suppression.** Drop any finding whose subject a Critical or High architectural finding would restructure, move or delete. It is premature, not wrong. Never applies to a defect.
 
@@ -116,7 +130,7 @@ Close the session view with two lines: `**Low, held:**` naming each Low item in 
 
 **On a re-review, raise what was held** and say which earlier points the revision settled.
 
-**When a check passes, record the pass.** Most changes pass most checks; a review that finds a problem under every heading has stopped discriminating.
+**When a check passes, record the pass** for yourself and give it when asked; it stays out of the view. Most changes pass most checks; a review that finds a problem under every heading has stopped discriminating.
 
 ## Costing, shared by both branches
 
@@ -126,7 +140,7 @@ Say plainly when the net is near neutral and the gain is readability or one conc
 
 ## Implementer mode
 
-Used when `/doxy:implement`'s hand-off runs this skill at the end of a ticket, in the implementing session. The two reviewers are the fresh contexts: their briefs get the MR URL, the description as written, the Jira ticket and the diff over `master..<branch>`, and nothing from the session, no plan, no design doc, no conversation. Skip the placement plan and draft no comments; the reader is the implementer, not GitLab. Return each finding in the layout from What reaches the MR, in its two sections, then the checks that passed, then held Low findings in one line. Mark any finding that would reopen a design decision, so the implementer routes it to the user instead of acting on it.
+Used when `/doxy:implement`'s hand-off runs this skill at the end of a ticket, in the implementing session. The two reviewers are the fresh contexts: their briefs get the MR URL, the description as written, the Jira ticket and the diff over `master..<branch>`, and nothing from the session, no plan, no design doc, no conversation. Skip the placement plan and draft no comments; the reader is the implementer, not GitLab. Return the view from What reaches the MR as it stands, table and sections, then the checks that passed in one line, since the implementer acts on those too. Mark any finding that would reopen a design decision, so the implementer routes it to the user instead of acting on it.
 
 ## Discussion
 

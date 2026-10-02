@@ -68,11 +68,9 @@ Drop any finding that does not survive. A confident wrong finding costs more tru
 
 ## 5 — Present the review
 
-Two sections, **Architecture** and **Code**, so the two angles stay visible. Within each, give every finding an ID and a severity, for example `[C1 — Critical]`, and order Critical, High, Medium, Low. When the architecture lane did not run, say so and why in one line in its place; when it ran and found nothing, record that as the result it is.
+Use the layout in `SKILL.md`, What reaches the MR: the header line with the gate, the verdict, the table, the legend, one section per finding with its four bullets, then Held and Would post. Order the table Critical, High, Medium, Low, defects first within a level, and number in that order. The gate line says why the architecture lane ran or did not; when it ran and found nothing the table simply has no `A` row.
 
-Two prefixes: **`A`** for shape (layer placement, capability genericity, published surface, vocabulary, decision points, arrangement) and **`C`** for a defect. A defect whose fix is a restructure stays one `C` finding with its own two-way costing, never an `A` and a `C` cross-referencing each other.
-
-Each finding uses the layout in `SKILL.md`, What reaches the MR: header with ID, level, anchor and claim, then **Consequence**, **Cause**, **Fix** on their own labelled lines. Cause is the mechanism, never the symptom restated. In a posted GitLab comment the labels are dropped and the three parts become its paragraphs, consequence first (layout in section 6).
+Three prefixes: **`A`** for a decision about the shape (layer placement, capability genericity, published surface, vocabulary, decision points, arrangement, footprint), **`C`** for a defect, **`L`** for a Low that is held. A defect whose fix is a restructure stays one `C` finding with its own two-way costing, never an `A` and a `C` cross-referencing each other. Why is the mechanism, never the symptom restated. In a posted GitLab comment the bullets become paragraphs, Breaks first, and Evidence is folded into Why or dropped (layout in section 6).
 
 ### Costing a rewrite
 
