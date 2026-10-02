@@ -37,7 +37,7 @@ The architecture brief holds the checks that used to be the architecture pass he
 
 ## 3 — Rate what came back
 
-Both lists arrive raw with a deciding line or a trigger each. Rate every finding here by the severity table in `SKILL.md`, in one scale across both lists, and apply the altitude rule: an open Critical or High architecture finding holds the Medium and Low findings inside what it would restructure, and holds every Low. A walked defect is never held. A finding marked "already raised by X" keeps its level.
+Both lists arrive raw with a deciding line or a trigger each. **Save them before rating:** write each reviewer's output, unedited, to `<scratchpad>/review-<iid>-<short sha>.md` under a heading per reviewer, and append the rated view below it once written. The view is a compression; this file is the record the placement step drafts from, and the user opens it when a table row needs its full walk. Rate every finding here by the severity table in `SKILL.md`, in one scale across both lists, and apply the altitude rule: an open Critical or High architecture finding holds the Medium and Low findings inside what it would restructure, and holds every Low. A walked defect is never held. A finding marked "already raised by X" keeps its level.
 
 A correctness finding is reportable only when concrete: the inputs or sequence, and the wrong result. Deterministic failures outrank races. Say "this is a bug rather than a style preference" so it is not filed with the architecture discussion.
 
@@ -89,7 +89,7 @@ The reference standard for a costed architectural finding is in `review-doctrine
 
 ## 6 — Placement plan, only after consensus
 
-When the review is settled, output where each comment goes.
+When the review is settled, output where each comment goes. Draft every comment from the reviewer's full finding in the saved `review-<iid>-<short sha>.md`, never from the compressed view: the comment carries the trigger sequence, the quoted contract or the measured number that the table row left out.
 
 **Inline, attached to code.** Anything naming a change to specific lines, and any architectural point about one service, class or file. Give `file:line` and text short enough for a diff thread.
 

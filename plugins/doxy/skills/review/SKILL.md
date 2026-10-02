@@ -116,6 +116,7 @@ A: a decision about the shape of the change · C: a defect in the code · L: low
 - **Evidence:** the `file:line`s, quoted contracts, library internals and spec names behind the finding, as a list of references, skippable.
 
 **Held:** the IDs given to the user only. **Would post:** the IDs going to the MR.
+Full findings: `<scratchpad>/review-<iid>-<short sha>.md`
 ```
 
 IDs are assigned in table order, with the prefix saying what kind of finding it is, and every finding in the table has a section below it, posted or held. The passes are not in the view; the reviewer records them and gives them when asked. The quotes and internals that justify a finding live only on its Evidence line, never in Breaks or Why. A finding whose Breaks or Why runs past two sentences is cut, and the cut material goes to Evidence or is dropped.
