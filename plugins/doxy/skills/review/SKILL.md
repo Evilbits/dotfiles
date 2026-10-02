@@ -96,6 +96,8 @@ The full list, including what was filtered, is always given to the user before d
 ```
 **!<iid> at `<sha>`** · architecture lane on (<reasons>) / off (<reason>)
 
+**Goal:** one or two sentences: what the change sets out to do, and what it defers.
+
 **Verdict:** one sentence: merge as it stands, or not, and the one reason.
 
 | | Level | Where | Finding | |
