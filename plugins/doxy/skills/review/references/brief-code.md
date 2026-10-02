@@ -20,6 +20,7 @@ Ask each of every new or changed async wait, retry, subscription, cache, latch o
 - **During the wait.** What happens on close, unmount, dismiss, navigation or a second trigger while it is pending? Does the side effect that already ran (media stopped, a store emptied, a modal hidden) match the outcome that is then dropped?
 - **Twice.** What happens if it is called twice, or if the second call is of a different kind than the first?
 - **Re-created.** What is it keyed by, and does that survive the object being re-created with new ids (a registry refresh, a remount, a reconnect)?
+- **The aggregate.** For anything that waits on, drains or clears a collection (an `all()`, a `clear()`, a flush, a sweep): what does it cover, and what started through another path is outside it? A detach begun by a removal, a write queued before a close, a timer armed by a retry: name each producer and check the aggregate sees it.
 - **Never answers.** What happens if the other side never responds? Is there a timeout, and does teardown still run without one? Does the library in use reject on disconnect, or hold the call open?
 - **Which failure.** Is a refusal handled differently from a network error and from a timeout? If they share one error type, which branch do they all take, and is that the right branch for each?
 - **Contract.** Does the code do what the other side requires, as quoted? Does the description, the doc and the rule text say what the code now does, including after the last fix commit?
