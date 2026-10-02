@@ -119,7 +119,7 @@ A: a decision about the shape of the change · C: a defect in the code · L: low
 Full findings: `<scratchpad>/review-<iid>-<short sha>.md`
 ```
 
-IDs are assigned in table order, with the prefix saying what kind of finding it is, and every finding in the table has a section below it, posted or held. The passes are not in the view; the reviewer records them and gives them when asked. The quotes and internals that justify a finding live only on its Evidence line, never in Breaks or Why. A finding whose Breaks or Why runs past two sentences is cut, and the cut material goes to Evidence or is dropped.
+IDs are assigned in table order, with the prefix saying what kind of finding it is. Every finding has a row in the table; only a finding that posts has a section below it. A held finding's full text lives in the saved file named on the last line, and the user pulls it into the view or the MR by its ID. The passes are not in the view; the reviewer records them and gives them when asked. The quotes and internals that justify a finding live only on its Evidence line, never in Breaks or Why. A finding whose Breaks or Why runs past two sentences is cut, and the cut material goes to Evidence or is dropped.
 
 **Dependency suppression.** Drop any finding whose subject a Critical or High architectural finding would restructure, move or delete. It is premature, not wrong. Never applies to a defect.
 

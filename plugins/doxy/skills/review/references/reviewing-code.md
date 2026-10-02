@@ -68,7 +68,7 @@ Drop any finding that does not survive. A confident wrong finding costs more tru
 
 ## 5 — Present the review
 
-Use the layout in `SKILL.md`, What reaches the MR: the header line with the gate, the verdict, the table, the legend, one section per finding with its four bullets, then Held and Would post. Order the table Critical, High, Medium, Low, defects first within a level, and number in that order. The gate line says why the architecture lane ran or did not; when it ran and found nothing the table simply has no `A` row.
+Use the layout in `SKILL.md`, What reaches the MR: the header line with the gate, the goal, the verdict, the table with every finding, the legend, one section with its four bullets per finding that posts, then Held and Would post. Order the table Critical, High, Medium, Low, defects first within a level, and number in that order. The gate line says why the architecture lane ran or did not; when it ran and found nothing the table simply has no `A` row.
 
 Three prefixes: **`A`** for a decision about the shape (layer placement, capability genericity, published surface, vocabulary, decision points, arrangement, footprint), **`C`** for a defect, **`L`** for a Low that is held. A defect whose fix is a restructure stays one `C` finding with its own two-way costing, never an `A` and a `C` cross-referencing each other. Why is the mechanism, never the symptom restated. In a posted GitLab comment the bullets become paragraphs, Breaks first, and Evidence is folded into Why or dropped (layout in section 6).
 
