@@ -79,6 +79,8 @@ The first rounds are built from these axes, each checked against the map so that
 | Which screens does the design show, and which does it not? | The Screens list in the debrief |
 | What is explicitly not part of this? | Out of scope |
 
+**Siblings decide the defaults.** When the feature adds another one of something the app already has several of (a note type, a game, a form, a template, a setting), the existing ones are the specification. Read how they behave from the code before the first round, and treat everything they share as `inherited`: it is not asked. The rounds ask only where the new one has a reason to differ, and the person's words usually say where ("it works like the others but the sections are F, I, R, P"). Where a question is still asked, choice A is always "the same as the existing <kind> (today: <what they do, in product words, from the code>)" and is the recommendation; the other choices are things the product can do today, checked against the code, never a behaviour invented for the question. A choice away from A is a divergence: confirm it in the next round in one line ("FIRP would then handle a section with nothing to say differently from PIE, SOAP and DAP, which <what they do>; is that what you want, or should it match them?") and record it in the ledger as a divergence so the debrief lists it. The reference miss: a new Scribe note type, wanted "the same as the others", asked about Medical Mode and about a section with nothing to say, with no "same as the other note types" choice offered; the person picked a literal option, and the build gave one note type its own logic for a case the generating model already handles, which the review then caught.
+
 When an answer needs a fact from the code, look it up between rounds; only the questions downstream of that fact wait. A question that can only be answered by looking at something, such as how a screen should feel or which of two layouts reads better, is not asked again in words: log it as an open question for design and move on.
 
 Check every answer against the map. Three outcomes: it fits, and is recorded; it is a gap, recorded as work with no alarm; it crosses a premise, and it becomes a boundary-hit question (step 2) in the next round, before anything that depends on it.
@@ -102,9 +104,10 @@ Before any ticket, send the debrief as one message:
 1. **The feature in one paragraph.** What it is, for whom, where they meet it, in product words. No more than one paragraph.
 2. **The requirements, as user stories.** One per thing the person can see or do, "As a <role>, I want <what>, so that <why>", each followed by its acceptance criteria as bullets, each observable and in product words. Everything decided in the interview lands here or nowhere. A story that rests on an assumed decision is marked "Needs engineering review" with the option that was rejected, so the person sees the gate. Examples of the grain: "As a provider, I want to select QCI as my note type." "As a provider, I want to download my Scribe notes and my Record output from one place on the post-call screen."
 3. **Screens.** One line per screen, naming the design frame it comes from, or "existing screen, no frame" or "design system defaults, confirmed".
-4. **Feature flag**, when one was decided: its name and what it gates.
-5. **Open questions**, each with an owner.
-6. **Out of scope.**
+4. **Where it differs from the existing <kind>**, when the feature adds another of something: one line per divergence the person chose, with what the siblings do instead; otherwise the one line "Behaves like the existing <kind> in everything not listed above." This is the line the person reads to catch a literal answer they did not mean.
+5. **Feature flag**, when one was decided: its name and what it gates.
+6. **Open questions**, each with an owner.
+7. **Out of scope.**
 
 Then ask: is this the feature, and is anything missing or wrong? The person may read it and ideate further; that is the point of the step. New ideas or changes reopen the interview: rounds on the new branch only, through the boundary check like anything else, then the debrief again in full. Only when the person says the debrief is right do tickets get written. The debrief is the source the tickets and the build are written from.
 
