@@ -192,7 +192,7 @@ Run against the full diff of each branch against its target, and fix everything 
 
 Report the checklist result to the person in one line per item that needed a fix.
 
-**Then an independent review, per branch, before the first push.** Spawn one general-purpose subagent per branch whose only inputs are the branch, its target, the vibe ticket text and the debrief, with the instruction to invoke the `doxy:review` skill with the Skill tool and run its implementer mode over `<target>..<branch>`. It gets nothing else from this session. Check each finding against the code before acting on it. The person never decides anything the review raises: they cannot judge it, so every outcome is settled here or by engineering.
+**Then an independent review, per branch, before the first push.** For each branch, invoke the `doxy:review` skill with the Skill tool in its implementer mode over `<target>..<branch>`, giving it the vibe ticket text and the debrief as the change's stated goal. Check each finding against the code before acting on it. The person never decides anything the review raises: they cannot judge it, so every outcome is settled here or by engineering.
 
 - **Holds, and the fix stays inside the app and the rules:** apply it the way the reviewer proposes, as a further commit on that branch, and run the checklist again.
 - **Holds, but the fix needs anything outside the app:** a boundary hit. It goes to engineering as a spike (step 5), and the build waits for it like any other.
