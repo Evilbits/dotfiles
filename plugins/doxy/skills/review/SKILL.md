@@ -131,7 +131,7 @@ IDs are assigned in table order, with the prefix saying what kind of finding it 
 
 **When the architecture reviewer finds nothing, or did not run**, say so, then report the Code findings and list the Low findings, since no pending decision invalidates them. A clean architecture pass is a result, not a gap.
 
-**On a re-review, raise what was held** and say which earlier points the revision settled.
+**On a re-review, raise what was held** and say which earlier points the revision settled. A re-review is a code review: the gate is decided again on the delta and both reviewers are spawned on it with the threads, never replaced by this session reading the delta itself.
 
 **When a check passes, record the pass** for yourself and give it when asked; it stays out of the view. Most changes pass most checks; a review that finds a problem under every heading has stopped discriminating.
 
