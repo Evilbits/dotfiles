@@ -63,7 +63,7 @@ Then:
 
 ### Workflow skills
 
-The doxy.me workflow skills (`/doxy-apps:feature`, `/doxy-apps:vibe-app`, `/doxy-apps:implement`, `/doxy-apps:review` and the rest) are the `doxy-apps` plugin in the company marketplace, [doxyme/cooks/claude-plugins](https://gitlab.com/doxyme/cooks/claude-plugins), where they change through merge requests. A private mirror of what has merged lives in [Evilbits/claude-skills](https://github.com/Evilbits/claude-skills). The banner hook below lists them when a session starts in a doxyme repository.
+The doxy.me workflow skills (`/doxy-apps:feature`, `/doxy-apps:vibe-app`, `/doxy-apps:implement`, `/doxy-apps:review` and the rest) are the `doxy-apps` plugin in the company marketplace, [doxyme/cooks/claude-plugins](https://gitlab.com/doxyme/cooks/claude-plugins), where they change through merge requests. The banner hook below lists them when a session starts in a doxyme repository.
 
 ### Hooks
 
