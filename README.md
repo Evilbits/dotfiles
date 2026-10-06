@@ -63,31 +63,7 @@ Then:
 
 ### Workflow skills
 
-`plugins/doxy` is one plugin with nine skills. Each is one step of the development flow:
-
-- `/doxy:feature` interviews a product manager or designer about a feature in product words. It writes Jira tickets checked against the code, with an engineering-review spike on every point that crosses a platform boundary.
-- `/doxy:vibe-app` takes such a ticket and a design to stacked app merge requests, boilerplate first. It self-reviews them against the Apps team's rules and stays blocked until engineering has answered every spike.
-- `/doxy:vibe-app-setup` gets a non-engineer's Mac ready for that: the code, the tools and GitLab access, with no terminal typing.
-- `/doxy:design` takes an idea to a brief the team can discuss.
-- `/doxy:ticket` turns the brief into Jira tickets.
-- `/doxy:implement` takes a ticket to a draft MR, with a review in a fresh context.
-- `/doxy:blitz-test` tests a draft MR on a fresh blitz stack in real browsers, with the scenarios agreed during the work plus new edge cases, and leaves the stack up for more.
-- `/doxy:review` reviews a change or a proposal from the Apps/SDK architecture frame.
-- `/doxy:debug` takes a bug report through Datadog, Slack and the code to a short post mortem.
-
-The skills also trigger on ordinary requests; the slash names are for invoking one on purpose. Briefs and post mortems go to `~/.claude/specs`, which here points at `home/.config/claude/specs` and on other machines is created on first use.
-
-To install:
-
-1. Add the marketplace and the plugin:
-
-   ```
-   /plugin marketplace add https://github.com/Evilbits/dotfiles
-   /plugin install doxy@rasmus
-   ```
-
-2. Turn on auto-update. Claude Code leaves it off for marketplaces outside Anthropic's, so without it the skills stay on the version first installed. Run `/plugin`, open the **Marketplaces** tab, select `rasmus` and choose **Enable auto-update**. Every session start then fetches new versions.
-3. Restart Claude Code so the skills load.
+The doxy.me workflow skills (`/doxy-apps:feature`, `/doxy-apps:vibe-app`, `/doxy-apps:implement`, `/doxy-apps:review` and the rest) are the `doxy-apps` plugin in the company marketplace, [doxyme/cooks/claude-plugins](https://gitlab.com/doxyme/cooks/claude-plugins), where they change through merge requests. A private mirror of what has merged lives in [Evilbits/claude-skills](https://github.com/Evilbits/claude-skills). The banner hook below lists them when a session starts in a doxyme repository.
 
 ### Hooks
 

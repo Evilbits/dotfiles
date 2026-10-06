@@ -246,7 +246,7 @@ export function getConfigModel() {
 
 /**
  * The Jira ticket the session opened on, with its summary when a Jira tool result in the transcript
- * carries it. A session started as "/doxy:implement <ticket URL>" says nothing else about its
+ * carries it. A session started as "/doxy-apps:implement <ticket URL>" says nothing else about its
  * subject, and the worker has no network, so the ticket's own title is read from what the session
  * already fetched.
  */
@@ -292,7 +292,7 @@ function findIssueSummary(text, key) {
 // cockpit strips the ID and shows the verb as a pill already.
 function saysNothing(title) {
   const recap = title.replace(/^[A-Z][A-Z0-9]+-\d+:\s*/, "").trim().toLowerCase();
-  return /^(doxy[: -])?(implement|review|design|debug|ticket|feature|vibe[- ]app|snooze)( ticket)?$/.test(recap);
+  return /^(doxy(-apps)?[: -])?(implement|review|design|debug|ticket|feature|vibe[- ]app|snooze)( ticket)?$/.test(recap);
 }
 
 function generateTitleViaClaude(userMessages, model, assistantMessages = [], ticket = null) {

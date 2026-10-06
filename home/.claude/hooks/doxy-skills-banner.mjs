@@ -1,6 +1,6 @@
-// SessionStart hook (startup, clear): show the /doxy:* skill menu in the transcript, and tell
+// SessionStart hook (startup, clear): show the /doxy-apps:* skill menu in the transcript, and tell
 // Claude to route the first message to the matching skill. Only fires in the doxyme repos, where
-// those skills mean something. The skills ship as the "doxy" plugin; this reads the installed copy.
+// those skills mean something. The skills ship as the "doxy-apps" plugin from the doxyme marketplace; this reads the installed copy.
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -19,11 +19,11 @@ function skillsDir() {
   const home = process.env.HOME;
   try {
     const reg = JSON.parse(readFileSync(join(home, '.claude', 'plugins', 'installed_plugins.json'), 'utf8'));
-    const entries = (reg.plugins ?? reg)['doxy@rasmus'];
+    const entries = (reg.plugins ?? reg)['doxy-apps@doxyme'];
     const p = (Array.isArray(entries) ? entries[0] : entries)?.installPath;
     if (p && existsSync(join(p, 'skills'))) return join(p, 'skills');
   } catch {}
-  const cache = join(home, '.claude', 'plugins', 'cache', 'rasmus', 'doxy');
+  const cache = join(home, '.claude', 'plugins', 'cache', 'doxyme', 'doxy-apps');
   if (!existsSync(cache)) return null;
   const versions = readdirSync(cache).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   const last = versions[versions.length - 1];
@@ -50,11 +50,11 @@ process.stdin.on('end', () => {
   };
 
   const width = skills.length ? Math.max(...skills.map((s) => s.length)) + 1 : 0;
-  const lines = skills.map((s) => `  /doxy:${s.padEnd(width)} ${tagline(s)}`);
+  const lines = skills.map((s) => `  /doxy-apps:${s.padEnd(width)} ${tagline(s)}`);
   const skillBlock = skills.length ? ['Doxyme workflow skills:', ...lines] : [];
   const systemMessage = skillBlock.join('\n');
   const additionalContext = skills.length
-    ? `The user has workflow skills for this repo: ${skills.map((s) => '/doxy:' + s).join(', ')}. ` +
+    ? `The user has workflow skills for this repo: ${skills.map((s) => '/doxy-apps:' + s).join(', ')}. ` +
       'They will forget to type them. When the first message matches one of them, invoke that skill; ' +
       'when it plausibly matches one, name the matching skill in one line before answering.'
     : '';
