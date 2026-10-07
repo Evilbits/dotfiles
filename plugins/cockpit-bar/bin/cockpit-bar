@@ -94,7 +94,7 @@ def collect():
                 continue
             found.append({"url": u, "project": project, "repo": project.rsplit("/", 1)[-1], "iid": m["iid"] if m else int(u.rsplit("/", 1)[-1]),
                           "title": m["title"] if m else "", "state": m["state"] if m else ""})
-        verb, subject = describe(s, ticket, found, renamed.get(s["id"], (0, ""))[1])
+        verb, subject = describe(s, ticket, renamed.get(s["id"], (0, ""))[1])
         m = re.search(r"https://[a-z0-9.-]+atlassian\.net", s.get("first_prompt") or "")
         ticket_url = ("%s/browse/%s" % (m.group(0) if m else "https://" + jira_host, ticket)) if ticket else ""
         out.append({
@@ -110,30 +110,12 @@ def collect():
         })
     return {"rows": out, "due": sum(1 for r in out if r["due"])}
 
-KEY_RE = re.compile(r"^\s*(?:[A-Z][A-Z0-9]{1,9}-\d{1,6}|NOJIRA)\s*[:·\-]?\s*")
-CONVENTIONAL_RE = re.compile(r"^[a-z]+(?:\([^)]*\))?!?:\s*")  # feat(scope): … / fix: …
-
-def describe(s, ticket, found, renamed):
-    """(verb, subject): what kind of work the session is and what it is about, without identifiers.
-    The verb is cockpit's own, from the latest skill the session ran. The subject is a rename if
-    there is one, else for a review the MR's title, else the session title with a leading ticket
-    key removed."""
-    from cockpit.index import verb_of
-    verb = verb_of(s)
-    subject = renamed
-    if not subject and verb == "Review":
-        first = [u for u in s.get("mr_urls", []) if u in {f["url"] for f in found}]
-        mr = next((f for f in found if first and f["url"] == first[0]), None)
-        if mr and mr["title"]:
-            subject = mr["title"]
-    if not subject:
-        from cockpit.index import title_of
-        subject = title_of(s)
-    subject = KEY_RE.sub("", CONVENTIONAL_RE.sub("", subject)).strip()
-    subject = subject[:1].upper() + subject[1:]
-    if verb and subject.lower().startswith(("doxy-" + verb.lower(), "doxy:" + verb.lower(), verb.lower() + " ")):
-        subject = subject.split(" ", 1)[1] if " " in subject else subject
-    return verb, subject or ticket or "session"
+def describe(s, ticket, renamed):
+    """(verb, subject): cockpit's own, so the menu bar and the picker always name a session the
+    same way. The subject is a rename if there is one, else for a session that began as a review
+    the MR's title, else the session title, without identifiers."""
+    from cockpit.index import verb_of, subject_of
+    return verb_of(s), subject_of(s, renamed) or ticket or "session"
 
 def terminal_to_front():
     for app in ("Alacritty", "iTerm2", "WezTerm", "kitty", "Ghostty", "Terminal"):

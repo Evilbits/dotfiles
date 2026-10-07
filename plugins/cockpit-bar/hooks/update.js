@@ -24,6 +24,8 @@ const TOOL_LABELS = {
   TodoWrite: "Planning", AskUserQuestion: "Asking you", Skill: "Loading a skill",
 };
 
+const toolLabel = (t) => (t ? TOOL_LABELS[t] || (t.startsWith("mcp__") ? "Calling " + t.split("__")[1] : "Using tool") : "");
+
 // True when the transcript's last conversation entry closes a turn (the Stop hook summary or the
 // turn duration Claude Code writes after it).
 function turnEnded(transcript) {
@@ -81,7 +83,7 @@ process.stdin.on("end", () => {
       state = "thinking"; label = "Thinking…"; startedAt = ts; break;
     case "pre": {
       const t = p.tool_name || "";
-      state = "tool"; label = TOOL_LABELS[t] || (t.startsWith("mcp__") ? "Calling " + t.split("__")[1] : "Using tool");
+      state = "tool"; label = toolLabel(t);
       if (!startedAt) startedAt = ts;
       break;
     }
@@ -96,11 +98,13 @@ process.stdin.on("end", () => {
       const isPerm = p.notification_type === "permission_prompt" ||
         m.includes("permission") || m.includes("approve") || m.includes("allow");
       if (!isPerm) return;
-      state = "permission"; label = "Awaiting permission"; startedAt = 0;
+      // The label stays the tool's: the app shows "Awaiting permission" only while Claude's registry
+      // says a dialog is open, and falls back to this label when the request was approved unseen.
+      state = "permission"; label = toolLabel(p.tool_name || prev.tool) || prev.label || ""; startedAt = prev.startedAt || ts;
       break;
     }
     case "permreq":
-      state = "permission"; label = "Awaiting permission"; startedAt = 0; break;
+      state = "permission"; label = toolLabel(p.tool_name || prev.tool) || prev.label || ""; startedAt = prev.startedAt || ts; break;
     case "stop":
       state = "done"; label = "Done"; startedAt = 0; break;
     default:
@@ -111,7 +115,7 @@ process.stdin.on("end", () => {
   const termProgram = process.env.TERM_PROGRAM || prev.term_program || "";
   // process.ppid IS this session's `claude` process (hooks are spawned directly by it, stable for the
   // session's life). The app uses kill(pid,0) for liveness.
-  const out = { state, label, tool: p.tool_name || "", project, cwd, sessionId: p.session_id || "", transcript: p.transcript_path || prev.transcript || "", entrypoint, term_program: termProgram, pid: process.ppid, started: true, startedAt, ts };
+  const out = { state, label, tool: p.tool_name || (state === "permission" ? prev.tool || "" : ""), project, cwd, sessionId: p.session_id || "", transcript: p.transcript_path || prev.transcript || "", entrypoint, term_program: termProgram, pid: process.ppid, started: true, startedAt, ts };
   try {
     fs.mkdirSync(stateDir, { recursive: true });
     const tmp = statePath + "." + process.pid + ".tmp";

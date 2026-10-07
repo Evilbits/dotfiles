@@ -866,9 +866,23 @@ final class StatusController: NSObject, NSMenuDelegate {
             if now - s.ts > cap { return "idle" }
             if !s.transcript.isEmpty, let last = cachedLastTurnLine(s.transcript),
                last.contains("interrupted by user") { return "idle" }
+            // A permission request can be approved without a dialog (auto mode, an allow rule), and
+            // no hook fires until the tool finishes. Claude's own registry says "waiting" only while a
+            // dialog is on screen; without that, the tool is running.
+            if s.state == "permission", let status = registryStatus(s.pid), status != "waiting" { return "tool" }
             return s.state
         }
         return s.state == "done" ? "idle" : s.state
+    }
+
+    // The status Claude writes for its process in ~/.claude/sessions/<pid>.json: idle, busy, or
+    // waiting while a dialog needs the user. nil when the file is missing or unreadable.
+    func registryStatus(_ pid: Int32) -> String? {
+        guard pid > 0 else { return nil }
+        let path = NSHomeDirectory() + "/.claude/sessions/\(pid).json"
+        guard let data = FileManager.default.contents(atPath: path),
+              let o = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return nil }
+        return o["status"] as? String
     }
 
     // kill(pid,0) returns 0 if the process exists; EPERM = exists but not ours; ESRCH = gone.
