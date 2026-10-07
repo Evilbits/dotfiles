@@ -92,6 +92,21 @@ class Describe(unittest.TestCase):
             self.assertEqual(index.verb_of(st), "Review")
             self.assertEqual(index.subject_of(st), "Optimize Claude workflow")
 
+    def test_repeating_the_first_skill_after_a_review_keeps_the_session_its_own(self):
+        st = self.absorb(*skill("doxy-implement", "PROD-1"), custom("Retry the stash"), *skill("doxy:review", MR_URL), *skill("doxy-implement", "PROD-1"))
+        with mock.patch.object(mrs, "lookup_url", return_value={"iid": 16595, "title": "Some other MR", "url": MR_URL, "state": "opened"}):
+            self.assertEqual(index.subject_of(st), "Retry the stash")
+
+    def test_a_review_that_repeats_after_another_skill_still_began_as_a_review(self):
+        st = self.absorb(*skill("doxy-review", MR_URL), *skill("doxy-design", "x"), *skill("doxy:review", MR_URL))
+        with mock.patch.object(mrs, "lookup_url", return_value={"iid": 16595, "title": "feat: PROD-1 - retry stash writes", "url": MR_URL, "state": "opened"}):
+            self.assertEqual(index.subject_of(st), "Retry stash writes")
+
+    def test_a_review_claude_starts_itself_first_counts_as_beginning_with_a_review(self):
+        st = self.absorb(user("review " + MR_URL), skill_call("doxy:review"), *skill("doxy-design", "x"))
+        with mock.patch.object(mrs, "lookup_url", return_value={"iid": 16595, "title": "Retry stash writes", "url": MR_URL, "state": "opened"}):
+            self.assertTrue(index.began_as_review(st))
+
     def test_review_falls_back_to_the_title_until_the_mr_is_fetched(self):
         st = self.absorb(*skill("doxy-review", MR_URL))
         with mock.patch.object(mrs, "lookup_url", return_value=None):

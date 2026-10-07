@@ -23,7 +23,7 @@ PASTE_RE = re.compile(r"<pasted_content\b[^>]*>[\s\S]*?</pasted_content\b[^>]*>"
 JUNK_TITLE_RE = re.compile(r"^(please |i need|alternatively|base directory|review this pasted|want you to|then i)", re.I)
 SKIP_DIRS = ("claude-rename-worker",)
 # Bumped when a session's state gains a field that only a full read of its transcript fills.
-SCHEMA = 2
+SCHEMA = 3
 PROMPT_KEEP = 8
 PROMPT_CHARS = 400
 
@@ -31,7 +31,7 @@ def new_state(session_id, project_dir):
     return {
         "id": session_id, "project_dir": project_dir, "cwd": "", "branch": "",
         "custom_title": "", "ai_title": "", "first_prompt": "", "prompts": [],
-        "tickets": {}, "tickets_assistant": {}, "mrs": [], "mr_urls": [], "skills": [], "skill_runs": [],
+        "tickets": {}, "tickets_assistant": {}, "mrs": [], "mr_urls": [], "skills": [], "skill_runs": [], "first_skill": "",
         "first_ts": "", "last_ts": "", "turns": 0, "continued_in": "", "jira_host": "", "_pending_cmd": None,
     }
 
@@ -121,7 +121,10 @@ def absorb_line(state, line):
 
 def _note_skill(state, name):
     """Keep the skills a session has run, latest last: a slash command, or a skill Claude started
-    itself, as when one skill hands over to the next."""
+    itself, as when one skill hands over to the next. The first one is kept on its own, since the
+    list drops a skill when it repeats and keeps only the latest eight."""
+    if not state.get("first_skill"):
+        state["first_skill"] = name
     runs = state.setdefault("skill_runs", [])
     if name in runs:
         runs.remove(name)
@@ -295,11 +298,11 @@ def verb_of(state):
 def began_as_review(state):
     """True when the first skill the session ran is a review: the session exists to review the MR
     it was given. A session that reviews something along the way is still about its own work."""
-    runs = state.get("skill_runs") or state["skills"]
-    if not runs:
+    first = state.get("first_skill") or ""
+    if not first:
         return False
     verbs = cfg()["skill_verbs"]
-    return (verbs.get(runs[0]) or verbs.get(runs[0].replace(":", "-"))) == "Review"
+    return (verbs.get(first) or verbs.get(first.replace(":", "-"))) == "Review"
 
 def subject_of(state, live_name=""):
     """What the session is about, without identifiers. A name the user gave the running session
