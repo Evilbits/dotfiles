@@ -1,0 +1,24 @@
+#!/bin/sh
+# tmux-launch-dir PANE_PID PANE_PATH: the folder a new tmux window opens in.
+# In a pane running Claude, the folder the Claude session was started in, read from its transcript's first record: a session that moved into a worktree still opens new windows at the folder it was launched from. A session too new to have a transcript uses the folder Claude's registry records.
+# In any other pane, the pane's current path.
+pane_pid=$1
+pane_path=$2
+for c in $(pgrep -P "$pane_pid"); do
+  reg="$HOME/.claude/sessions/$c.json"
+  [ -f "$reg" ] || continue
+  sid=$(sed -n 's/.*"sessionId":"\([^"]*\)".*/\1/p' "$reg")
+  dir=""
+  if [ -n "$sid" ]; then
+    for t in "$HOME"/.claude/projects/*/"$sid".jsonl; do
+      [ -f "$t" ] && dir=$(grep -m1 -o '"cwd":"[^"]*"' "$t" | sed 's/^"cwd":"//; s/"$//')
+      break
+    done
+  fi
+  [ -n "$dir" ] || dir=$(sed -n 's/.*"cwd":"\([^"]*\)".*/\1/p' "$reg")
+  if [ -d "$dir" ]; then
+    echo "$dir"
+    exit 0
+  fi
+done
+echo "$pane_path"
