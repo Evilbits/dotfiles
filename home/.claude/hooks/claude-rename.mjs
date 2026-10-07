@@ -118,6 +118,19 @@ async function main() {
       return;
     }
 
+    // A conversation resumed under a new id keeps the title it already had instead of being named
+    // afresh: either the old transcript's records come along, stamped with the old id, or Claude
+    // starts the new transcript with the old title as its own custom-title record.
+    if (marker.status === "absent") {
+      const inherited = findAncestorTitle(jsonlPath, sessionId) || findCarriedTitle(jsonlPath);
+      if (inherited) {
+        markDone(markerPath, inherited);
+        writeTitle(jsonlPath, sessionId, inherited);
+        output();
+        return;
+      }
+    }
+
     // Already named: re-append our title so it's the last custom-title record
     // in the file (the picker reads the last one — last write wins).
     if (marker.status === "named") {
@@ -421,6 +434,35 @@ function findLatestRename(jsonlPath) {
   } catch {
     return null;
   }
+}
+
+/** The title of the latest earlier session id in this transcript that has one; later ids win. */
+// The first custom-title record in a transcript this hook has not named yet: Claude wrote it
+// there when it resumed the conversation under this new id.
+function findCarriedTitle(jsonlPath) {
+  try {
+    for (const line of readFileSync(jsonlPath, "utf-8").split("\n")) {
+      if (!line.includes('"type":"custom-title"')) continue;
+      const title = JSON.parse(line).customTitle;
+      if (title && title.trim()) return title.trim();
+    }
+  } catch {}
+  return null;
+}
+
+function findAncestorTitle(jsonlPath, sessionId) {
+  let title = null;
+  try {
+    const seen = new Set();
+    for (const line of readFileSync(jsonlPath, "utf-8").split("\n")) {
+      const m = line.match(/^\{[^\n]*?"sessionId":"([0-9a-f-]{36})"/);
+      if (!m || m[1] === sessionId || seen.has(m[1])) continue;
+      seen.add(m[1]);
+      const ancestor = readMarkerContent(join(MARKER_DIR, m[1]));
+      if (ancestor.status === "named") title = ancestor.title;
+    }
+  } catch {}
+  return title;
 }
 
 function hasMinimalConversation(jsonlPath) {
