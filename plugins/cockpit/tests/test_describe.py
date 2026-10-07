@@ -58,6 +58,11 @@ class Describe(unittest.TestCase):
         st = self.absorb(*skill("doxy:implement", "PROD-1"), *skill("doxy:blitz-test", "PROD-1"))
         self.assertEqual(index.verb_of(st), "Test")
 
+    def test_the_company_doxy_apps_plugin_names_its_verb(self):
+        st = self.absorb(*skill("doxy-apps:implement", "PROD-1"), *skill("doxy-apps:review", MR_URL))
+        self.assertEqual(index.verb_of(st), "Review")
+        self.assertEqual(index.verb_of(self.absorb(*skill("doxy-apps:vibe-app", "PROD-1"))), "App")
+
     def test_a_skill_claude_starts_itself_counts(self):
         st = self.absorb(*skill("doxy:implement", "PROD-1"), skill_call("doxy:review"))
         self.assertEqual(index.verb_of(st), "Review")
@@ -80,6 +85,12 @@ class Describe(unittest.TestCase):
         st = self.absorb(*skill("doxy-review", MR_URL))
         with mock.patch.object(mrs, "lookup_url", return_value={"iid": 16595, "title": "feat(extensions-hotpot): PROD-10905 - retry stash writes", "url": MR_URL, "state": "opened"}):
             self.assertEqual(index.subject_of(st), "Retry stash writes")
+
+    def test_a_session_that_reviews_along_the_way_keeps_its_own_title(self):
+        st = self.absorb(*skill("doxy-design", "an idea"), custom("Optimize Claude workflow"), *skill("doxy:review", MR_URL))
+        with mock.patch.object(mrs, "lookup_url", return_value={"iid": 16595, "title": "feat(extensions-hotpot): PROD-10905 - retry stash writes", "url": MR_URL, "state": "opened"}):
+            self.assertEqual(index.verb_of(st), "Review")
+            self.assertEqual(index.subject_of(st), "Optimize Claude workflow")
 
     def test_review_falls_back_to_the_title_until_the_mr_is_fetched(self):
         st = self.absorb(*skill("doxy-review", MR_URL))

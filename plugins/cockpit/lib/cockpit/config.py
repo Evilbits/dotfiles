@@ -29,10 +29,14 @@ DEFAULTS = {
     # Slash-command skills worth a column; empty means any command the session invoked.
     "skill_prefix": "",
     # The kind of work a session is, from the latest skill it ran: shown before its subject in the
-    # picker and the menu bar. Skills not listed here give no verb; `doxy:x` counts as `doxy-x`.
+    # picker and the menu bar. Skills not listed here give no verb; a plugin skill `doxy-apps:x` counts as `doxy-apps-x`.
     "skill_verbs": {"doxy-review": "Review", "doxy-implement": "Implement", "doxy-design": "Design",
                     "doxy-ticket": "Ticket", "doxy-epic": "Epic", "doxy-debug": "Debug",
-                    "doxy-blitz-test": "Test", "doxy-feature": "Feature", "doxy-vibe-app": "App"},
+                    "doxy-blitz-test": "Test", "doxy-feature": "Feature", "doxy-vibe-app": "App",
+                    "doxy-apps-review": "Review", "doxy-apps-implement": "Implement",
+                    "doxy-apps-design": "Design", "doxy-apps-ticket": "Ticket", "doxy-apps-debug": "Debug",
+                    "doxy-apps-blitz-test": "Test", "doxy-apps-feature": "Feature",
+                    "doxy-apps-vibe-app": "App"},
     # Host for ticket links in the status line; empty means the host of the first Jira link a
     # session was given, and no link when it never saw one.
     "jira_host": "",

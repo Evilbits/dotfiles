@@ -292,13 +292,22 @@ def verb_of(state):
             return verb
     return ""
 
+def began_as_review(state):
+    """True when the first skill the session ran is a review: the session exists to review the MR
+    it was given. A session that reviews something along the way is still about its own work."""
+    runs = state.get("skill_runs") or state["skills"]
+    if not runs:
+        return False
+    verbs = cfg()["skill_verbs"]
+    return (verbs.get(runs[0]) or verbs.get(runs[0].replace(":", "-"))) == "Review"
+
 def subject_of(state, live_name=""):
     """What the session is about, without identifiers. A name the user gave the running session
-    wins; a review is named after the MR it was given once the wake has fetched it; otherwise the
-    session title. A leading commit type, ticket key or repeat of the verb is dropped, since the
-    picker and the status line show those on their own."""
+    wins; a session that began as a review is named after the MR it was given once the wake has
+    fetched it; otherwise the session title. A leading commit type, ticket key or repeat of the verb
+    is dropped, since the picker and the status line show those on their own."""
     subject = live_name
-    if not subject and verb_of(state) == "Review" and state["mr_urls"]:
+    if not subject and began_as_review(state) and state["mr_urls"]:
         from . import mrs
         mr = mrs.lookup_url(state["mr_urls"][0])
         subject = (mr or {}).get("title") or ""
