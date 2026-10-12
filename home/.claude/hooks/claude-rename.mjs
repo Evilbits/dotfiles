@@ -181,7 +181,9 @@ async function nameSessionAI(sessionId, jsonlPath) {
 
   const markerPath = join(MARKER_DIR, sessionId);
   const attempts = readMarkerContent(markerPath).attempts || 1;
-  const { userMessages, assistantMessages } = extractMessages(jsonlPath);
+  const extracted = extractMessages(jsonlPath);
+  const userMessages = foldBareCommand(extracted.userMessages);
+  const { assistantMessages } = extracted;
   if (userMessages.length === 0) return;
 
   const ticket = findTicket(jsonlPath, userMessages[0]);
@@ -514,6 +516,15 @@ function extractMessages(jsonlPath) {
   } catch {}
 
   return { userMessages, assistantMessages };
+}
+
+// A skill run with no arguments ("/doxy-apps:implement") asks for its input, and the reply (a ticket
+// link, a brief) is what the session is about, so the two are read as one opening message.
+function foldBareCommand(userMessages) {
+  if (userMessages.length > 1 && /^\/[\w:-]+$/.test(userMessages[0])) {
+    return [`${userMessages[0]} ${userMessages[1]}`, ...userMessages.slice(2)];
+  }
+  return userMessages;
 }
 
 function extractText(content) {
