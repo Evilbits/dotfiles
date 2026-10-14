@@ -121,8 +121,12 @@ async function main() {
     // A conversation resumed under a new id keeps the title it already had instead of being named
     // afresh: either the old transcript's records come along, stamped with the old id, or Claude
     // starts the new transcript with the old title as its own custom-title record.
+    // /clear also starts the new transcript with the cleared session's title, but it begins a new
+    // conversation, so that title is not inherited.
     if (marker.status === "absent") {
-      const inherited = findAncestorTitle(jsonlPath, sessionId) || findCarriedTitle(jsonlPath);
+      const inherited =
+        findAncestorTitle(jsonlPath, sessionId) ||
+        (startedByClear(jsonlPath) ? null : findCarriedTitle(jsonlPath));
       if (inherited) {
         markDone(markerPath, inherited);
         writeTitle(jsonlPath, sessionId, inherited);
@@ -441,6 +445,16 @@ function findLatestRename(jsonlPath) {
 /** The title of the latest earlier session id in this transcript that has one; later ids win. */
 // The first custom-title record in a transcript this hook has not named yet: Claude wrote it
 // there when it resumed the conversation under this new id.
+function startedByClear(jsonlPath) {
+  try {
+    return readFileSync(jsonlPath, "utf-8")
+      .split("\n")
+      .some((line) => line.includes("<command-name>/clear</command-name>") && !line.includes("tool_result"));
+  } catch {
+    return false;
+  }
+}
+
 function findCarriedTitle(jsonlPath) {
   try {
     for (const line of readFileSync(jsonlPath, "utf-8").split("\n")) {
@@ -552,6 +566,7 @@ function isSystemMessage(text) {
     text.startsWith("<system-reminder>") ||
     // The body of a skill, injected as a user message when a skill is invoked.
     text.startsWith("Base directory for this skill") ||
+    text === "/clear" ||
     /^<[a-z-]+>/.test(text.trim())
   );
 }
