@@ -38,6 +38,14 @@ def attached_panes():
                 break
     return out
 
+def existing_panes():
+    """The pane ids tmux has now, or None when tmux cannot be asked (no server, not installed)."""
+    try:
+        r = subprocess.run(["tmux", "list-panes", "-a", "-F", "#{pane_id}"], capture_output=True, text=True)
+    except FileNotFoundError:
+        return None
+    return set(r.stdout.split()) if r.returncode == 0 else None
+
 def live_sessions():
     """Running Claude processes, keyed by canonical session id. Claude registers two kinds: an
     interactive process, with a tmux pane when it runs in one, and a background session
@@ -75,6 +83,14 @@ def live_sessions():
             live[sid] = d
         elif d.get("status") == "busy":
             live[sid] = dict(live[sid], status="busy")
+    # A recorded pane can outlive itself: a conversation continued into a background job keeps the
+    # pane it started in, and tmux gives that window to whatever runs there next. Jumping to it
+    # lands on another session, so a pane tmux no longer has is dropped.
+    panes = existing_panes() if any(d.get("tmux") for d in live.values()) else None
+    if panes is not None:
+        for sid, d in list(live.items()):
+            if d.get("tmux") and d["tmux"].split(".")[-1] not in panes:
+                live[sid] = {k: v for k, v in d.items() if k != "tmux"}
     return live
 
 def user_names():

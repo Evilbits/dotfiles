@@ -17,11 +17,13 @@ def entry(sid, kind, tmux=None, status="idle"):
 class LiveSessions(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.mkdtemp()
-        self.saved = registry.REGISTRY
+        self.saved = registry.REGISTRY, registry.existing_panes
         registry.REGISTRY = self.dir
+        # tmux is not asked in these tests unless one sets the panes it has.
+        registry.existing_panes = lambda: None
 
     def tearDown(self):
-        registry.REGISTRY = self.saved
+        registry.REGISTRY, registry.existing_panes = self.saved
 
     def write(self, name, d):
         with open(os.path.join(self.dir, name), "w") as f:
@@ -46,3 +48,17 @@ class LiveSessions(unittest.TestCase):
     def test_interactive_without_tmux_is_live(self):
         self.write("1.json", entry("s1", "interactive"))
         self.assertIn("s1", registry.live_sessions())
+
+    def test_a_pane_tmux_no_longer_has_is_dropped(self):
+        # A conversation continued into a background job keeps the pane it started in; tmux gives
+        # that window to another session, and a jump there lands on the wrong conversation.
+        self.write("1.json", dict(entry("s1", "bg", tmux="repo:@4.%4"), jobId="s1"))
+        registry.existing_panes = lambda: {"%5"}
+        live = registry.live_sessions()
+        self.assertNotIn("tmux", live["s1"])
+        self.assertEqual(live["s1"]["jobId"], "s1")
+
+    def test_a_pane_tmux_still_has_is_kept(self):
+        self.write("1.json", entry("s1", "interactive", tmux="repo:@4.%5"))
+        registry.existing_panes = lambda: {"%5"}
+        self.assertEqual(registry.live_sessions()["s1"]["tmux"], "repo:@4.%5")
