@@ -59,9 +59,23 @@ def rows(states, mtimes, live, only_snoozed=False):
         out.append("\t".join([
             st["id"], marker, fit(_age(mtimes.get(st["id"], 0)), 4), fit(project_of(st), 12),
             fit(verb_of(st), 9), fit(subject_of(st, names.get(st["id"], "")), 60),
-            fit(" ".join("!" + m for m in st["mrs"][:2]), 13), DIM + primary_ticket(st) + RESET,
+            fit(" ".join("!" + m for m in st["mrs"][:2]), 13), DIM + " ".join([primary_ticket(st)] + _also(st)).strip() + RESET,
         ]))
     return out
+
+def _also(st):
+    """The session's other tickets and MRs, so searching any of them finds it: every ticket key the
+    user typed besides the primary one, and every MR the session dealt with, typed or opened by Claude.
+    Keys Claude only mentioned stay out; they would make a search hit dozens of sessions."""
+    primary = primary_ticket(st)
+    tickets = [t for t, _ in sorted(st["tickets"].items(), key=lambda kv: -kv[1]) if t != primary]
+    numbers = list(st["mrs"]) + [u.rsplit("/", 1)[-1] for u in st.get("mr_urls", [])]
+    shown = set(st["mrs"][:2])
+    mrs = []
+    for n in numbers:
+        if n not in shown and n not in mrs:
+            mrs.append(n)
+    return tickets + ["!" + n for n in mrs]
 
 def snoozed_lines(states, banner=False):
     """One line per snoozed session, soonest first. The footer form is column-aligned for fzf;

@@ -21,5 +21,32 @@ class TicketColumn(unittest.TestCase):
         # --with-nth 2.. shows every column but the id, so the last one is matched.
         self.assertEqual(ui.pick.__code__.co_consts.count("2.."), 1)
 
+class EverythingASessionTouchedIsSearchable(unittest.TestCase):
+    def row(self, st):
+        with mock.patch.object(index, "cfg", return_value=dict(config.DEFAULTS)), \
+             mock.patch.object(snooze, "load", return_value={}), mock.patch.object(ui, "user_names", return_value={}), \
+             mock.patch.object(index, "pinned_tickets", return_value={}):
+            return ui.rows([st], {"s1": 0}, {})[0]
+
+    def test_every_ticket_typed_and_every_mr_dealt_with_is_in_the_row(self):
+        # A session that worked through three tickets and opened an MR itself is found by any of them.
+        st = index.new_state("s1", "-repo")
+        st["tickets"] = {"PROD-11963": 1, "PROD-11964": 1, "PROD-12011": 1}
+        st["tickets_assistant"] = {"PROD-11963": 9}
+        st["mrs"] = ["17713"]
+        st["mr_urls"] = ["https://gitlab.com/doxyme/code/doxyme-core/-/merge_requests/17889",
+                         "https://gitlab.com/doxyme/cooks/claude-plugins/-/merge_requests/165"]
+        row = self.row(st)
+        for term in ("PROD-11963", "PROD-11964", "PROD-12011", "17713", "17889", "165"):
+            self.assertIn(term, row)
+        self.assertIn("PROD-11963", row.split("\t")[-1])
+
+    def test_a_ticket_only_the_assistant_mentioned_stays_out(self):
+        # Keys Claude merely mentioned would make every search hit dozens of sessions.
+        st = index.new_state("s1", "-repo")
+        st["tickets"] = {"PROD-1": 1}
+        st["tickets_assistant"] = {"PROD-1": 5, "PROD-9608": 3}
+        self.assertNotIn("PROD-9608", self.row(st))
+
 if __name__ == "__main__":
     unittest.main()
