@@ -23,7 +23,7 @@ PASTE_RE = re.compile(r"<pasted_content\b[^>]*>[\s\S]*?</pasted_content\b[^>]*>"
 JUNK_TITLE_RE = re.compile(r"^(please |i need|alternatively|base directory|review this pasted|want you to|then i)", re.I)
 SKIP_DIRS = ("claude-rename-worker",)
 # Bumped when a session's state gains a field that only a full read of its transcript fills.
-SCHEMA = 3
+SCHEMA = 4
 PROMPT_KEEP = 8
 PROMPT_CHARS = 400
 
@@ -32,7 +32,7 @@ def new_state(session_id, project_dir):
         "id": session_id, "project_dir": project_dir, "cwd": "", "branch": "",
         "custom_title": "", "ai_title": "", "first_prompt": "", "prompts": [],
         "tickets": {}, "tickets_assistant": {}, "mrs": [], "mr_urls": [], "skills": [], "skill_runs": [], "first_skill": "",
-        "first_ts": "", "last_ts": "", "turns": 0, "continued_in": "", "jira_host": "", "_pending_cmd": None,
+        "first_ts": "", "last_ts": "", "turns": 0, "continued_in": "", "jira_host": "", "entrypoint": "", "_pending_cmd": None,
     }
 
 def _prompt_text(content):
@@ -68,6 +68,7 @@ def absorb_line(state, line):
             return
         state["cwd"] = rec.get("cwd") or state["cwd"]
         state["branch"] = rec.get("gitBranch") or state["branch"]
+        state["entrypoint"] = rec.get("entrypoint") or state.get("entrypoint") or ""
         ts = rec.get("timestamp") or ""
         if ts:
             state["first_ts"] = state["first_ts"] or ts
@@ -194,8 +195,7 @@ def index_sessions(force=False):
     for path in [p for p in cache if p not in seen and not p.startswith("_")]:
         del cache[path]
         changed = True
-    # A transcript with no user record is a background agent's stub (title records only), not a session anyone can resume.
-    entries = [e for k, e in cache.items() if not k.startswith("_") and e["state"]["first_ts"]]
+    entries = [e for k, e in cache.items() if not k.startswith("_") and listed(e["state"])]
     ids = {e["state"]["id"] for e in entries}
     alias = {e["state"]["id"]: e["state"]["continued_in"] for e in entries if e["state"].get("continued_in") in ids}
     if cache.get("_alias") != alias:
@@ -209,6 +209,12 @@ def index_sessions(force=False):
         head = canonical(e["state"]["id"])
         mtimes[head] = max(mtimes.get(head, 0), e["mtime"])
     return [e["state"] for e in entries if e["state"]["id"] not in alias], mtimes
+
+def listed(state):
+    """Whether the picker shows a session. A transcript with no user record is a background agent's
+    stub (title records only), and one started headless (`claude -p`, entrypoint `sdk-cli`) is a
+    script's run; nobody resumes either from the picker."""
+    return bool(state["first_ts"]) and state.get("entrypoint") != "sdk-cli"
 
 def one_session(session_id):
     """Cheap path for the status line: refresh only this session's entry."""

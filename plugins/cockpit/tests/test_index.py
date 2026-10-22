@@ -30,3 +30,28 @@ class PromptTickets(unittest.TestCase):
     def test_typed_key_still_counts_next_to_a_paste(self):
         st = self.absorb(user('this is about PROD-10977: <pasted_content id="1">PROD-11125</pasted_content id="1">'))
         self.assertEqual(st["tickets"], {"PROD-10977": 1})
+
+def user_from(entrypoint, text="review this"):
+    return json.dumps({"type": "user", "entrypoint": entrypoint, "message": {"role": "user", "content": text}, "timestamp": "2026-10-22T10:00:00Z"}, separators=(",", ":"))
+
+class WhatThePickerLists(unittest.TestCase):
+    def absorb(self, *lines):
+        st = index.new_state("s1", "p")
+        for l in lines:
+            index.absorb_line(st, l)
+        return st
+
+    def test_an_interactive_session_is_listed(self):
+        self.assertTrue(index.listed(self.absorb(user_from("cli"))))
+
+    def test_a_headless_session_is_not_listed(self):
+        # `claude -p`, as a script or a test harness runs it: nobody resumes these from the picker.
+        st = self.absorb(user_from("sdk-cli"))
+        self.assertEqual(st["entrypoint"], "sdk-cli")
+        self.assertFalse(index.listed(st))
+
+    def test_a_headless_session_resumed_by_hand_is_listed(self):
+        self.assertTrue(index.listed(self.absorb(user_from("sdk-cli"), user_from("cli", "carry on"))))
+
+    def test_a_background_agent_stub_is_not_listed(self):
+        self.assertFalse(index.listed(index.new_state("s1", "p")))
