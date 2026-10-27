@@ -40,6 +40,25 @@ class StatuslineMr(unittest.TestCase):
             found = mrs.session_mrs(state)
         self.assertEqual([m["iid"] for m in found], [16595, 89])
 
+    def found(self, state, authors):
+        by_url = {m["url"]: dict(m, author=authors[m["iid"]]) for m in (OLDER_MR, BRANCH_MR, OWN_MR)}
+        with mock.patch.object(mrs, "lookup_url", side_effect=lambda u: by_url[u]), \
+             mock.patch("cockpit.gitlab.me", return_value="me"):
+            return [m["iid"] for m in mrs.session_mrs(state)]
+
+    def test_an_mr_only_claude_mentioned_is_never_shown(self):
+        # Claude cites someone else's MR while working; the status line must not call it the session's MR.
+        state = new_state("sid", "-repo")
+        state["mr_urls"] = [BRANCH_MR["url"]]
+        self.assertEqual(self.found(state, {17005: "other", 16595: "me", 89: "me"}), [])
+
+    def test_someone_elses_mr_the_user_pasted_is_shown(self):
+        # A review session: the user pasted the MR under review.
+        state = new_state("sid", "-repo")
+        state["mr_urls"] = [OLDER_MR["url"], BRANCH_MR["url"]]
+        state["mrs"] = ["17005"]
+        self.assertEqual(self.found(state, {17005: "other", 16595: "me", 89: "other"}), [17005])
+
     def test_subject_and_ticket_link_are_the_last_fields(self):
         state = new_state("sid", "-repo")
         state["custom_title"] = "PROD-11125: read-protected stash fields"

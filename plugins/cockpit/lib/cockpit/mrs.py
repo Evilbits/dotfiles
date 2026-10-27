@@ -40,13 +40,15 @@ def lookup_url(url):
 
 def session_mrs(state):
     """The MRs that came out of a session, newest first: every link it dealt with that the token
-    owner authored, else the latest link at all. Empty until the wake has fetched them."""
+    owner authored, else the latest one the user pasted, as a review session does. An MR Claude only
+    mentioned is never the session's. Empty until the wake has fetched them."""
     from .gitlab import me
     mrs_ = [lookup_url(u) for u in reversed(state.get("mr_urls", []))]
     mrs_ = [m for m in mrs_ if m]
     who = me()
     own = [m for m in mrs_ if m.get("author") == who]
-    return own or mrs_[:1]
+    pasted = [m for m in mrs_ if str(m["iid"]) in state.get("mrs", [])]
+    return own or pasted[:1]
 
 def session_mr(state):
     """The MR a session is working on: the newest of session_mrs, None until fetched."""
