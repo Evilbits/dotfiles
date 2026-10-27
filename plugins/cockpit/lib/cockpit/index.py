@@ -23,7 +23,7 @@ PASTE_RE = re.compile(r"<pasted_content\b[^>]*>[\s\S]*?</pasted_content\b[^>]*>"
 JUNK_TITLE_RE = re.compile(r"^(please |i need|alternatively|base directory|review this pasted|want you to|then i)", re.I)
 SKIP_DIRS = ("claude-rename-worker",)
 # Bumped when a session's state gains a field that only a full read of its transcript fills.
-SCHEMA = 4
+SCHEMA = 5
 PROMPT_KEEP = 8
 PROMPT_CHARS = 400
 
@@ -31,7 +31,7 @@ def new_state(session_id, project_dir):
     return {
         "id": session_id, "project_dir": project_dir, "cwd": "", "branch": "",
         "custom_title": "", "ai_title": "", "first_prompt": "", "prompts": [],
-        "tickets": {}, "tickets_assistant": {}, "mrs": [], "mr_urls": [], "skills": [], "skill_runs": [], "first_skill": "",
+        "tickets": {}, "tickets_assistant": {}, "mrs": [], "mr_urls": [], "mr_urls_pasted": [], "skills": [], "skill_runs": [], "first_skill": "",
         "first_ts": "", "last_ts": "", "turns": 0, "continued_in": "", "jira_host": "", "entrypoint": "", "_pending_cmd": None,
     }
 
@@ -92,6 +92,7 @@ def absorb_line(state, line):
             if m not in state["mrs"]:
                 state["mrs"].append(m)
         _note_mr_urls(state, text)
+        _note_mr_urls(state, text, "mr_urls_pasted")
         jira = JIRA_URL_RE.search(text)
         if jira and not state.get("jira_host"):
             state["jira_host"] = jira.group(1)
@@ -143,10 +144,10 @@ def _note_skill_calls(state, line):
             if isinstance(name, str) and name:
                 _note_skill(state, name)
 
-def _note_mr_urls(state, text):
+def _note_mr_urls(state, text, key="mr_urls"):
     """Keep the MR links a session has dealt with, latest last, so the status line can name the
     one the session is working on even when it lives in another repository."""
-    urls = state.setdefault("mr_urls", [])
+    urls = state.setdefault(key, [])
     for u in MR_URL_RE.findall(text):
         if u in urls:
             urls.remove(u)

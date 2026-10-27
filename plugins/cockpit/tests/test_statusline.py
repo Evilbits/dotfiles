@@ -56,8 +56,18 @@ class StatuslineMr(unittest.TestCase):
         # A review session: the user pasted the MR under review.
         state = new_state("sid", "-repo")
         state["mr_urls"] = [OLDER_MR["url"], BRANCH_MR["url"]]
-        state["mrs"] = ["17005"]
+        state["mr_urls_pasted"] = [BRANCH_MR["url"]]
         self.assertEqual(self.found(state, {17005: "other", 16595: "me", 89: "other"}), [17005])
+
+    def test_the_same_number_in_another_project_is_not_the_pasted_mr(self):
+        # IIDs are per project: the user pasted project a's !17005, Claude mentioned project b's.
+        state = new_state("sid", "-repo")
+        other = dict(BRANCH_MR, url="https://gitlab.com/g/other/-/merge_requests/17005")
+        state["mr_urls"] = [other["url"]]
+        state["mr_urls_pasted"] = [BRANCH_MR["url"]]
+        with mock.patch.object(mrs, "lookup_url", return_value=dict(other, author="other")), \
+             mock.patch("cockpit.gitlab.me", return_value="me"):
+            self.assertEqual(mrs.session_mrs(state), [])
 
     def test_subject_and_ticket_link_are_the_last_fields(self):
         state = new_state("sid", "-repo")

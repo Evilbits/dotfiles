@@ -47,7 +47,8 @@ def session_mrs(state):
     mrs_ = [m for m in mrs_ if m]
     who = me()
     own = [m for m in mrs_ if m.get("author") == who]
-    pasted = [m for m in mrs_ if str(m["iid"]) in state.get("mrs", [])]
+    pasted_urls = set(state.get("mr_urls_pasted", []))
+    pasted = [m for m in mrs_ if m["url"] in pasted_urls]
     return own or pasted[:1]
 
 def session_mr(state):

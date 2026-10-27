@@ -55,3 +55,11 @@ class WhatThePickerLists(unittest.TestCase):
 
     def test_a_background_agent_stub_is_not_listed(self):
         self.assertFalse(index.listed(index.new_state("s1", "p")))
+
+class PastedMrLinks(unittest.TestCase):
+    def test_a_link_the_user_typed_is_pasted_and_one_claude_wrote_is_not(self):
+        st = index.new_state("s1", "p")
+        index.absorb_line(st, user("review https://gitlab.com/g/a/-/merge_requests/180 please"))
+        index.absorb_line(st, json.dumps({"type": "assistant", "message": {"content": [{"type": "text", "text": "see https://gitlab.com/g/b/-/merge_requests/180"}]}}, separators=(",", ":")))
+        self.assertEqual(st["mr_urls_pasted"], ["https://gitlab.com/g/a/-/merge_requests/180"])
+        self.assertIn("https://gitlab.com/g/b/-/merge_requests/180", st["mr_urls"])
