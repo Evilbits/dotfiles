@@ -23,7 +23,7 @@ PASTE_RE = re.compile(r"<pasted_content\b[^>]*>[\s\S]*?</pasted_content\b[^>]*>"
 JUNK_TITLE_RE = re.compile(r"^(please |i need|alternatively|base directory|review this pasted|want you to|then i)", re.I)
 SKIP_DIRS = ("claude-rename-worker",)
 # Bumped when a session's state gains a field that only a full read of its transcript fills.
-SCHEMA = 6
+SCHEMA = 7
 PROMPT_KEEP = 8
 PROMPT_CHARS = 400
 
@@ -31,7 +31,7 @@ def new_state(session_id, project_dir):
     return {
         "id": session_id, "project_dir": project_dir, "cwd": "", "branch": "",
         "custom_title": "", "ai_title": "", "first_prompt": "", "prompts": [],
-        "tickets": {}, "tickets_assistant": {}, "mrs": [], "mr_urls": [], "mr_urls_pasted": [], "skills": [], "skill_runs": [], "first_skill": "",
+        "tickets": {}, "tickets_assistant": {}, "mrs": [], "mr_urls": [], "mr_urls_pasted": [], "created_mrs": [], "skills": [], "skill_runs": [], "first_skill": "",
         "first_ts": "", "last_ts": "", "turns": 0, "continued_in": "", "jira_host": "", "entrypoint": "", "_pending_cmd": None,
     }
 
@@ -52,6 +52,17 @@ def absorb_line(state, line):
             state["skills"].append(state["_pending_cmd"])
         _note_skill(state, state["_pending_cmd"])
         state["_pending_cmd"] = None
+        return
+    if '"type":"pr-link"' in line:
+        # Claude Code's own record of an MR this session opened, the one sure sign of its own work;
+        # kept apart from mentioned links so later mentions never push it out.
+        try:
+            url = json.loads(line).get("prUrl") or ""
+        except Exception:
+            return
+        created = state.setdefault("created_mrs", [])
+        if url and url not in created:
+            created.append(url)
         return
     if '"type":"continued-in"' in line:
         try:

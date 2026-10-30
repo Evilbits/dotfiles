@@ -116,7 +116,7 @@ def statusline_fields(state, session_id, repo_dir="", branch=""):
     # branch: it is shown only to a session that never dealt with an MR link of its own.
     branch_mr = mrs.lookup(repo_dir, branch) if repo_dir and branch else None
     found = [branch_mr] if branch_mr and branch_mr.get("state") == "opened" else []
-    if state and state.get("mr_urls"):
+    if state and (state.get("mr_urls") or state.get("created_mrs")):
         found += [m for m in mrs.session_mrs(state) if m["url"] not in {f["url"] for f in found}]
     elif not found and branch_mr:
         found = [branch_mr]

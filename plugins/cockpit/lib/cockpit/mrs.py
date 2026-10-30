@@ -39,14 +39,18 @@ def lookup_url(url):
     return _want(m.group(2) + "!" + m.group(3), {"project": m.group(2), "iid": int(m.group(3))})
 
 def session_mrs(state):
-    """The MRs that came out of a session, newest first: every link it dealt with that the token
-    owner authored, else the latest one the user pasted, as a review session does. An MR Claude only
-    mentioned is never the session's. Empty until the wake has fetched them."""
+    """The MRs that came out of a session, newest first: the ones it created, then every link it
+    dealt with that the token owner authored, else the latest one the user pasted, as a review
+    session does. An MR Claude only mentioned is never the session's. Empty until the wake has
+    fetched them."""
     from .gitlab import me
+    created = [lookup_url(u) for u in reversed(state.get("created_mrs", []))]
+    created = [m for m in created if m]
     mrs_ = [lookup_url(u) for u in reversed(state.get("mr_urls", []))]
     mrs_ = [m for m in mrs_ if m]
     who = me()
-    own = [m for m in mrs_ if m.get("author") == who]
+    seen = {m["url"] for m in created}
+    own = created + [m for m in mrs_ if m.get("author") == who and m["url"] not in seen]
     pasted_urls = set(state.get("mr_urls_pasted", []))
     pasted = [m for m in mrs_ if m["url"] in pasted_urls]
     return own or pasted[:1]

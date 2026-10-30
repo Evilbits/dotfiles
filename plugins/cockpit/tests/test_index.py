@@ -39,6 +39,16 @@ class PromptTickets(unittest.TestCase):
         self.assertEqual(st["prompts"], ["look at PROD-10977 please"])
         self.assertEqual(st["turns"], 1)
 
+    def test_an_mr_the_session_created_is_kept_however_many_others_follow(self):
+        # Claude Code writes a pr-link record when the session opens an MR; later MR links must
+        # not push it out the way they push out older mentioned links.
+        created = json.dumps({"type": "pr-link", "prNumber": 18222, "prRepository": "g/p",
+                              "prUrl": "https://gitlab.com/g/p/-/merge_requests/18222"}, separators=(",", ":"))
+        others = [json.dumps({"type": "assistant", "message": {"content": [{"type": "text", "text": "https://gitlab.com/g/p/-/merge_requests/%d" % n}]}}, separators=(",", ":")) for n in range(1, 9)]
+        st = self.absorb(created, created, *others)
+        self.assertEqual(st["created_mrs"], ["https://gitlab.com/g/p/-/merge_requests/18222"])
+        self.assertNotIn("https://gitlab.com/g/p/-/merge_requests/18222", st["mr_urls"])
+
     def test_typed_key_still_counts_next_to_a_paste(self):
         st = self.absorb(user('this is about PROD-10977: <pasted_content id="1">PROD-11125</pasted_content id="1">'))
         self.assertEqual(st["tickets"], {"PROD-10977": 1})

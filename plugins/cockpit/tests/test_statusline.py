@@ -57,6 +57,16 @@ class StatuslineMr(unittest.TestCase):
             found = mrs.session_mrs(state)
         self.assertEqual([m["iid"] for m in found], [16595, 89])
 
+    def test_mrs_the_session_created_come_first(self):
+        # Created MRs are known from pr-link records even when no link to them is left in mr_urls.
+        state = new_state("sid", "-repo")
+        state["mr_urls"] = [OWN_MR["url"]]
+        state["created_mrs"] = [OLDER_MR["url"]]
+        by_url = {m["url"]: dict(m, author="me") for m in (OLDER_MR, OWN_MR)}
+        with mock.patch.object(mrs, "lookup_url", side_effect=lambda u: by_url[u]), \
+             mock.patch("cockpit.gitlab.me", return_value="me"):
+            self.assertEqual([m["iid"] for m in mrs.session_mrs(state)], [89, 16595])
+
     def found(self, state, authors):
         by_url = {m["url"]: dict(m, author=authors[m["iid"]]) for m in (OLDER_MR, BRANCH_MR, OWN_MR)}
         with mock.patch.object(mrs, "lookup_url", side_effect=lambda u: by_url[u]), \
