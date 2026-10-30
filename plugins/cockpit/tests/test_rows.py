@@ -27,6 +27,11 @@ class TicketColumn(unittest.TestCase):
         # saw that ticket. --exact matches each typed term as a substring.
         self.assertIn("--exact", ui.pick.__code__.co_consts)
 
+    def test_rows_stay_scrolled_to_their_subject(self):
+        # A match in the ticket column, the last one, scrolled the whole row sideways and hid the
+        # subject; the preview already lists every ticket, so the row keeps its start in view.
+        self.assertIn("--no-hscroll", ui.pick.__code__.co_consts)
+
 class EverythingASessionTouchedIsSearchable(unittest.TestCase):
     def row(self, st):
         with mock.patch.object(index, "cfg", return_value=dict(config.DEFAULTS)), \

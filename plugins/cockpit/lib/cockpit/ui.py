@@ -187,7 +187,7 @@ HEADER = "   age  project      kind      subject                                
 
 def pick(lines, footer, me):
     args = [
-        "fzf", "--reverse", "--no-sort", "--exact", "--ansi", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
+        "fzf", "--reverse", "--no-sort", "--exact", "--no-hscroll", "--ansi", "--delimiter", "\t", "--with-nth", "2..", "--tabstop", "1",
         "--header", HEADER, "--header-first",
         "--preview", "'%s' --preview {1}" % me, "--preview-window", "right,50%,wrap",
         "--bind", "ctrl-y:execute-silent(printf %s {1} | pbcopy)",

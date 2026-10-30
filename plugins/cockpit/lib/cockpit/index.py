@@ -23,7 +23,7 @@ PASTE_RE = re.compile(r"<pasted_content\b[^>]*>[\s\S]*?</pasted_content\b[^>]*>"
 JUNK_TITLE_RE = re.compile(r"^(please |i need|alternatively|base directory|review this pasted|want you to|then i)", re.I)
 SKIP_DIRS = ("claude-rename-worker",)
 # Bumped when a session's state gains a field that only a full read of its transcript fills.
-SCHEMA = 5
+SCHEMA = 6
 PROMPT_KEEP = 8
 PROMPT_CHARS = 400
 
@@ -59,7 +59,8 @@ def absorb_line(state, line):
         except Exception:
             pass
         return
-    if '"type":"user"' in line and '"isMeta":true' not in line and '"isSidechain":true' not in line:
+    # A compaction summary is a user record Claude wrote; its keys and MRs were never typed.
+    if '"type":"user"' in line and '"isMeta":true' not in line and '"isSidechain":true' not in line and '"isCompactSummary":true' not in line:
         try:
             rec = json.loads(line)
         except Exception:

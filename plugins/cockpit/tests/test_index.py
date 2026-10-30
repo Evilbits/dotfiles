@@ -27,6 +27,18 @@ class PromptTickets(unittest.TestCase):
         st = self.absorb(user('fix this:\n<pasted_content id="1">\nPROD-11125 · Worktree version bump, see PROD-11125\n</pasted_content id="1">\nthanks'))
         self.assertEqual(st["tickets"], {})
 
+    def test_a_compaction_summary_is_not_a_prompt(self):
+        # Claude writes the summary after /compact as a user record; its keys and MRs are every
+        # one the old context mentioned, and none of them were typed.
+        summary = json.dumps({"type": "user", "isCompactSummary": True, "isVisibleInTranscriptOnly": True,
+                              "message": {"role": "user", "content": "This session is being continued from a previous conversation. PROD-11951 and merge_requests/17759 came up."},
+                              "timestamp": "2026-09-23T10:00:00Z"}, separators=(",", ":"))
+        st = self.absorb(user("look at PROD-10977 please"), summary)
+        self.assertEqual(st["tickets"], {"PROD-10977": 1})
+        self.assertEqual(st["mrs"], [])
+        self.assertEqual(st["prompts"], ["look at PROD-10977 please"])
+        self.assertEqual(st["turns"], 1)
+
     def test_typed_key_still_counts_next_to_a_paste(self):
         st = self.absorb(user('this is about PROD-10977: <pasted_content id="1">PROD-11125</pasted_content id="1">'))
         self.assertEqual(st["tickets"], {"PROD-10977": 1})
