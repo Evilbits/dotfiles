@@ -111,13 +111,16 @@ def statusline_fields(state, session_id, repo_dir="", branch=""):
     own = snoozed.get(session_id)
     own_text = (snooze.text(own, absolute=True) + ((" · " + own["reason"]) if own.get("reason") else "")) if own else ""
     due = sum(1 for e in snoozed.values() if snooze.is_due(e))
-    # A session that has dealt with MR links shows one of those, or nothing until they are fetched;
-    # the checkout's branch MR is only a guess for sessions that never named one.
+    # The checkout branch's open MR is the one the session pushes to, whether or not a link to it
+    # ever appeared in the transcript, so it leads. A closed one may be earlier work on a reused
+    # branch: it is shown only to a session that never dealt with an MR link of its own.
+    branch_mr = mrs.lookup(repo_dir, branch) if repo_dir and branch else None
+    found = [branch_mr] if branch_mr and branch_mr.get("state") == "opened" else []
     if state and state.get("mr_urls"):
-        found = mrs.session_mrs(state)[:3]
-    else:
-        mr = mrs.lookup(repo_dir, branch) if repo_dir and branch else None
-        found = [mr] if mr else []
+        found += [m for m in mrs.session_mrs(state) if m["url"] not in {f["url"] for f in found}]
+    elif not found and branch_mr:
+        found = [branch_mr]
+    found = found[:3]
     labels = []
     for i, mr in enumerate(found):
         label = ("!%d %s" % (mr["iid"], mr["title"])) if i == 0 else "!%d" % mr["iid"]
