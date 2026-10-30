@@ -21,6 +21,12 @@ class TicketColumn(unittest.TestCase):
         # --with-nth 2.. shows every column but the id, so the last one is matched.
         self.assertEqual(ui.pick.__code__.co_consts.count("2.."), 1)
 
+    def test_search_matches_whole_terms(self):
+        # Fuzzy matching let a ticket key match any row holding its characters in order, such as
+        # PROD-12606 followed by an MR ending in 6, so a key search listed sessions that never
+        # saw that ticket. --exact matches each typed term as a substring.
+        self.assertIn("--exact", ui.pick.__code__.co_consts)
+
 class EverythingASessionTouchedIsSearchable(unittest.TestCase):
     def row(self, st):
         with mock.patch.object(index, "cfg", return_value=dict(config.DEFAULTS)), \
