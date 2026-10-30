@@ -9,7 +9,7 @@ import urllib.error
 import urllib.parse
 
 from . import gitlab
-from .config import CACHE_DIR, load_json, save_json
+from .config import CACHE_DIR, load_json, updating_json
 
 MRS = os.path.join(CACHE_DIR, "mrs.json")
 FRESH = 120          # seconds a cached answer is served without a refresh
@@ -25,10 +25,9 @@ def _key(project, branch):
     return project + "#" + branch
 
 def _want(key, seed):
-    data = load_json(MRS)
-    entry = data.setdefault(key, dict(seed, checked=0))
-    entry["wanted"] = time.time()
-    save_json(MRS, data)
+    with updating_json(MRS) as data:
+        entry = data.setdefault(key, dict(seed, checked=0))
+        entry["wanted"] = time.time()
     return entry.get("mr")
 
 def lookup_url(url):
@@ -68,11 +67,7 @@ def lookup(repo_dir, branch):
     project = project_of_repo(repo_dir)
     if not project:
         return None
-    data = load_json(MRS)
-    entry = data.setdefault(_key(project, branch), {"project": project, "branch": branch, "checked": 0})
-    entry["wanted"] = time.time()
-    save_json(MRS, data)
-    return entry.get("mr")
+    return _want(_key(project, branch), {"project": project, "branch": branch})
 
 def _shape(mr):
     return {"iid": mr["iid"], "title": mr["title"], "url": mr["web_url"], "state": mr["state"], "author": (mr.get("author") or {}).get("username", "")}
@@ -86,29 +81,27 @@ def fetch_iid(project, iid):
     return _shape(gitlab.get(gitlab.cfg()["gitlab_host"], "projects/%s/merge_requests/%d" % (urllib.parse.quote(project, safe=""), iid)))
 
 def refresh_wanted(log):
-    """Called by the wake: refresh stale entries the status line asked about, forget old ones."""
-    data = load_json(MRS)
+    """Called by the wake: refresh stale entries the status line asked about, forget old ones.
+    GitLab is asked outside the lock, and the answers are merged into the file as it is then, so
+    the status lines that render meanwhile are neither blocked nor overwritten."""
     now = time.time()
-    changed = False
-    for key in list(data):
-        e = data[key]
-        if now - e.get("wanted", 0) > FORGET:
-            del data[key]
-            changed = True
-            continue
-        if now - e.get("checked", 0) < FRESH:
+    found = {}
+    for key, e in load_json(MRS).items():
+        if now - e.get("wanted", 0) > FORGET or now - e.get("checked", 0) < FRESH:
             continue
         try:
-            e["mr"] = fetch_iid(e["project"], e["iid"]) if "iid" in e else fetch(e["project"], e["branch"])
-            e["checked"] = now
-            changed = True
+            found[key] = fetch_iid(e["project"], e["iid"]) if "iid" in e else fetch(e["project"], e["branch"])
         except urllib.error.HTTPError as ex:
             if ex.code == 404:
                 # An example link or a deleted MR: remember there is nothing, stop asking every minute.
-                e["mr"], e["checked"], changed = None, now, True
+                found[key] = None
             else:
                 log("mr lookup failed for %s: %s" % (key, ex))
         except Exception as ex:
             log("mr lookup failed for %s: %s" % (key, ex))
-    if changed:
-        save_json(MRS, data)
+    with updating_json(MRS) as data:
+        for key in [k for k, e in data.items() if now - e.get("wanted", 0) > FORGET]:
+            del data[key]
+        for key, mr in found.items():
+            if key in data:
+                data[key]["mr"], data[key]["checked"] = mr, now

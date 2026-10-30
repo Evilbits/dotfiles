@@ -21,6 +21,20 @@ class TicketColumn(unittest.TestCase):
         # --with-nth 2.. shows every column but the id, so the last one is matched.
         self.assertEqual(ui.pick.__code__.co_consts.count("2.."), 1)
 
+    def test_an_mr_the_session_created_is_searchable(self):
+        # "searching by either 17889 (the MR code) or 12011 (Jira ticket ID) doesn't find it."
+        st = index.new_state("s1", "-repo")
+        st["custom_title"] = "PROD-12011: Some work"
+        st["tickets"] = {"PROD-12011": 1}
+        st["created_mrs"] = ["https://gitlab.com/g/p/-/merge_requests/17889"]
+        with mock.patch.object(index, "cfg", return_value=dict(config.DEFAULTS)), \
+             mock.patch.object(snooze, "load", return_value={}), mock.patch.object(ui, "user_names", return_value={}), \
+             mock.patch.object(index, "pinned_tickets", return_value={}):
+            row = ui.rows([st], {"s1": 0}, {})[0]
+        shown = "\t".join(row.split("\t")[1:])
+        self.assertIn("17889", shown)
+        self.assertIn("PROD-12011", shown)
+
     def test_search_matches_whole_terms(self):
         # Fuzzy matching let a ticket key match any row holding its characters in order, such as
         # PROD-12606 followed by an MR ending in 6, so a key search listed sessions that never

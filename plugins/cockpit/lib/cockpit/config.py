@@ -1,5 +1,7 @@
 """Paths and user configuration. Everything a person might want to change lives here or in
 ~/.config/cockpit/config.json, so the code itself carries no personal constants."""
+import contextlib
+import fcntl
 import json
 import os
 import re
@@ -107,7 +109,21 @@ def save_json(path, data, indent=None):
     updated in place instead of being replaced by a plain file."""
     path = os.path.realpath(path)
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp = path + ".tmp"
+    # One temporary file per writer: status lines in every session and the minute job write the
+    # same caches, and a shared one let one writer's rename take another's half-written file.
+    tmp = "%s.%d.tmp" % (path, os.getpid())
     with open(tmp, "w") as f:
         json.dump(data, f, indent=indent)
     os.replace(tmp, path)
+
+@contextlib.contextmanager
+def updating_json(path, indent=None):
+    """Read, change and write a JSON file under an exclusive lock, so a writer that loaded the file
+    earlier can never write back a copy that drops another writer's change."""
+    real = os.path.realpath(path)
+    os.makedirs(os.path.dirname(real), exist_ok=True)
+    with open(real + ".lock", "a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        data = load_json(real)
+        yield data
+        save_json(real, data, indent)

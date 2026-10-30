@@ -69,7 +69,7 @@ def _also(st):
     Keys Claude only mentioned stay out; they would make a search hit dozens of sessions."""
     primary = primary_ticket(st)
     tickets = [t for t, _ in sorted(st["tickets"].items(), key=lambda kv: -kv[1]) if t != primary]
-    numbers = list(st["mrs"]) + [u.rsplit("/", 1)[-1] for u in st.get("mr_urls", [])]
+    numbers = list(st["mrs"]) + [u.rsplit("/", 1)[-1] for u in st.get("created_mrs", []) + st.get("mr_urls", [])]
     shown = set(st["mrs"][:2])
     mrs = []
     for n in numbers:
@@ -111,16 +111,14 @@ def statusline_fields(state, session_id, repo_dir="", branch=""):
     own = snoozed.get(session_id)
     own_text = (snooze.text(own, absolute=True) + ((" · " + own["reason"]) if own.get("reason") else "")) if own else ""
     due = sum(1 for e in snoozed.values() if snooze.is_due(e))
-    # The checkout branch's open MR is the one the session pushes to, whether or not a link to it
-    # ever appeared in the transcript, so it leads. A closed one may be earlier work on a reused
-    # branch: it is shown only to a session that never dealt with an MR link of its own.
-    branch_mr = mrs.lookup(repo_dir, branch) if repo_dir and branch else None
-    found = [branch_mr] if branch_mr and branch_mr.get("state") == "opened" else []
+    # A session that created or dealt with MR links shows those, or nothing until they are fetched;
+    # the checkout's branch MR is only a guess for sessions that never named one, since other
+    # sessions can switch the branch under it.
     if state and (state.get("mr_urls") or state.get("created_mrs")):
-        found += [m for m in mrs.session_mrs(state) if m["url"] not in {f["url"] for f in found}]
-    elif not found and branch_mr:
-        found = [branch_mr]
-    found = found[:3]
+        found = mrs.session_mrs(state)[:3]
+    else:
+        mr = mrs.lookup(repo_dir, branch) if repo_dir and branch else None
+        found = [mr] if mr else []
     labels = []
     for i, mr in enumerate(found):
         label = ("!%d %s" % (mr["iid"], mr["title"])) if i == 0 else "!%d" % mr["iid"]

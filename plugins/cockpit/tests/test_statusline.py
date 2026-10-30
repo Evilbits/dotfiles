@@ -1,4 +1,4 @@
-"""The status line's choice of MR: the checkout branch's open MR, then the session's own links, then the branch's closed MR as a fallback."""
+"""The status line's choice of MR: the session's own links first, the checkout branch only as a fallback."""
 import os
 import sys
 import unittest
@@ -22,21 +22,6 @@ class StatuslineMr(unittest.TestCase):
              mock.patch.object(mrs, "lookup", return_value=branch) as lookup:
             out = ui.statusline_fields(state, "sid", "/repo", "feature-branch").split("\t")
         return out[5], out[6], lookup.called
-
-    def test_the_branchs_open_mr_comes_before_the_sessions_links(self):
-        # The open MR of the checked-out branch is the one the session pushes to; a link to it
-        # may never appear in the transcript, or an older own MR's link may be the newest one.
-        state = new_state("sid", "-repo")
-        state["mr_urls"] = [OLDER_MR["url"]]
-        label, url, _ = self.fields(state, own=OLDER_MR, branch=OPEN_BRANCH_MR)
-        self.assertEqual(label.split("\x1f"), ["!18222 mint names a Visit", "!89 · merged"])
-        self.assertEqual(url.split("\x1f"), [OPEN_BRANCH_MR["url"], OLDER_MR["url"]])
-
-    def test_the_branchs_open_mr_is_listed_once(self):
-        state = new_state("sid", "-repo")
-        state["mr_urls"] = [OPEN_BRANCH_MR["url"], OLDER_MR["url"]]
-        _, url, _ = self.fields(state, own=[OLDER_MR, OPEN_BRANCH_MR], branch=OPEN_BRANCH_MR)
-        self.assertEqual(url.split("\x1f"), [OPEN_BRANCH_MR["url"], OLDER_MR["url"]])
 
     def test_every_own_mr_is_listed_newest_first_with_the_title_on_the_newest(self):
         state = new_state("sid", "-repo")
@@ -110,15 +95,25 @@ class StatuslineMr(unittest.TestCase):
     def test_session_with_links_never_shows_the_branch_mr(self):
         state = new_state("sid", "-repo")
         state["mr_urls"] = [OWN_MR["url"]]
-        label, url, _ = self.fields(state, own=None)
-        # The branch's MR here is merged, so it may be an earlier piece of work on a reused branch.
+        label, url, used_branch = self.fields(state, own=None)
         self.assertEqual((label, url), ("", ""))
+        self.assertFalse(used_branch)
+
+    def test_an_open_branch_mr_is_not_shown_over_the_sessions_own(self):
+        # Other sessions switch the branch under this one; only the MRs that came out of this
+        # session count, whatever the branch's MR is.
+        state = new_state("sid", "-repo")
+        state["created_mrs"] = [OWN_MR["url"]]
+        label, url, used_branch = self.fields(state, own=OWN_MR, branch=OPEN_BRANCH_MR)
+        self.assertEqual(url, OWN_MR["url"])
+        self.assertFalse(used_branch)
 
     def test_session_with_links_shows_its_own_once_fetched(self):
         state = new_state("sid", "-repo")
         state["mr_urls"] = [OWN_MR["url"]]
-        label, url, _ = self.fields(state, own=OWN_MR)
+        label, url, used_branch = self.fields(state, own=OWN_MR)
         self.assertEqual((label, url), ("!16595 retry stash writes", OWN_MR["url"]))
+        self.assertFalse(used_branch)
 
     def test_session_without_links_falls_back_to_the_branch(self):
         label, url, used_branch = self.fields(new_state("sid", "-repo"), own=None)

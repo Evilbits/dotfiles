@@ -5,7 +5,9 @@ import datetime as dt
 import re
 import time
 
-from .config import SNOOZE, canonical, load_json, save_json
+import contextlib
+
+from .config import SNOOZE, canonical, load_json, updating_json
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 WEEKDAY_WORDS = {w: i for i, w in enumerate(WEEKDAYS)}
@@ -19,33 +21,41 @@ def load():
             data.setdefault(canonical(k), v)
     return data
 
+@contextlib.contextmanager
+def _editing():
+    """The entries as they are on disk, under the store's lock, written back on exit."""
+    with updating_json(SNOOZE, indent=1) as raw:
+        entries = {}
+        for k, v in raw.items():
+            if isinstance(v, dict):
+                entries.setdefault(canonical(k), v)
+        raw.clear()
+        raw.update(entries)
+        yield raw
+
 def put(session_id, entry):
-    data = load()
-    data[canonical(session_id)] = entry
-    save_json(SNOOZE, data, indent=1)
+    with _editing() as data:
+        data[canonical(session_id)] = entry
 
 def remove(session_id):
-    data = load()
     session_id = canonical(session_id)
-    for k in list(data):
-        if k == session_id or k.startswith(session_id):
-            del data[k]
-    save_json(SNOOZE, data, indent=1)
+    with _editing() as data:
+        for k in list(data):
+            if k == session_id or k.startswith(session_id):
+                del data[k]
 
 def update(session_id, **fields):
     """Merge fields into the entry as it is on disk now; a no-op if it was removed meanwhile."""
-    data = load()
-    if session_id in data:
-        data[session_id].update(fields)
-        save_json(SNOOZE, data, indent=1)
+    with _editing() as data:
+        if session_id in data:
+            data[session_id].update(fields)
 
 def mark_due(session_id, event):
     """Set due on the entry as it is on disk now; a no-op if the user removed it meanwhile."""
-    data = load()
-    if session_id in data:
-        data[session_id]["due"] = True
-        data[session_id]["event"] = event
-        save_json(SNOOZE, data, indent=1)
+    with _editing() as data:
+        if session_id in data:
+            data[session_id]["due"] = True
+            data[session_id]["event"] = event
 
 def parse_until(spec, now=None):
     """2h, 45m, 3d, tomorrow, fri, 14:30 -> epoch seconds. Day-based specs land at 09:00."""
