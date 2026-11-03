@@ -1032,7 +1032,10 @@ extension StatusController: UNUserNotificationCenterDelegate {
         content.body = body
         content.sound = .default
         content.userInfo = ["session": sessionId]
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil)) { error in
+        // A request whose identifier macOS has already delivered replaces that notification without a banner,
+        // and a session can wake for the same reason more than once, so every request gets its own identifier.
+        let request = UNNotificationRequest(identifier: "\(id)|\(UUID().uuidString)", content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request) { error in
             if let error = error { NSLog("CockpitBar: notification failed: %@", "\(error)") }
         }
     }
