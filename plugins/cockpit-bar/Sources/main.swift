@@ -1,4 +1,5 @@
 import Cocoa
+import UserNotifications
 
 // Cockpit Bar: a fork of claude-status-bar (MIT, m1ckc3s) whose session list is cockpit's. The menu bar side
 // (splat animation, activity text, permission state, completion chime) is driven by the hook-written files in
@@ -55,7 +56,7 @@ final class StatusController: NSObject, NSMenuDelegate {
     struct Row {
         var id: String, group: Int, ticket: String, ticketURL: String, verb: String, title: String, repo: String, branch: String
         var live: Bool, tmux: String, kind: String
-        var snoozed: Bool, due: Bool, snoozeText: String, snoozeShort: String, wakes: String
+        var snoozed: Bool, due: Bool, snoozeText: String, snoozeShort: String, wakes: String, dueEvent: String
         var started: String, last: String
         var mrs: [MR]
         var stateIds: [String]
@@ -79,6 +80,7 @@ final class StatusController: NSObject, NSMenuDelegate {
             snoozeText = o["snooze_text"] as? String ?? ""
             snoozeShort = o["snooze_short"] as? String ?? ""
             wakes = o["wakes"] as? String ?? ""
+            dueEvent = o["due_event"] as? String ?? ""
             started = o["started"] as? String ?? ""
             last = o["last"] as? String ?? ""
             mrs = (o["mrs"] as? [[String: Any]] ?? []).map { m in
@@ -90,7 +92,7 @@ final class StatusController: NSObject, NSMenuDelegate {
         init(session s: Session) {
             id = s.id; group = 1; ticket = ""; ticketURL = ""; verb = ""; title = s.project.isEmpty ? "new session" : s.project; repo = s.project; branch = ""
             live = true; tmux = ""; kind = ""
-            snoozed = false; due = false; snoozeText = ""; snoozeShort = ""; wakes = ""
+            snoozed = false; due = false; snoozeText = ""; snoozeShort = ""; wakes = ""; dueEvent = ""
             started = ""; last = ""; mrs = []; stateIds = [s.id]; synthetic = true
         }
     }
@@ -246,6 +248,7 @@ final class StatusController: NSObject, NSMenuDelegate {
         pollTimer = t
         tick()
         try? FileManager.default.removeItem(atPath: (baseDir as NSString).appendingPathComponent("quit-intent"))
+        setUpNotifications()
         refreshRows()
     }
 
@@ -289,6 +292,7 @@ final class StatusController: NSObject, NSMenuDelegate {
             self.rows = list.map(Row.init(json:))
             self.dueCount = (obj["due"] as? NSNumber)?.intValue ?? 0
             self.applyTitle()
+            self.notifyNewlyDue()
         }
     }
 
@@ -982,6 +986,69 @@ final class StatusController: NSObject, NSMenuDelegate {
             .font: NSFont.monospacedDigitSystemFont(ofSize: 0, weight: .regular),
         ]
         button.attributedTitle = NSAttributedString(string: " \(text)", attributes: attrs)
+    }
+}
+
+// MARK: notifications
+
+// cockpit's wake job marks a snoozed session due once a minute, but its terminal-notifier and osascript
+// notifications are silently dropped on recent macOS, where neither is registered as a notification sender.
+// This app is a real bundle, so macOS registers it: it asks for permission once and posts one notification
+// per session that becomes due; clicking it opens the session the way its menu row does.
+extension StatusController: UNUserNotificationCenterDelegate {
+    static let notifiedKey = "notifiedDue"
+
+    func setUpNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+        center.requestAuthorization(options: [.alert, .sound]) { granted, error in
+            if let error = error { NSLog("CockpitBar: notification permission: %@", "\(error)") }
+            guard granted, CommandLine.arguments.contains("--test-notification") else { return }
+            self.post(id: "test", title: "Cockpit Bar", body: "Notifications work. A session that wakes from a snooze shows here.", sessionId: "")
+        }
+    }
+
+    // One notification per session and wake event. What was sent is remembered across restarts and forgotten
+    // once the session is no longer due, so a session that is snoozed and wakes again is announced again.
+    func notifyNewlyDue() {
+        let defaults = UserDefaults.standard
+        var sent = Set(defaults.stringArray(forKey: Self.notifiedKey) ?? [])
+        let due = rows.filter { $0.due && !$0.synthetic }
+        let keys = Set(due.map { "\($0.id)|\($0.dueEvent)" })
+        for row in due {
+            let key = "\(row.id)|\(row.dueEvent)"
+            guard !sent.contains(key) else { continue }
+            let label = [row.ticket, row.title].filter { !$0.isEmpty }.joined(separator: " · ")
+            let why = row.dueEvent.isEmpty || row.dueEvent == "time" ? row.snoozeText : row.dueEvent
+            post(id: key, title: "Claude session due", body: why.isEmpty ? label : "\(label)\n\(why)", sessionId: row.id)
+            sent.insert(key)
+        }
+        defaults.set(Array(sent.intersection(keys)), forKey: Self.notifiedKey)
+    }
+
+    func post(id: String, title: String, body: String, sessionId: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        content.userInfo = ["session": sessionId]
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil)) { error in
+            if let error = error { NSLog("CockpitBar: notification failed: %@", "\(error)") }
+        }
+    }
+
+    // A menu bar app counts as frontmost often enough that macOS would otherwise swallow the banner.
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .list, .sound])
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        if let id = response.notification.request.content.userInfo["session"] as? String, !id.isEmpty {
+            DispatchQueue.main.async { self.act(["--open", id]) }
+        }
+        completionHandler()
     }
 }
 

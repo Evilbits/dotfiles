@@ -16,7 +16,7 @@ mkdir -p "$STAGE/Contents/MacOS" "$STAGE/Contents/Resources"
 
 echo "Compiling…"
 # Pin the deployment target, else swiftc stamps the binary with this machine's OS version.
-swiftc -O -target arm64-apple-macos12.0 Sources/*.swift -o "$STAGE/Contents/MacOS/$EXEC" -framework Cocoa
+swiftc -O -target arm64-apple-macos12.0 Sources/*.swift -o "$STAGE/Contents/MacOS/$EXEC" -framework Cocoa -framework UserNotifications
 
 # CockpitBarProvider tells the app where bin/cockpit-bar lives, so the app never needs an install step
 # and picks up edits to the Python side without a rebuild.

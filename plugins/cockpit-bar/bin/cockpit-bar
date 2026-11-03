@@ -105,6 +105,7 @@ def collect():
             "snooze_text": (snooze.text(e, absolute=True) + ((" · " + e["reason"]) if e.get("reason") else "")) if e else "",
             "snooze_short": snooze.text(e) if e else "",
             "wakes": snooze.triggers(e) if e and e.get("mr") else "",
+            "due_event": (e.get("event") or "") if e and snooze.is_due(e) else "",
             "started": ui._when(s["first_ts"]) if s.get("first_ts") else "", "last": ui._when(s["last_ts"]) if s.get("last_ts") else "",
             "mrs": found, "state_ids": state_ids.get(s["id"], []),
         })
