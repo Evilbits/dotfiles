@@ -16,6 +16,8 @@ for c in $(pgrep -P "$pane_pid"); do
     done
   fi
   [ -n "$dir" ] || dir=$(sed -n 's/.*"cwd":"\([^"]*\)".*/\1/p' "$reg")
+  # Sessions started in doxyme-core before the ~/dev/doxyme workspace replaced it open new windows in the workspace.
+  [ "$dir" = "$HOME/dev/doxyme-core" ] && dir="$HOME/dev/doxyme"
   if [ -d "$dir" ]; then
     echo "$dir"
     exit 0
